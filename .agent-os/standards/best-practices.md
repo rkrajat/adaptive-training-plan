@@ -44,7 +44,7 @@ components/
     ├── FeatureName.tsx   // PascalCase component
     ├── types.ts          // TypeScript interfaces
     ├── constants.ts      // UPPER_CASE constants
-    ├── styles.ts         // Chakra UI theme extensions and custom variants
+    ├── styles.ts         // Tailwind CSS custom utilities and component styles
     └── FeatureName.test.tsx
 ```
 
@@ -58,20 +58,21 @@ components/
 
 ## Design System Integration
 
-### Chakra UI Component Usage (ENFORCED)
+### shadcn/ui Component Usage (ENFORCED)
 
-- **MUST** use Chakra UI components before creating custom components (ENFORCED BY code review)
-- **MUST** use Chakra UI's style props system for styling (REQUIRED)
-- **MUST** follow Chakra UI component prop specifications exactly (NO EXCEPTIONS)
-- **ABSOLUTELY FORBIDDEN** to create custom UI components when Chakra UI equivalents exist (BLOCKED by architecture review)
+- **MUST** use shadcn/ui components before creating custom components (ENFORCED BY code review)
+- **MUST** use Tailwind CSS utility classes for styling (REQUIRED)
+- **MUST** follow shadcn/ui component patterns and conventions exactly (NO EXCEPTIONS)
+- **ABSOLUTELY FORBIDDEN** to create custom UI components when shadcn/ui equivalents exist (BLOCKED by architecture review)
 
 
 ### Styling Approach (ENFORCED HIERARCHY)
 
-1. **FIRST**: Use Chakra UI components with built-in variants (ALWAYS)
-2. **SECOND**: Use Chakra UI style props (bg, p, m, color, etc.) (REQUIRED)
-3. **THIRD**: Use Chakra UI theme tokens and custom themes (WHEN NEEDED)
-4. **ABSOLUTELY FORBIDDEN**: Inline styles or hardcoded CSS values (BLOCKED BY ESLINT)
+1. **FIRST**: Use shadcn/ui components with built-in variants (ALWAYS)
+2. **SECOND**: Use Tailwind CSS utility classes for styling (REQUIRED)
+3. **THIRD**: Use Tailwind CSS theme configuration and custom design tokens (WHEN NEEDED)
+4. **FOURTH**: Use CSS variables (defined in globals.css) for complex theming (WHEN NEEDED)
+5. **ABSOLUTELY FORBIDDEN**: Inline styles or arbitrary CSS values outside Tailwind (BLOCKED BY ESLINT)
 
 
 ## Data Access (ENFORCED BY CODE REVIEW)
@@ -97,7 +98,8 @@ components/
 ### Functional Components
 
 ```typescript
-import { Box, Button, Card, CardBody, CardHeader, Heading } from '@chakra-ui/react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export const UserProfile = ({ user, onEdit }: UserProfileProps) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -109,11 +111,11 @@ export const UserProfile = ({ user, onEdit }: UserProfileProps) => {
   return (
     <Card>
       <CardHeader>
-        <Heading size="lg" fontWeight="semibold">{user.name}</Heading>
+        <CardTitle className="text-2xl font-semibold">{user.name}</CardTitle>
       </CardHeader>
-      <CardBody>
+      <CardContent>
         <Button variant="outline" onClick={handleEdit}>Edit</Button>
-      </CardBody>
+      </CardContent>
     </Card>
   );
 };
@@ -170,7 +172,7 @@ const { data, isLoading, error } = useQuery({
 
 ### Forbidden
 
-- Custom UI components when Chakra UI equivalents exist
+- Custom UI components when shadcn/ui equivalents exist
 - Inline styles or hardcoded CSS values
 - Default exports (use named exports)
 - Function declarations (use arrow functions)
@@ -199,7 +201,7 @@ const { data, isLoading, error } = useQuery({
 
 **Reference**: `@.agent-os/standards/tech-stack.md`
 
-- **UI**: Chakra UI with emotion/styled-system
+- **UI**: shadcn/ui with Tailwind CSS
 - **State**: Zustand 5.0.3 with shallow selectors
 - **API Data**: TanStack Query 5.59.16
 - **HTTP Client**: sindresorhus/ky for API requests

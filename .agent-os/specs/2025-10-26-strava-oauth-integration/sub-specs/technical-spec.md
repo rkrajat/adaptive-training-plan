@@ -40,11 +40,11 @@ This is the technical specification for the spec detailed in @.agent-os/specs/20
 ### Frontend (apps/web)
 
 **Login Page (app/login/page.tsx):**
-- Create full-page centered layout with Chakra UI components
+- Create full-page centered layout with Tailwind CSS utility classes
 - Display "Adaptive Training Plan" title
-- Show "Login with Strava" button (Chakra Button with orange Strava brand color)
+- Show "Login with Strava" button (shadcn/ui Button with orange Strava brand color #FC4C02)
 - Button redirects to backend OAuth endpoint: `GET ${API_URL}/api/auth/strava`
-- Use Chakra UI `Container`, `VStack`, `Heading`, `Button` components
+- Use shadcn/ui `Button` and `Card` components with Tailwind for layout
 
 **Dashboard Page (app/dashboard/page.tsx):**
 - Protected route - check for JWT token in localStorage
@@ -80,11 +80,11 @@ This is the technical specification for the spec detailed in @.agent-os/specs/20
 - Button hover state: darker orange
 
 **Dashboard:**
-- Header section with user info: avatar (size "lg"), name (size "xl")
-- Activities section: grid layout with cards
+- Header section with user info: avatar (w-16 h-16 rounded-full), name (text-2xl font-semibold)
+- Activities section: grid layout with shadcn/ui Card components
 - Each activity card shows: name, distance (in miles), duration (formatted), type, date
-- Use Chakra UI Card components with hover effect
-- Responsive grid: 1 column mobile, 2 columns tablet, 3 columns desktop
+- Use shadcn/ui Card components with hover effect (hover:shadow-md transition)
+- Responsive grid: grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4
 
 ## External Dependencies
 

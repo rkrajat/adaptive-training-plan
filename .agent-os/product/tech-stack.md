@@ -19,9 +19,10 @@
 #### UI Framework
 - **React:** Latest stable (Frontend UI library using functional components and hooks)
 
-#### Component Library
-- **Chakra UI:** Latest stable (Primary design system and accessible component library)
-- **Tailwind CSS:** Latest stable (Utility-first CSS framework for custom designs)
+#### Component Library & Styling
+- **shadcn/ui:** Latest stable (Primary component library - beautifully designed, accessible components built with Radix UI)
+- **Tailwind CSS:** Latest stable (Utility-first CSS framework for styling and design system)
+- **Radix UI:** Latest stable (Headless UI primitives powering shadcn/ui components)
 
 #### State Management
 - **Zustand:** Latest stable (Lightweight state management solution)

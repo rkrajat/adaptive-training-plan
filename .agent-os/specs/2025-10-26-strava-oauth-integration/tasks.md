@@ -50,22 +50,24 @@
   - [x] 6.4 Configure package.json with proper exports
   - [x] 6.5 Build types package with TypeScript
 
-- [ ] 7. Set up frontend API client with JWT support
-  - [ ] 7.1 Install ky dependency in apps/web
-  - [ ] 7.2 Create apps/web/lib/api.ts with ky client configuration
-  - [ ] 7.3 Add beforeRequest hook to inject JWT token from localStorage
-  - [ ] 7.4 Add afterResponse hook to handle 401 errors and redirect to login
-  - [ ] 7.5 Export typed API methods for auth and activities endpoints
-  - [ ] 7.6 Create apps/web/lib/auth.ts with token storage utilities (getToken, setToken, removeToken)
+- [ ] 7. Set up frontend with Tailwind CSS, shadcn/ui, and API client
+  - [ ] 7.1 Install and configure Tailwind CSS in apps/web
+  - [ ] 7.2 Initialize shadcn/ui and install required components (button, card, avatar, alert, spinner)
+  - [ ] 7.3 Install ky dependency in apps/web
+  - [ ] 7.4 Create apps/web/lib/api.ts with ky client configuration
+  - [ ] 7.5 Add beforeRequest hook to inject JWT token from localStorage
+  - [ ] 7.6 Add afterResponse hook to handle 401 errors and redirect to login
+  - [ ] 7.7 Export typed API methods for auth and activities endpoints
+  - [ ] 7.8 Create apps/web/lib/auth.ts with token storage utilities (getToken, setToken, removeToken)
 
 - [ ] 8. Create login page
   - [ ] 8.1 Create apps/web/app/login/page.tsx
-  - [ ] 8.2 Implement centered layout with Chakra UI Container and VStack
-  - [ ] 8.3 Add "Adaptive Training Plan" heading with size 2xl
-  - [ ] 8.4 Add "Login with Strava" button with Strava orange color (#FC4C02)
+  - [ ] 8.2 Implement centered layout with Tailwind CSS (flex items-center justify-center min-h-screen)
+  - [ ] 8.3 Add "Adaptive Training Plan" heading (text-4xl font-bold)
+  - [ ] 8.4 Add "Login with Strava" button using shadcn/ui Button with Strava orange color (#FC4C02)
   - [ ] 8.5 Button redirects to backend OAuth endpoint on click
   - [ ] 8.6 Add loading state while redirecting
-  - [ ] 8.7 Style page with proper spacing and responsive design
+  - [ ] 8.7 Style page with proper spacing (space-y-6) and responsive design
 
 - [ ] 9. Create OAuth callback handler page
   - [ ] 9.1 Create apps/web/app/auth/callback/page.tsx
@@ -80,11 +82,11 @@
   - [ ] 10.2 Implement route protection: check for JWT token, redirect to /login if missing
   - [ ] 10.3 Create TanStack Query hook to fetch user profile from /api/auth/me
   - [ ] 10.4 Create TanStack Query hook to fetch activities from /api/activities
-  - [ ] 10.5 Display user profile section with avatar, name using Chakra UI
-  - [ ] 10.6 Display activities in responsive grid layout with Chakra Card components
+  - [ ] 10.5 Display user profile section with avatar (shadcn/ui Avatar) and name (text-2xl font-semibold)
+  - [ ] 10.6 Display activities in responsive grid layout (grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4) with shadcn/ui Card
   - [ ] 10.7 Format activity data (distance in miles, duration in mm:ss, date formatting)
-  - [ ] 10.8 Implement loading states with Chakra Spinner
-  - [ ] 10.9 Implement error states with Chakra Alert
+  - [ ] 10.8 Implement loading states with loading spinner (animate-spin)
+  - [ ] 10.9 Implement error states with shadcn/ui Alert
   - [ ] 10.10 Add empty state when no activities found
 
 - [ ] 11. Integration testing and verification
