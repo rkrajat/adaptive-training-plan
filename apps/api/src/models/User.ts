@@ -1,0 +1,50 @@
+import mongoose, { type Document, Schema } from 'mongoose';
+
+export interface IUser extends Document {
+  stravaId: number;
+  firstName: string;
+  lastName: string;
+  profilePhoto: string;
+  stravaAccessToken?: string;
+  stravaRefreshToken?: string;
+  stravaTokenExpiresAt?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const userSchema = new Schema<IUser>(
+  {
+    stravaId: {
+      type: Number,
+      required: true,
+      unique: true,
+      index: true,
+    },
+    firstName: {
+      type: String,
+      required: true,
+    },
+    lastName: {
+      type: String,
+      required: true,
+    },
+    profilePhoto: {
+      type: String,
+      required: true,
+    },
+    stravaAccessToken: {
+      type: String,
+    },
+    stravaRefreshToken: {
+      type: String,
+    },
+    stravaTokenExpiresAt: {
+      type: Date,
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
+
+export const User = mongoose.model<IUser>('User', userSchema);
