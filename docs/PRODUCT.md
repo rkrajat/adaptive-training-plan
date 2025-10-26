@@ -1,7 +1,7 @@
-# Product Brief: Adaptive Running Coach
+# Product Brief: Adaptive Training Plan
 
 ## 1. Overview
-Adaptive Running Coach is an online platform that helps runners intelligently adjust their current training plans based on recent performance and health data. By analyzing the user’s past runs and metrics (such as distance, heart rate, sleep, et ), the platform provides data-driven recommendations to optimize their weekly training.
+Adaptive Training Plan is an online platform that helps runners intelligently adjust their current training plans based on recent performance and health data. By analyzing the user’s past runs and metrics (such as distance, heart rate, sleep, et ), the platform provides data-driven recommendations to optimize their weekly training.
 
 ---
 
