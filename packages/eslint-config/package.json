@@ -2,12 +2,15 @@
   "name": "@adaptive-training-plan/eslint-config",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "description": "Shared ESLint configuration for Adaptive Training Plan monorepo",
   "main": "index.js",
   "files": [
     "index.js",
     "nextjs.js",
-    "node.js"
+    "node.js",
+    "base.js",
+    "node-flat.js"
   ],
   "dependencies": {
     "@typescript-eslint/eslint-plugin": "^8.21.0",
