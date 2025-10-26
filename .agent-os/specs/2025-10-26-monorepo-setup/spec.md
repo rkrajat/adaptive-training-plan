@@ -23,7 +23,7 @@ Using Turborepo's task pipeline, the developer runs `turbo build --filter=web` t
 
 ### Maintaining Code Quality Standards
 
-As a team, we want shared TypeScript and ESLint configurations across all packages, so that code quality standards are consistent throughout the monorepo and we avoid configuration drift.
+We want shared TypeScript and ESLint configurations across all packages, so that code quality standards are consistent throughout the monorepo and we avoid configuration drift.
 
 All packages and applications extend base TypeScript and ESLint configurations from shared packages (`@adaptive-training-plan/typescript-config` and `@adaptive-training-plan/eslint-config`). When a developer adds a new package, they simply reference these shared configs, ensuring immediate compliance with team standards without duplicating configuration files.
 
