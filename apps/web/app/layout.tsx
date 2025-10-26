@@ -1,5 +1,8 @@
 import type { Metadata } from 'next';
 
+import { Providers } from './providers';
+import './globals.css';
+
 export const metadata: Metadata = {
   title: 'Adaptive Training Plan',
   description: 'Intelligently adjust your training plans based on performance and health data from Strava',
@@ -12,8 +15,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body style={{ margin: 0, fontFamily: 'system-ui, sans-serif' }}>
-        {children}
+      <body>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

@@ -50,44 +50,44 @@
   - [x] 6.4 Configure package.json with proper exports
   - [x] 6.5 Build types package with TypeScript
 
-- [ ] 7. Set up frontend with Tailwind CSS, shadcn/ui, and API client
-  - [ ] 7.1 Install and configure Tailwind CSS in apps/web
-  - [ ] 7.2 Initialize shadcn/ui and install required components (button, card, avatar, alert, spinner)
-  - [ ] 7.3 Install ky dependency in apps/web
-  - [ ] 7.4 Create apps/web/lib/api.ts with ky client configuration
-  - [ ] 7.5 Add beforeRequest hook to inject JWT token from localStorage
-  - [ ] 7.6 Add afterResponse hook to handle 401 errors and redirect to login
-  - [ ] 7.7 Export typed API methods for auth and activities endpoints
-  - [ ] 7.8 Create apps/web/lib/auth.ts with token storage utilities (getToken, setToken, removeToken)
+- [x] 7. Set up frontend with Tailwind CSS, shadcn/ui, and API client
+  - [x] 7.1 Install and configure Tailwind CSS in apps/web
+  - [x] 7.2 Initialize shadcn/ui and install required components (button, card, avatar, alert, spinner)
+  - [x] 7.3 Install ky dependency in apps/web
+  - [x] 7.4 Create apps/web/lib/api.ts with ky client configuration
+  - [x] 7.5 Add beforeRequest hook to inject JWT token from localStorage
+  - [x] 7.6 Add afterResponse hook to handle 401 errors and redirect to login
+  - [x] 7.7 Export typed API methods for auth and activities endpoints
+  - [x] 7.8 Create apps/web/lib/auth.ts with token storage utilities (getToken, setToken, removeToken)
 
-- [ ] 8. Create login page
-  - [ ] 8.1 Create apps/web/app/login/page.tsx
-  - [ ] 8.2 Implement centered layout with Tailwind CSS (flex items-center justify-center min-h-screen)
-  - [ ] 8.3 Add "Adaptive Training Plan" heading (text-4xl font-bold)
-  - [ ] 8.4 Add "Login with Strava" button using shadcn/ui Button with Strava orange color (#FC4C02)
-  - [ ] 8.5 Button redirects to backend OAuth endpoint on click
-  - [ ] 8.6 Add loading state while redirecting
-  - [ ] 8.7 Style page with proper spacing (space-y-6) and responsive design
+- [x] 8. Create login page
+  - [x] 8.1 Create apps/web/app/login/page.tsx
+  - [x] 8.2 Implement centered layout with Tailwind CSS (flex items-center justify-center min-h-screen)
+  - [x] 8.3 Add "Adaptive Training Plan" heading (text-4xl font-bold)
+  - [x] 8.4 Add "Login with Strava" button using shadcn/ui Button with Strava orange color (#FC4C02)
+  - [x] 8.5 Button redirects to backend OAuth endpoint on click
+  - [x] 8.6 Add loading state while redirecting
+  - [x] 8.7 Style page with proper spacing (space-y-6) and responsive design
 
-- [ ] 9. Create OAuth callback handler page
-  - [ ] 9.1 Create apps/web/app/auth/callback/page.tsx
-  - [ ] 9.2 Extract JWT token from URL query parameter on mount
-  - [ ] 9.3 Store token in localStorage using auth utility
-  - [ ] 9.4 Show loading spinner while processing
-  - [ ] 9.5 Redirect to /dashboard after token stored
-  - [ ] 9.6 Handle missing token error and redirect to /login
+- [x] 9. Create OAuth callback handler page
+  - [x] 9.1 Create apps/web/app/auth/callback/page.tsx
+  - [x] 9.2 Extract JWT token from URL query parameter on mount
+  - [x] 9.3 Store token in localStorage using auth utility
+  - [x] 9.4 Show loading spinner while processing
+  - [x] 9.5 Redirect to /dashboard after token stored
+  - [x] 9.6 Handle missing token error and redirect to /login
 
-- [ ] 10. Create dashboard page with activities display
-  - [ ] 10.1 Create apps/web/app/dashboard/page.tsx
-  - [ ] 10.2 Implement route protection: check for JWT token, redirect to /login if missing
-  - [ ] 10.3 Create TanStack Query hook to fetch user profile from /api/auth/me
-  - [ ] 10.4 Create TanStack Query hook to fetch activities from /api/activities
-  - [ ] 10.5 Display user profile section with avatar (shadcn/ui Avatar) and name (text-2xl font-semibold)
-  - [ ] 10.6 Display activities in responsive grid layout (grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4) with shadcn/ui Card
-  - [ ] 10.7 Format activity data (distance in miles, duration in mm:ss, date formatting)
-  - [ ] 10.8 Implement loading states with loading spinner (animate-spin)
-  - [ ] 10.9 Implement error states with shadcn/ui Alert
-  - [ ] 10.10 Add empty state when no activities found
+- [x] 10. Create dashboard page with activities display
+  - [x] 10.1 Create apps/web/app/dashboard/page.tsx
+  - [x] 10.2 Implement route protection: check for JWT token, redirect to /login if missing
+  - [x] 10.3 Create TanStack Query hook to fetch user profile from /api/auth/me
+  - [x] 10.4 Create TanStack Query hook to fetch activities from /api/activities
+  - [x] 10.5 Display user profile section with avatar (shadcn/ui Avatar) and name (text-2xl font-semibold)
+  - [x] 10.6 Display activities in responsive grid layout (grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4) with shadcn/ui Card
+  - [x] 10.7 Format activity data (distance in miles, duration in mm:ss, date formatting)
+  - [x] 10.8 Implement loading states with loading spinner (animate-spin)
+  - [x] 10.9 Implement error states with shadcn/ui Alert
+  - [x] 10.10 Add empty state when no activities found
 
 - [ ] 11. Integration testing and verification
   - [ ] 11.1 Start both backend (pnpm dev:api) and frontend (pnpm dev:web) servers
