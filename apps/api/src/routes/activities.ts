@@ -26,15 +26,20 @@ router.get("/", authenticateJWT, async (req: Request, res: Response) => {
     });
 
     // Format activity data
-    const formattedActivities = activities.map((activity: any) => ({
-      id: activity.id,
-      name: activity.name,
-      distance: activity.distance,
-      movingTime: activity.moving_time,
-      type: activity.type,
-      startDate: activity.start_date,
-      averageHeartrate: activity.average_heartrate || null,
-    }));
+    const formattedActivities = activities
+      .map((activity: any) => ({
+        id: activity.id,
+        name: activity.name,
+        distance: activity.distance,
+        movingTime: activity.moving_time,
+        type: activity.type,
+        startDate: activity.start_date,
+        averageHeartrate: activity.average_heartrate || null,
+      }))
+      .sort(
+        (a: any, b: any) =>
+          new Date(b.startDate).getTime() - new Date(a.startDate).getTime()
+      );
 
     res.json({ activities: formattedActivities });
   } catch (error) {
