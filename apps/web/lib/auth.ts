@@ -23,8 +23,8 @@ export const logout = (): void => {
   // Remove JWT token from localStorage
   removeToken();
 
-  // Redirect to login page
+  // Redirect to landing page
   if (typeof window !== 'undefined') {
-    window.location.href = '/login';
+    window.location.href = '/';
   }
 };
