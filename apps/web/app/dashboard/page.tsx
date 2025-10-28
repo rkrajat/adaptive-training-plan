@@ -22,7 +22,7 @@ export default function DashboardPage() {
 
   // Fetch user profile
   const {
-    data: _user,
+    data: user,
     isLoading: isLoadingUser,
     error: userError,
   } = useQuery<User>({
@@ -103,14 +103,14 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Navigation Header */}
-      <Navigation />
+      <Navigation user={user} />
 
       {/* Main Content */}
       <main className="mx-auto max-w-7xl px-6 py-8">
         {/* Welcome Message */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">
-            Welcome back, Runner! 👋
+            Welcome back, {user?.firstName || 'Runner'}! 👋
           </h1>
           <p className="mt-1 text-gray-600">
             Here's your personalized training recommendation for this week
