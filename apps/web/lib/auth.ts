@@ -18,3 +18,13 @@ export const removeToken = (): void => {
 export const isAuthenticated = (): boolean => {
   return !!getToken();
 };
+
+export const logout = (): void => {
+  // Remove JWT token from localStorage
+  removeToken();
+
+  // Redirect to login page
+  if (typeof window !== 'undefined') {
+    window.location.href = '/login';
+  }
+};

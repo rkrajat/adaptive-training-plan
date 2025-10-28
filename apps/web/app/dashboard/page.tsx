@@ -8,6 +8,7 @@ import type { Activity, User } from '@adaptive-training-plan/types';
 
 import { isAuthenticated } from '@/lib/auth';
 import { activitiesApi, authApi } from '@/lib/api';
+import { Navigation } from '@/components/Navigation';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -101,26 +102,8 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="border-b border-gray-200 bg-white">
-        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-4">
-            {user?.profilePhoto && (
-              <img
-                src={user.profilePhoto}
-                alt={`${user.firstName} ${user.lastName}`}
-                className="h-16 w-16 rounded-full object-cover"
-              />
-            )}
-            <div>
-              <h1 className="text-2xl font-semibold text-gray-900">
-                {user?.firstName} {user?.lastName}
-              </h1>
-              <p className="text-sm text-gray-600">Welcome to your training dashboard</p>
-            </div>
-          </div>
-        </div>
-      </header>
+      {/* Navigation Header */}
+      {user && <Navigation user={user} />}
 
       {/* Main Content */}
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
