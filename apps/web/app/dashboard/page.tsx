@@ -74,7 +74,7 @@ export default function DashboardPage() {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-50">
         <div className="text-center">
-          <div className="inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-blue-500 border-r-transparent"></div>
+          <div className="inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
           <p className="mt-4 text-lg text-gray-700">Loading your data...</p>
         </div>
       </div>
@@ -122,7 +122,7 @@ export default function DashboardPage() {
           {/* Avg Pace */}
           <div className="rounded-lg border border-gray-200 bg-white p-6">
             <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
-              <svg className="h-4 w-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <svg className="h-4 w-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
               Avg Pace
@@ -144,7 +144,7 @@ export default function DashboardPage() {
           {/* Weekly Distance */}
           <div className="rounded-lg border border-gray-200 bg-white p-6">
             <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
-              <svg className="h-4 w-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <svg className="h-4 w-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
               Weekly Distance
@@ -168,7 +168,7 @@ export default function DashboardPage() {
         <div className="mb-8 rounded-lg border border-gray-200 bg-white p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-gray-900">Week 4 Recommendation</h2>
-            <button className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+            <button className="rounded-md bg-orange-500 px-4 py-2 text-sm font-medium text-white hover:bg-orange-600 transition-colors">
               Regenerate
             </button>
           </div>
@@ -188,7 +188,7 @@ export default function DashboardPage() {
             <h3 className="text-base font-semibold text-gray-900 mb-3">Recommended Adjustments</h3>
             <ol className="space-y-3">
               <li className="flex gap-3">
-                <span className="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 text-blue-600 text-sm font-semibold">
+                <span className="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 text-blue-700 text-sm font-semibold">
                   1
                 </span>
                 <span className="text-sm text-gray-700 pt-0.5">
@@ -196,7 +196,7 @@ export default function DashboardPage() {
                 </span>
               </li>
               <li className="flex gap-3">
-                <span className="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 text-blue-600 text-sm font-semibold">
+                <span className="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 text-blue-700 text-sm font-semibold">
                   2
                 </span>
                 <span className="text-sm text-gray-700 pt-0.5">
@@ -204,7 +204,7 @@ export default function DashboardPage() {
                 </span>
               </li>
               <li className="flex gap-3">
-                <span className="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 text-blue-600 text-sm font-semibold">
+                <span className="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 text-blue-700 text-sm font-semibold">
                   3
                 </span>
                 <span className="text-sm text-gray-700 pt-0.5">
@@ -212,7 +212,7 @@ export default function DashboardPage() {
                 </span>
               </li>
               <li className="flex gap-3">
-                <span className="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 text-blue-600 text-sm font-semibold">
+                <span className="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 text-blue-700 text-sm font-semibold">
                   4
                 </span>
                 <span className="text-sm text-gray-700 pt-0.5">
@@ -310,7 +310,7 @@ export default function DashboardPage() {
           <p className="text-sm text-gray-600 mb-6 max-w-md mx-auto">
             Share your current training schedule to get more personalized weekly recommendations
           </p>
-          <button className="inline-flex items-center gap-2 rounded-md bg-blue-500 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-600 transition-colors">
+          <button className="inline-flex items-center gap-2 rounded-md bg-orange-500 px-5 py-2.5 text-sm font-medium text-white hover:bg-orange-600 transition-colors">
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
             </svg>

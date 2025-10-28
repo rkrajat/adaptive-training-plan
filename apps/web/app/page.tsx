@@ -7,7 +7,7 @@ export const HomePage = () => {
       <header className="border-b border-gray-200">
         <div className="mx-auto max-w-7xl px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <svg className="h-6 w-6 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <svg className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
             </svg>
             <span className="text-xl font-semibold text-gray-900">AdaptiveRunning</span>
@@ -25,7 +25,7 @@ export const HomePage = () => {
       <section className="mx-auto max-w-4xl px-6 py-20 text-center">
         <h1 className="text-5xl font-bold text-gray-900">
           Train Smarter,{' '}
-          <span className="bg-blue-500 text-white px-4 py-1 inline-block">
+          <span className="bg-blue-600 text-white px-4 py-1 inline-block">
             Not Harder
           </span>
         </h1>
@@ -37,7 +37,7 @@ export const HomePage = () => {
         <div className="mt-10">
           <Link
             href="/login"
-            className="inline-flex items-center gap-2 rounded-md bg-blue-500 px-6 py-3 text-base font-medium text-white hover:bg-blue-600 transition-colors"
+            className="inline-flex items-center gap-2 rounded-md bg-orange-500 px-6 py-3 text-base font-medium text-white hover:bg-orange-600 transition-colors"
           >
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -53,7 +53,7 @@ export const HomePage = () => {
           {/* Feature 1 */}
           <div className="border border-gray-200 rounded-lg p-8 text-center hover:shadow-md transition-shadow">
             <div className="mx-auto w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mb-4">
-              <svg className="h-6 w-6 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <svg className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
             </div>
@@ -78,8 +78,8 @@ export const HomePage = () => {
 
           {/* Feature 3 */}
           <div className="border border-gray-200 rounded-lg p-8 text-center hover:shadow-md transition-shadow">
-            <div className="mx-auto w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-4">
-              <svg className="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <div className="mx-auto w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mb-4">
+              <svg className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
             </div>
@@ -100,7 +100,7 @@ export const HomePage = () => {
             {/* Step 1 */}
             <div className="flex gap-4">
               <div className="flex-shrink-0">
-                <div className="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center font-semibold">
+                <div className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold">
                   1
                 </div>
               </div>
@@ -115,7 +115,7 @@ export const HomePage = () => {
             {/* Step 2 */}
             <div className="flex gap-4">
               <div className="flex-shrink-0">
-                <div className="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center font-semibold">
+                <div className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold">
                   2
                 </div>
               </div>
@@ -130,7 +130,7 @@ export const HomePage = () => {
             {/* Step 3 */}
             <div className="flex gap-4">
               <div className="flex-shrink-0">
-                <div className="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center font-semibold">
+                <div className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold">
                   3
                 </div>
               </div>
@@ -156,7 +156,7 @@ export const HomePage = () => {
           </p>
           <Link
             href="/login"
-            className="inline-flex items-center gap-2 rounded-md bg-blue-500 px-6 py-3 text-base font-medium text-white hover:bg-blue-600 transition-colors"
+            className="inline-flex items-center gap-2 rounded-md bg-orange-500 px-6 py-3 text-base font-medium text-white hover:bg-orange-600 transition-colors"
           >
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
