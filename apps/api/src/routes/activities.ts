@@ -2,6 +2,7 @@ import { Router, type Request, type Response } from "express";
 import * as strava from "strava-v3";
 
 import { authenticateJWT } from "../middleware/auth";
+import { useMockData, getMockActivities } from "../utils/mock";
 
 const router = Router();
 
@@ -10,6 +11,28 @@ router.get("/", authenticateJWT, async (req: Request, res: Response) => {
   try {
     if (!req.user) {
       res.status(401).json({ error: "User not authenticated" });
+      return;
+    }
+
+    // Return mock data if enabled
+    if (useMockData()) {
+      const mockActivities = getMockActivities();
+      const formattedActivities = mockActivities
+        .map((activity: any) => ({
+          id: activity.id,
+          name: activity.name,
+          distance: activity.distance,
+          movingTime: activity.moving_time,
+          type: activity.type,
+          startDate: activity.start_date,
+          averageHeartrate: activity.average_heartrate || null,
+        }))
+        .sort(
+          (a: any, b: any) =>
+            new Date(b.startDate).getTime() - new Date(a.startDate).getTime()
+        );
+
+      res.json({ activities: formattedActivities });
       return;
     }
 
