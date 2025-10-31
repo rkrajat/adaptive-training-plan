@@ -3,6 +3,8 @@
 import type { User } from '@adaptive-training-plan/types';
 import { Zap, LogOut } from 'lucide-react';
 
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
 import { logout } from '../lib/auth';
 
 interface NavigationProps {
@@ -23,31 +25,30 @@ export const Navigation = ({ user }: NavigationProps) => {
         <div className="flex items-center gap-4">
           {user && (
             <div className="flex items-center gap-3">
-              {user.profilePhoto ? (
-                <img
+              <Avatar>
+                <AvatarImage
                   src={user.profilePhoto}
                   alt={`${user.firstName} ${user.lastName}`}
-                  className="w-8 h-8 rounded-full object-cover"
                 />
-              ) : (
-                <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 text-xs font-semibold">
+                <AvatarFallback>
                   {user.firstName?.[0]}
                   {user.lastName?.[0]}
-                </div>
-              )}
-              <span className="text-sm font-medium text-gray-900">
+                </AvatarFallback>
+              </Avatar>
+              <span className="text-sm font-medium">
                 {user.firstName} {user.lastName}
               </span>
             </div>
           )}
 
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={logout}
-            className="flex items-center gap-1 text-sm text-gray-700 hover:text-gray-900 transition-colors"
           >
-            <LogOut className="h-4 w-4" />
+            <LogOut className="mr-1 h-4 w-4" />
             Logout
-          </button>
+          </Button>
         </div>
       </div>
     </nav>

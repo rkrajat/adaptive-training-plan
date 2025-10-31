@@ -10,6 +10,9 @@ import type { Activity, User } from "@adaptive-training-plan/types";
 import { isAuthenticated } from "@/lib/auth";
 import { activitiesApi, authApi, recommendationsApi } from "@/lib/api";
 import { Navigation } from "@/components/Navigation";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -155,21 +158,23 @@ export default function DashboardPage() {
   if (userError || activitiesError) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
-        <div className="w-full max-w-md rounded-lg border border-red-200 bg-red-50 p-6">
-          <h3 className="text-lg font-semibold text-red-900">
-            Error Loading Data
-          </h3>
-          <p className="mt-2 text-sm text-red-700">
-            {(userError as Error)?.message ||
-              (activitiesError as Error)?.message ||
-              "Failed to load data"}
-          </p>
-          <button
-            onClick={() => router.push("/login")}
-            className="mt-4 rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700"
-          >
-            Return to Login
-          </button>
+        <div className="w-full max-w-md">
+          <Alert variant="destructive">
+            <XCircle className="h-4 w-4" />
+            <AlertTitle>Error Loading Data</AlertTitle>
+            <AlertDescription>
+              {(userError as Error)?.message ||
+                (activitiesError as Error)?.message ||
+                "Failed to load data"}
+              <Button
+                onClick={() => router.push("/login")}
+                variant="destructive"
+                className="mt-4 w-full"
+              >
+                Return to Login
+              </Button>
+            </AlertDescription>
+          </Alert>
         </div>
       </div>
     );
@@ -195,56 +200,73 @@ export default function DashboardPage() {
         {/* Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {/* Avg Pace */}
-          <div className="rounded-lg border border-gray-200 bg-white p-6">
-            <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
-              <Zap className="h-4 w-4 text-emerald-500" />
-              Avg Pace
-            </div>
-            <div className="text-2xl font-bold text-gray-900">5:12 /km</div>
-          </div>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium flex items-center gap-2 text-muted-foreground">
+                <Zap className="h-4 w-4 text-emerald-500" />
+                Avg Pace
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">5:12 /km</div>
+            </CardContent>
+          </Card>
 
           {/* Avg HR */}
-          <div className="rounded-lg border border-gray-200 bg-white p-6">
-            <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
-              <Heart className="h-4 w-4 text-orange-500 fill-orange-500" />
-              Avg HR
-            </div>
-            <div className="text-2xl font-bold text-gray-900">152 bpm</div>
-          </div>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium flex items-center gap-2 text-muted-foreground">
+                <Heart className="h-4 w-4 text-orange-500 fill-orange-500" />
+                Avg HR
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">152 bpm</div>
+            </CardContent>
+          </Card>
 
           {/* Weekly Distance */}
-          <div className="rounded-lg border border-gray-200 bg-white p-6">
-            <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
-              <Zap className="h-4 w-4 text-emerald-500" />
-              Weekly Distance
-            </div>
-            <div className="text-2xl font-bold text-gray-900">42.3 km</div>
-          </div>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium flex items-center gap-2 text-muted-foreground">
+                <Zap className="h-4 w-4 text-emerald-500" />
+                Weekly Distance
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">42.3 km</div>
+            </CardContent>
+          </Card>
 
           {/* Sleep Score */}
-          <div className="rounded-lg border border-gray-200 bg-white p-6">
-            <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
-              <Archive className="h-4 w-4 text-gray-600" />
-              Sleep Score
-            </div>
-            <div className="text-2xl font-bold text-gray-900">82/100</div>
-          </div>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium flex items-center gap-2 text-muted-foreground">
+                <Archive className="h-4 w-4 text-gray-600" />
+                Sleep Score
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">82/100</div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* AI-Generated Weekly Recommendation */}
-        <div className="mb-8 rounded-lg border border-gray-200 bg-white p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-gray-900">
-              Weekly Training Recommendation
-            </h2>
-            <button
-              onClick={handleRegenerate}
-              disabled={isGenerating}
-              className="rounded-md bg-orange-500 px-4 py-2 text-sm font-medium text-white hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isGenerating ? "Generating..." : "Regenerate"}
-            </button>
-          </div>
+        <Card className="mb-8">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle>Weekly Training Recommendation</CardTitle>
+              <Button
+                onClick={handleRegenerate}
+                disabled={isGenerating}
+                className="bg-orange-500 hover:bg-orange-600"
+              >
+                {isGenerating ? "Generating..." : "Regenerate"}
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
 
           {/* Loading State */}
           {isGenerating && !completion && (
@@ -258,25 +280,20 @@ export default function DashboardPage() {
 
           {/* Error State */}
           {completionError && !completion && (
-            <div className="rounded-md bg-red-50 border border-red-200 p-4">
-              <div className="flex items-start gap-3">
-                <XCircle className="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5" />
-                <div className="flex-1">
-                  <h3 className="text-sm font-semibold text-red-900">
-                    Failed to generate recommendation
-                  </h3>
-                  <p className="mt-1 text-sm text-red-700">
-                    {completionError.message}
-                  </p>
-                  <button
-                    onClick={handleRegenerate}
-                    className="mt-3 text-sm font-medium text-red-700 hover:text-red-800"
-                  >
-                    Try again →
-                  </button>
-                </div>
-              </div>
-            </div>
+            <Alert variant="destructive">
+              <XCircle className="h-4 w-4" />
+              <AlertTitle>Failed to generate recommendation</AlertTitle>
+              <AlertDescription>
+                {completionError.message}
+                <Button
+                  onClick={handleRegenerate}
+                  variant="link"
+                  className="mt-2 p-0 h-auto text-red-700 hover:text-red-800"
+                >
+                  Try again →
+                </Button>
+              </AlertDescription>
+            </Alert>
           )}
 
           {/* Streaming/Completed Content */}
@@ -297,7 +314,8 @@ export default function DashboardPage() {
               </p>
             </div>
           )}
-        </div>
+          </CardContent>
+        </Card>
 
         {/* Recent Activities */}
         <div className="mb-8">
@@ -306,22 +324,19 @@ export default function DashboardPage() {
           </h2>
 
           {activities.length === 0 ? (
-            <div className="rounded-lg border border-gray-200 bg-white p-12 text-center">
+            <Card className="p-12 text-center">
               <Archive className="mx-auto h-12 w-12 text-gray-400" />
-              <h3 className="mt-4 text-lg font-semibold text-gray-900">
+              <h3 className="mt-4 text-lg font-semibold">
                 No activities found
               </h3>
-              <p className="mt-2 text-sm text-gray-600">
+              <p className="mt-2 text-sm text-muted-foreground">
                 You haven&apos;t logged any activities in the last 30 days.
               </p>
-            </div>
+            </Card>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {activities.map((activity: Activity) => (
-                <div
-                  key={activity.id}
-                  className="rounded-lg border border-gray-200 bg-white p-4 hover:shadow-md transition-shadow"
-                >
+                <Card key={activity.id} className="p-4 hover:shadow-md transition-shadow">
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex-1 min-w-0">
                       <h3 className="font-semibold text-gray-900 text-sm truncate">
@@ -359,14 +374,14 @@ export default function DashboardPage() {
                       </span>
                     </div>
                   </div>
-                </div>
+                </Card>
               ))}
             </div>
           )}
         </div>
 
         {/* Upload Training Plan Section */}
-        <div className="rounded-lg border border-gray-200 bg-white p-8 text-center">
+        <Card className="p-8 text-center">
           <div className="mx-auto w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-4">
             <CloudUpload className="h-6 w-6 text-gray-600" />
           </div>
@@ -377,11 +392,11 @@ export default function DashboardPage() {
             Share your current training schedule to get more personalized weekly
             recommendations
           </p>
-          <button className="inline-flex items-center gap-2 rounded-md bg-orange-500 px-5 py-2.5 text-sm font-medium text-white hover:bg-orange-600 transition-colors">
-            <CloudUpload className="h-4 w-4" />
+          <Button className="bg-orange-500 hover:bg-orange-600">
+            <CloudUpload className="mr-2 h-4 w-4" />
             Upload Plan
-          </button>
-        </div>
+          </Button>
+        </Card>
       </main>
     </div>
   );
