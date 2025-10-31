@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { Zap, BarChart3 } from 'lucide-react';
 
 export const HomePage = () => {
   return (
@@ -7,9 +8,7 @@ export const HomePage = () => {
       <header className="border-b border-gray-200">
         <div className="mx-auto max-w-7xl px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <svg className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
-            </svg>
+            <Zap className="h-6 w-6 text-blue-600" />
             <span className="text-xl font-semibold text-gray-900">AdaptiveRunning</span>
           </div>
           <Link
@@ -39,9 +38,7 @@ export const HomePage = () => {
             href="/login"
             className="inline-flex items-center gap-2 rounded-md bg-orange-500 px-6 py-3 text-base font-medium text-white hover:bg-orange-600 transition-colors"
           >
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
-            </svg>
+            <Zap className="h-5 w-5" />
             Sign Up with Strava
           </Link>
         </div>
@@ -53,9 +50,7 @@ export const HomePage = () => {
           {/* Feature 1 */}
           <div className="border border-gray-200 rounded-lg p-8 text-center hover:shadow-md transition-shadow">
             <div className="mx-auto w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mb-4">
-              <svg className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
+              <Zap className="h-6 w-6 text-blue-600" />
             </div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">Strava Integration</h3>
             <p className="text-sm text-gray-600">
@@ -66,9 +61,7 @@ export const HomePage = () => {
           {/* Feature 2 */}
           <div className="border border-gray-200 rounded-lg p-8 text-center hover:shadow-md transition-shadow">
             <div className="mx-auto w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center mb-4">
-              <svg className="h-6 w-6 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-              </svg>
+              <BarChart3 className="h-6 w-6 text-orange-500" />
             </div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">Data-Driven Insights</h3>
             <p className="text-sm text-gray-600">
@@ -79,9 +72,7 @@ export const HomePage = () => {
           {/* Feature 3 */}
           <div className="border border-gray-200 rounded-lg p-8 text-center hover:shadow-md transition-shadow">
             <div className="mx-auto w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mb-4">
-              <svg className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
+              <Zap className="h-6 w-6 text-blue-600" />
             </div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">Adaptive Plans</h3>
             <p className="text-sm text-gray-600">
@@ -158,9 +149,7 @@ export const HomePage = () => {
             href="/login"
             className="inline-flex items-center gap-2 rounded-md bg-orange-500 px-6 py-3 text-base font-medium text-white hover:bg-orange-600 transition-colors"
           >
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
-            </svg>
+            <Zap className="h-5 w-5" />
             Get Started with Strava
           </Link>
         </div>
