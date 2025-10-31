@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { Zap, Heart, Loader2, Archive, CloudUpload, XCircle } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 import type { Activity, User } from "@adaptive-training-plan/types";
 
@@ -301,10 +303,10 @@ export default function DashboardPage() {
 
           {/* Streaming/Completed Content */}
           {completion && (
-            <div className="prose prose-sm max-w-none">
-              <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
+            <div className="prose prose-sm max-w-none prose-headings:font-semibold prose-h1:text-xl prose-h2:text-lg prose-h3:text-base prose-p:text-sm prose-p:leading-relaxed prose-ul:my-2 prose-ol:my-2 prose-li:my-1 prose-strong:text-gray-900 prose-strong:font-semibold">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
                 {completion}
-              </div>
+              </ReactMarkdown>
             </div>
           )}
 
