@@ -1,12 +1,21 @@
 'use client';
 
-import { useEffect } from 'react';
+import { Suspense, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 
 import { setToken } from '@/lib/auth';
 
-export default function CallbackPage() {
+const LoadingSpinner = () => (
+  <div className="flex min-h-screen items-center justify-center bg-gray-50">
+    <div className="text-center">
+      <Loader2 className="inline-block h-12 w-12 animate-spin text-[#FC4C02]" />
+      <p className="mt-4 text-lg text-gray-700">Completing authentication...</p>
+    </div>
+  </div>
+);
+
+const CallbackContent = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -22,12 +31,13 @@ export default function CallbackPage() {
     }
   }, [searchParams, router]);
 
+  return <LoadingSpinner />;
+};
+
+export default function CallbackPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50">
-      <div className="text-center">
-        <Loader2 className="inline-block h-12 w-12 animate-spin text-[#FC4C02]" />
-        <p className="mt-4 text-lg text-gray-700">Completing authentication...</p>
-      </div>
-    </div>
+    <Suspense fallback={<LoadingSpinner />}>
+      <CallbackContent />
+    </Suspense>
   );
 }
