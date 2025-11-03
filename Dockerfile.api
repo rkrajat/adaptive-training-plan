@@ -1,0 +1,51 @@
+# Base image
+FROM node:20-alpine AS base
+RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
+WORKDIR /app
+
+# Builder stage - install dependencies and build
+FROM base AS builder
+
+# Copy workspace configuration
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
+
+# Copy all package.json files for dependency resolution
+COPY apps/api/package.json ./apps/api/
+COPY packages/eslint-config/package.json ./packages/eslint-config/
+COPY packages/types/package.json ./packages/types/
+COPY packages/typescript-config/package.json ./packages/typescript-config/
+
+# Install dependencies
+RUN pnpm install --frozen-lockfile
+
+# Copy source code
+COPY apps/api ./apps/api
+COPY packages ./packages
+
+# Build the API
+RUN pnpm turbo run build --filter=api
+
+# Runner stage - production image
+FROM node:20-alpine AS runner
+RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
+WORKDIR /app
+
+# Copy package files
+COPY --from=builder /app/package.json /app/pnpm-lock.yaml /app/pnpm-workspace.yaml ./
+COPY --from=builder /app/apps/api/package.json ./apps/api/
+
+# Install production dependencies only
+RUN pnpm install --prod --frozen-lockfile --filter=api
+
+# Copy built application
+COPY --from=builder /app/apps/api/dist ./apps/api/dist
+
+# Set environment
+ENV NODE_ENV=production
+ENV PORT=8080
+
+# Expose port
+EXPOSE 8080
+
+# Start the application
+CMD ["node", "apps/api/dist/index.js"]

@@ -1,0 +1,10 @@
+node_modules
+dist
+.env
+.env.local
+.turbo
+*.log
+.git
+.gitignore
+README.md
+tsconfig.tsbuildinfo

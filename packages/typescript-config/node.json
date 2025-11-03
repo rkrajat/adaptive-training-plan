@@ -3,7 +3,7 @@
   "extends": "./base.json",
   "compilerOptions": {
     "lib": ["ES2022"],
-    "module": "ESNext",
+    "module": "CommonJS",
     "outDir": "dist",
     "rootDir": "src",
     "sourceMap": true
