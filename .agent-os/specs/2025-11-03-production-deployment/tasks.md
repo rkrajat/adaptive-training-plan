@@ -7,25 +7,25 @@ These are the tasks to be completed for the spec detailed in @.agent-os/specs/20
 
 ## Tasks
 
-- [ ] 1. Setup Vercel Frontend Deployment
-  - [ ] 1.1 Create Vercel account and install Vercel CLI if needed
-  - [ ] 1.2 Link GitHub repository to Vercel and create new project
-  - [ ] 1.3 Configure Vercel project settings (root directory: `apps/web`, framework: Next.js, build command with Turborepo)
+- [x] 1. Setup Vercel Frontend Deployment
+  - [x] 1.1 Create Vercel account and install Vercel CLI if needed
+  - [x] 1.2 Link GitHub repository to Vercel and create new project
+  - [x] 1.3 Configure Vercel project settings (root directory: `apps/web`, framework: Next.js, build command with Turborepo)
   - [ ] 1.4 Configure Vercel environment variables (`NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_STRAVA_CLIENT_ID`, `TURBO_TOKEN`, `TURBO_TEAM`)
-  - [ ] 1.5 Set production branch to `main` and enable preview deployments
-  - [ ] 1.6 Perform manual deployment test via Vercel dashboard
-  - [ ] 1.7 Verify frontend is accessible at Vercel-provided URL
+  - [x] 1.5 Set production branch to `main` and enable preview deployments
+  - [x] 1.6 Perform manual deployment test via Vercel dashboard
+  - [x] 1.7 Verify frontend is accessible at Vercel-provided URL (https://adaptive-training-plan.vercel.app)
   - [ ] 1.8 Document Vercel project details (`VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`) for GitHub Actions
 
-- [ ] 2. Setup Fly.io Backend Deployment
-  - [ ] 2.1 Create Fly.io account and install flyctl CLI
-  - [ ] 2.2 Create Dockerfile in `apps/api/` with Turborepo pruning and multi-stage build
-  - [ ] 2.3 Create `fly.toml` configuration file in `apps/api/` with health checks and deployment settings
-  - [ ] 2.4 Add health check endpoint (`GET /health`) to Express.js application
-  - [ ] 2.5 Initialize Fly.io app with `flyctl launch --no-deploy`
-  - [ ] 2.6 Configure Fly.io secrets (`MONGODB_URI`, `STRAVA_CLIENT_ID`, `STRAVA_CLIENT_SECRET`, `JWT_SECRET`, `FRONTEND_URL`)
-  - [ ] 2.7 Perform manual deployment test with `flyctl deploy`
-  - [ ] 2.8 Verify backend is accessible at Fly.io URL and health check returns 200 OK
+- [x] 2. Setup Fly.io Backend Deployment
+  - [x] 2.1 Create Fly.io account and install flyctl CLI
+  - [x] 2.2 Create Dockerfile in root as `Dockerfile.api` with multi-stage build (switched to CommonJS)
+  - [x] 2.3 Create `fly.toml` configuration file in `apps/api/` with health checks and deployment settings
+  - [x] 2.4 Add health check endpoint (`GET /health`) to Express.js application (already existed)
+  - [x] 2.5 Initialize Fly.io app `adaptive-training-plan-api`
+  - [x] 2.6 Configure Fly.io secrets (`MONGODB_URI`, `STRAVA_CLIENT_ID`, `STRAVA_CLIENT_SECRET`, `JWT_SECRET`, `FRONTEND_URL`, `OPENAI_API_KEY`, `STRAVA_REDIRECT_URI`)
+  - [x] 2.7 Perform manual deployment test with `flyctl deploy`
+  - [x] 2.8 Verify backend is accessible at Fly.io URL (https://adaptive-training-plan-api.fly.dev) and health check returns 200 OK
   - [ ] 2.9 Test MongoDB Atlas connection from Fly.io app (check logs)
   - [ ] 2.10 Generate and document Fly.io API token for GitHub Actions
 
