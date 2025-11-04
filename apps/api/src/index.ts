@@ -10,6 +10,7 @@ import { errorHandler, notFoundHandler } from "./middleware/error-handler";
 import { activitiesRouter } from "./routes/activities";
 import { authRouter } from "./routes/auth";
 import { recommendationsRouter } from "./routes/recommendations";
+import { trainingPlansRouter } from "./routes/training-plans";
 
 const app = express();
 
@@ -30,6 +31,7 @@ app.use(apiRateLimiter);
 app.use("/api/auth", authRateLimiter, authRouter);
 app.use("/api/activities", activitiesRouter);
 app.use("/api/recommendations", recommendationsRouter);
+app.use("/api/training-plans", trainingPlansRouter);
 
 app.get("/health", (_req, res) => {
   res.json({ status: "ok", message: "API is running" });

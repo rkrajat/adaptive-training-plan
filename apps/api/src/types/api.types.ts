@@ -79,3 +79,78 @@ export interface OAuthCallbackQuery {
   scope?: string;
   error?: string;
 }
+
+/**
+ * Training plan metadata
+ */
+export interface TrainingPlanMetadata {
+  name: string;
+  goal?: string;
+  raceName?: string;
+  raceDate?: string;
+  raceDistance?: string;
+  targetTime?: string;
+}
+
+/**
+ * Training plan upload request
+ */
+export interface TrainingPlanUploadRequest {
+  name: string;
+  goal?: string;
+  raceName?: string;
+  raceDate?: string;
+  raceDistance?: string;
+  targetTime?: string;
+}
+
+/**
+ * Training plan response
+ */
+export interface TrainingPlanResponse {
+  id: string;
+  userId: string;
+  metadata: TrainingPlanMetadata;
+  source: 'user_upload' | 'ai_generated';
+  isActive: boolean;
+  currentWeek: number;
+  startDate: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * Training plan with CSV content response
+ */
+export interface TrainingPlanWithContentResponse extends TrainingPlanResponse {
+  csvContent: string;
+}
+
+/**
+ * Training plan version response
+ */
+export interface TrainingPlanVersionResponse {
+  id: string;
+  trainingPlanId: string;
+  versionNumber: number;
+  metadata: TrainingPlanMetadata;
+  changeType: 'created' | 'updated' | 'ai_modified';
+  changeDescription?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * Training plan with versions response
+ */
+export interface TrainingPlanWithVersionsResponse
+  extends TrainingPlanWithContentResponse {
+  versions: TrainingPlanVersionResponse[];
+}
+
+/**
+ * List training plans response
+ */
+export interface ListTrainingPlansResponse {
+  plans: TrainingPlanResponse[];
+}

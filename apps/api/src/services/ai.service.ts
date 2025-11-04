@@ -33,6 +33,34 @@ Format your response as clear, actionable recommendations in markdown format.`;
   }
 
   /**
+   * Format training plan CSV for AI prompt context
+   */
+  formatTrainingPlanForPrompt(csvContent: string, currentWeek: number): string {
+    const lines = csvContent.split('\n').filter((line) => line.trim());
+
+    if (lines.length < 2) {
+      return 'No training plan data available';
+    }
+
+    // Include header and some context around current week
+    const header = lines[0];
+    const startWeek = Math.max(1, currentWeek - 1);
+    const endWeek = Math.min(lines.length - 1, currentWeek + 2);
+
+    let formattedPlan = `Training Plan Structure:\n${header}\n\n`;
+    formattedPlan += `Current Week (Week ${currentWeek}) and Context:\n`;
+
+    for (let index = startWeek; index <= endWeek; index++) {
+      if (lines[index]) {
+        const weekMarker = index === currentWeek ? '>>> ' : '    ';
+        formattedPlan += `${weekMarker}Week ${index}: ${lines[index]}\n`;
+      }
+    }
+
+    return formattedPlan;
+  }
+
+  /**
    * Build the user prompt with activities and training context
    */
   private buildUserPrompt(
@@ -57,6 +85,36 @@ Format your response as clear, actionable recommendations in markdown format.`;
     }
 
     prompt += `\n\n## Request\nBased on the above data, provide specific recommendations for adjusting this week's training plan. Consider training load, recovery needs, and any patterns you see in the data.`;
+
+    return prompt;
+  }
+
+  /**
+   * Build user prompt with training plan from database
+   */
+  private buildUserPromptWithTrainingPlan(
+    activities: FormattedActivity[],
+    trainingPlanData: string,
+    currentWeek: number,
+    userFeedback?: string
+  ): string {
+    const activitiesText = activities
+      .map(
+        (activity) =>
+          `- ${activity.name} (${activity.type}): ${(activity.distance / 1000).toFixed(2)}km in ${Math.floor(activity.movingTime / 60)} minutes` +
+          (activity.averageHeartrate
+            ? ` | Avg HR: ${activity.averageHeartrate} bpm`
+            : "")
+      )
+      .join("\n");
+
+    let prompt = `## Recent Activities (Last 30 Days)\n${activitiesText}\n\n## Training Plan\n${trainingPlanData}`;
+
+    if (userFeedback) {
+      prompt += `\n\n## Athlete Feedback\n${userFeedback}`;
+    }
+
+    prompt += `\n\n## Request\nBased on the recent activities and the training plan above (currently on Week ${currentWeek}), provide specific recommendations for adjusting this week's training. Consider training load, recovery needs, and any patterns you see in the data. Be specific about which workouts to modify or keep as planned.`;
 
     return prompt;
   }
@@ -175,6 +233,66 @@ Keep the tone professional but encouraging. Be specific and actionable.`;
       return result.text;
     } catch (error) {
       log.error("Failed to generate AI recommendations", error);
+      throw new InternalServerError(
+        "Failed to generate training recommendations",
+        error
+      );
+    }
+  }
+
+  /**
+   * Generate training recommendations with training plan from database
+   */
+  async generateRecommendationsWithPlan(
+    activities: FormattedActivity[],
+    csvContent: string,
+    currentWeek: number,
+    userFeedback?: string
+  ): Promise<string> {
+    try {
+      log.info("Generating AI recommendations with training plan", {
+        activitiesCount: activities.length,
+        currentWeek,
+        hasFeedback: !!userFeedback,
+      });
+
+      const systemPrompt = this.buildSystemPrompt();
+      const trainingPlanData = this.formatTrainingPlanForPrompt(csvContent, currentWeek);
+      const userPrompt = this.buildUserPromptWithTrainingPlan(
+        activities,
+        trainingPlanData,
+        currentWeek,
+        userFeedback
+      );
+
+      log.debug("AI prompts prepared with training plan", {
+        systemPromptLength: systemPrompt.length,
+        userPromptLength: userPrompt.length,
+      });
+
+      const result = await generateText({
+        model: openai(config.openai.model),
+        messages: [
+          {
+            role: "system",
+            content: systemPrompt,
+          },
+          {
+            role: "user",
+            content: userPrompt,
+          },
+        ],
+        temperature: config.openai.temperature,
+      });
+
+      log.info("AI recommendations generated successfully with training plan", {
+        responseLength: result.text.length,
+        usage: result.usage,
+      });
+
+      return result.text;
+    } catch (error) {
+      log.error("Failed to generate AI recommendations with training plan", error);
       throw new InternalServerError(
         "Failed to generate training recommendations",
         error

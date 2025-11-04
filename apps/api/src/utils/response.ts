@@ -52,3 +52,11 @@ export const sendNotFound = (res: Response, error: string): void => {
 export const sendInternalError = (res: Response, error: string, details?: unknown): void => {
   sendError(res, error, 500, details);
 };
+
+/**
+ * Send a 201 Created response
+ */
+export const sendCreated = <T>(res: Response, data: T, message?: string): void => {
+  const response = message ? { data, message } : data;
+  res.status(201).json(response);
+};
