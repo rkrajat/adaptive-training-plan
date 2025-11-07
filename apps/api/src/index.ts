@@ -10,6 +10,7 @@ import { errorHandler, notFoundHandler } from "./middleware/error-handler";
 import { activitiesRouter } from "./routes/activities";
 import { authRouter } from "./routes/auth";
 import { recommendationsRouter } from "./routes/recommendations";
+import { trainingPlansRouter } from "./routes/training-plans";
 
 const app = express();
 
@@ -30,6 +31,7 @@ app.use(apiRateLimiter);
 app.use("/api/auth", authRateLimiter, authRouter);
 app.use("/api/activities", activitiesRouter);
 app.use("/api/recommendations", recommendationsRouter);
+app.use("/api/training-plans", trainingPlansRouter);
 
 app.get("/health", (_req, res) => {
   res.json({ status: "ok", message: "API is running" });
@@ -56,12 +58,20 @@ const connectDB = async (): Promise<void> => {
 const startServer = async (): Promise<void> => {
   await connectDB();
 
-  app.listen(config.port, () => {
+  const server = app.listen(config.port, () => {
     log.info(`API server running on http://localhost:${config.port}`);
     log.info(`Frontend URL: ${config.frontendUrl}`);
     log.info(`Environment: ${config.nodeEnv}`);
-    log.info(`Strava Client ID: ${config.strava.clientId ? "✓ Set" : "✗ Missing"}`);
+    log.info(
+      `Strava Client ID: ${config.strava.clientId ? "✓ Set" : "✗ Missing"}`
+    );
   });
+
+  // Configure server timeouts
+  // AI recommendations can take 30-60 seconds, so set generous timeouts
+  server.timeout = 120000; // 2 minutes - overall request timeout
+  server.keepAliveTimeout = 65000; // 65 seconds - keep-alive timeout (slightly higher than typical load balancer timeout)
+  server.headersTimeout = 66000; // 66 seconds - headers timeout (should be higher than keepAliveTimeout)
 };
 
 startServer();

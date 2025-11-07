@@ -109,6 +109,23 @@ export interface FormattedActivity {
 }
 
 /**
+ * Enhanced formatted activity for AI recommendations with training plan
+ * Includes additional calculated fields and optional metadata
+ */
+export interface EnhancedFormattedActivity {
+  date: string; // YYYY-MM-DD format
+  day: string; // Day of week (Mon, Tue, Wed, etc.)
+  actual_run_type?: string; // Run type (Easy, Interval, Tempo, Long, Rest)
+  actual_distance_km: number; // Distance in kilometers
+  avg_pace_min_per_km: string; // Average pace in min/km (e.g., "5:42")
+  avg_hr_bpm: number | null; // Average heart rate in bpm
+  max_hr_bpm?: number; // Maximum heart rate in bpm
+  sleep_score?: number; // Sleep quality score 0-100
+  recovery_pct?: number; // Recovery percentage 0-100
+  notes?: string; // Free-text notes
+}
+
+/**
  * Type guard to check if error is a Strava API error with statusCode
  */
 export const isStravaApiError = (
