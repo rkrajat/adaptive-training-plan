@@ -68,5 +68,34 @@
     @apply bg-background text-foreground antialiased;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
       'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+    /* Prevent horizontal scroll on mobile */
+    overflow-x: hidden;
+  }
+
+  /* Ensure images and media are responsive */
+  img, video {
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* Prevent text overflow in prose content */
+  .prose {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
+
+  .prose p,
+  .prose li,
+  .prose td,
+  .prose th {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
+
+  /* Ensure code blocks don't overflow */
+  .prose pre,
+  .prose code {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
   }
 }

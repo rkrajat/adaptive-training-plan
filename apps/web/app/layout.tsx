@@ -1,11 +1,18 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from "next";
 
-import { Providers } from './providers';
-import './globals.css';
+import { Providers } from "./providers";
+import "./globals.css";
 
 export const metadata: Metadata = {
-  title: 'Adaptive Training Plan',
-  description: 'Intelligently adjust your training plans based on performance and health data from Strava',
+  title: "Adaptive Training Plan",
+  description:
+    "Intelligently adjust your training plans based on performance and health data from Strava",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
 };
 
 export default function RootLayout({
