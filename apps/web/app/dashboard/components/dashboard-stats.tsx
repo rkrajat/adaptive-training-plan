@@ -37,17 +37,17 @@ export const DashboardStats = () => {
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
       {stats.map((stat) => (
         <Card key={stat.label}>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2 text-muted-foreground">
+            <CardTitle className="text-xs sm:text-sm font-medium flex items-center gap-2 text-muted-foreground">
               {stat.icon}
               {stat.label}
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stat.value}</div>
+            <div className="text-xl sm:text-2xl font-bold">{stat.value}</div>
           </CardContent>
         </Card>
       ))}

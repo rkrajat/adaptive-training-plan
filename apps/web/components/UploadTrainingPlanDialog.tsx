@@ -84,106 +84,129 @@ export const UploadTrainingPlanDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="max-w-[95vw] sm:max-w-[500px] max-h-[90vh] overflow-y-auto px-4 sm:px-6">
         <form onSubmit={handleSubmit}>
-          <DialogHeader>
-            <DialogTitle>Upload Training Plan</DialogTitle>
-            <DialogDescription>
+          <DialogHeader className="px-0">
+            <DialogTitle className="text-lg sm:text-xl">
+              Upload Training Plan
+            </DialogTitle>
+            <DialogDescription className="text-xs sm:text-sm">
               Upload your training plan in CSV format to get personalized
               recommendations
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4 py-4">
+          <div className="space-y-3 sm:space-y-4 py-4">
             {/* File Upload */}
-            <div className="space-y-2">
-              <Label htmlFor="file">CSV File *</Label>
+            <div className="space-y-1.5 sm:space-y-2">
+              <Label htmlFor="file" className="text-xs sm:text-sm">
+                CSV File *
+              </Label>
               <Input
                 id="file"
                 type="file"
                 accept=".csv"
                 onChange={handleFileChange}
                 required
+                className="text-xs sm:text-sm"
               />
               {file && (
-                <p className="text-sm text-gray-600">
+                <p className="text-xs sm:text-sm text-gray-600 break-words">
                   Selected: {file.name}
                 </p>
               )}
             </div>
 
             {/* Plan Name */}
-            <div className="space-y-2">
-              <Label htmlFor="name">Plan Name *</Label>
+            <div className="space-y-1.5 sm:space-y-2">
+              <Label htmlFor="name" className="text-xs sm:text-sm">
+                Plan Name *
+              </Label>
               <Input
                 id="name"
                 placeholder="e.g., Marathon Training Plan"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
+                className="text-xs sm:text-sm"
               />
             </div>
 
             {/* Goal */}
-            <div className="space-y-2">
-              <Label htmlFor="goal">Goal (Optional)</Label>
+            <div className="space-y-1.5 sm:space-y-2">
+              <Label htmlFor="goal" className="text-xs sm:text-sm">
+                Goal (Optional)
+              </Label>
               <Input
                 id="goal"
                 placeholder="e.g., Complete a marathon"
                 value={goal}
                 onChange={(e) => setGoal(e.target.value)}
+                className="text-xs sm:text-sm"
               />
             </div>
 
             {/* Race Name */}
-            <div className="space-y-2">
-              <Label htmlFor="raceName">Race Name (Optional)</Label>
+            <div className="space-y-1.5 sm:space-y-2">
+              <Label htmlFor="raceName" className="text-xs sm:text-sm">
+                Race Name (Optional)
+              </Label>
               <Input
                 id="raceName"
                 placeholder="e.g., Boston Marathon"
                 value={raceName}
                 onChange={(e) => setRaceName(e.target.value)}
+                className="text-xs sm:text-sm"
               />
             </div>
 
             {/* Race Date */}
-            <div className="space-y-2">
-              <Label htmlFor="raceDate">Race Date (Optional)</Label>
+            <div className="space-y-1.5 sm:space-y-2">
+              <Label htmlFor="raceDate" className="text-xs sm:text-sm">
+                Race Date (Optional)
+              </Label>
               <Input
                 id="raceDate"
                 type="date"
                 value={raceDate}
                 onChange={(e) => setRaceDate(e.target.value)}
+                className="text-xs sm:text-sm"
               />
             </div>
 
             {/* Race Distance */}
-            <div className="space-y-2">
-              <Label htmlFor="raceDistance">Race Distance (Optional)</Label>
+            <div className="space-y-1.5 sm:space-y-2">
+              <Label htmlFor="raceDistance" className="text-xs sm:text-sm">
+                Race Distance (Optional)
+              </Label>
               <Input
                 id="raceDistance"
                 placeholder="e.g., 42.2km"
                 value={raceDistance}
                 onChange={(e) => setRaceDistance(e.target.value)}
+                className="text-xs sm:text-sm"
               />
             </div>
 
             {/* Target Time */}
-            <div className="space-y-2">
-              <Label htmlFor="targetTime">Target Time (Optional)</Label>
+            <div className="space-y-1.5 sm:space-y-2">
+              <Label htmlFor="targetTime" className="text-xs sm:text-sm">
+                Target Time (Optional)
+              </Label>
               <Input
                 id="targetTime"
                 placeholder="e.g., 3:30:00"
                 value={targetTime}
                 onChange={(e) => setTargetTime(e.target.value)}
+                className="text-xs sm:text-sm"
               />
             </div>
 
             {/* Error Display */}
             {uploadMutation.isError && (
-              <Alert variant="destructive">
+              <Alert variant="destructive" className="text-xs sm:text-sm">
                 <XCircle className="h-4 w-4" />
-                <AlertDescription>
+                <AlertDescription className="break-words">
                   {uploadMutation.error?.message ||
                     "Failed to upload training plan"}
                 </AlertDescription>
@@ -191,19 +214,22 @@ export const UploadTrainingPlanDialog = ({
             )}
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0 px-0">
             <Button
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
               disabled={uploadMutation.isPending}
+              className="w-full sm:w-auto order-2 sm:order-1"
+              size="sm"
             >
               Cancel
             </Button>
             <Button
               type="submit"
-              className="bg-orange-500 hover:bg-orange-600"
+              className="bg-orange-500 hover:bg-orange-600 w-full sm:w-auto order-1 sm:order-2"
               disabled={uploadMutation.isPending || !file || !name}
+              size="sm"
             >
               {uploadMutation.isPending ? (
                 <>
