@@ -314,7 +314,6 @@ Clearly explain deviations, fatigue risks, and reasoning for modifications.
   private buildUserPromptWithEnhancedActivities(
     activities: EnhancedFormattedActivity[],
     trainingPlanData: string,
-    currentWeek: number,
     userFeedback?: string
   ): string {
     // Format activities as a structured table
@@ -562,7 +561,6 @@ Keep the tone professional but encouraging. Be specific and actionable.`;
       const userPrompt = this.buildUserPromptWithEnhancedActivities(
         activities,
         trainingPlanData,
-        currentWeek,
         userFeedback
       );
 
