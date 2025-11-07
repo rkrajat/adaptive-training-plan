@@ -3,15 +3,28 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { Zap, Heart, Loader2, Archive, CloudUpload, XCircle } from "lucide-react";
+import {
+  Zap,
+  Heart,
+  Loader2,
+  Archive,
+  CloudUpload,
+  XCircle,
+} from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
 import type { Activity, User } from "@adaptive-training-plan/types";
 
 import { isAuthenticated } from "@/lib/auth";
-import { activitiesApi, authApi, recommendationsApi } from "@/lib/api";
+import {
+  activitiesApi,
+  authApi,
+  recommendationsApi,
+  trainingPlansApi,
+} from "@/lib/api";
 import { Navigation } from "@/components/Navigation";
+import { UploadTrainingPlanDialog } from "@/components/UploadTrainingPlanDialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -50,25 +63,45 @@ export default function DashboardPage() {
 
   const activities = activitiesData?.activities || [];
 
+  // Fetch training plans
+  const { data: trainingPlansData, isLoading: isLoadingPlans } = useQuery({
+    queryKey: ["trainingPlans"],
+    queryFn: trainingPlansApi.list,
+    enabled: isAuthenticated(),
+  });
+
+  const trainingPlans = trainingPlansData?.plans || [];
+  const activePlan = trainingPlans.find((plan) => plan.isActive);
+
+  // State for upload dialog
+  const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
+
   // State for AI-generated recommendations
   const [completion, setCompletion] = useState<string>("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [completionError, setCompletionError] = useState<Error | null>(null);
 
-  // Function to handle streaming recommendations
-  const generateRecommendations = async (regenerate = false): Promise<void> => {
+  // Function to handle recommendations with training plan
+  const generateRecommendations = async (
+    userFeedback?: string
+  ): Promise<void> => {
     setIsGenerating(true);
     setCompletionError(null);
     setCompletion("");
 
     try {
-      const response = await recommendationsApi.generate(regenerate);
-
-      if (!response.ok) {
+      // Check if user has an active training plan
+      if (!activePlan) {
         throw new Error(
-          `Failed to generate recommendations: ${response.statusText}`
+          "Please upload a training plan first to get recommendations"
         );
       }
+
+      // Use the new endpoint with training plan
+      const response: Response = await recommendationsApi.generateWithPlan(
+        activePlan.id,
+        userFeedback
+      );
 
       const reader = response.body?.getReader();
       const decoder = new TextDecoder();
@@ -82,25 +115,11 @@ export default function DashboardPage() {
       while (true) {
         const { done, value } = await reader.read();
 
-        console.log("=======", {
-          done,
-          value,
-        });
-
         if (done) {
           break;
         }
 
-        console.log("=======", {
-          done,
-          value,
-        });
-
         const chunk = decoder.decode(value, { stream: true });
-
-        console.log("=======", {
-          chunk,
-        });
 
         accumulated += chunk;
         setCompletion(accumulated);
@@ -113,17 +132,17 @@ export default function DashboardPage() {
     }
   };
 
-  // Auto-generate recommendations on mount (only once when user is authenticated)
+  // Auto-generate recommendations when training plan is available
   useEffect(() => {
-    if (isAuthenticated() && !completion && !isGenerating) {
-      generateRecommendations(false).catch(console.error);
+    if (isAuthenticated() && activePlan && !completion && !isGenerating) {
+      generateRecommendations().catch(console.error);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [activePlan?.id]);
 
   // Handle regenerate button click
   const handleRegenerate = (): void => {
-    generateRecommendations(true).catch(console.error);
+    generateRecommendations().catch(console.error);
   };
 
   // Format duration from seconds to mm:ss
@@ -149,7 +168,7 @@ export default function DashboardPage() {
     return null;
   }
 
-  if (isLoadingUser || isLoadingActivities) {
+  if (isLoadingUser || isLoadingActivities || isLoadingPlans) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-50">
         <div className="text-center">
@@ -272,53 +291,52 @@ export default function DashboardPage() {
             </div>
           </CardHeader>
           <CardContent>
+            {/* Loading State */}
+            {isGenerating && !completion && (
+              <div className="space-y-4">
+                <div className="h-4 bg-gray-200 rounded animate-pulse w-3/4"></div>
+                <div className="h-4 bg-gray-200 rounded animate-pulse w-full"></div>
+                <div className="h-4 bg-gray-200 rounded animate-pulse w-5/6"></div>
+                <div className="h-4 bg-gray-200 rounded animate-pulse w-2/3"></div>
+              </div>
+            )}
 
-          {/* Loading State */}
-          {isGenerating && !completion && (
-            <div className="space-y-4">
-              <div className="h-4 bg-gray-200 rounded animate-pulse w-3/4"></div>
-              <div className="h-4 bg-gray-200 rounded animate-pulse w-full"></div>
-              <div className="h-4 bg-gray-200 rounded animate-pulse w-5/6"></div>
-              <div className="h-4 bg-gray-200 rounded animate-pulse w-2/3"></div>
-            </div>
-          )}
+            {/* Error State */}
+            {completionError && !completion && (
+              <Alert variant="destructive">
+                <XCircle className="h-4 w-4" />
+                <AlertTitle>Failed to generate recommendation</AlertTitle>
+                <AlertDescription>
+                  {completionError.message}
+                  <Button
+                    onClick={handleRegenerate}
+                    variant="link"
+                    className="mt-2 p-0 h-auto text-red-700 hover:text-red-800"
+                  >
+                    Try again →
+                  </Button>
+                </AlertDescription>
+              </Alert>
+            )}
 
-          {/* Error State */}
-          {completionError && !completion && (
-            <Alert variant="destructive">
-              <XCircle className="h-4 w-4" />
-              <AlertTitle>Failed to generate recommendation</AlertTitle>
-              <AlertDescription>
-                {completionError.message}
-                <Button
-                  onClick={handleRegenerate}
-                  variant="link"
-                  className="mt-2 p-0 h-auto text-red-700 hover:text-red-800"
-                >
-                  Try again →
-                </Button>
-              </AlertDescription>
-            </Alert>
-          )}
+            {/* Streaming/Completed Content */}
+            {completion && (
+              <div className="prose prose-sm max-w-none prose-headings:font-semibold prose-h1:text-xl prose-h2:text-lg prose-h3:text-base prose-p:text-sm prose-p:leading-relaxed prose-ul:my-2 prose-ol:my-2 prose-li:my-1 prose-strong:text-gray-900 prose-strong:font-semibold">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {completion}
+                </ReactMarkdown>
+              </div>
+            )}
 
-          {/* Streaming/Completed Content */}
-          {completion && (
-            <div className="prose prose-sm max-w-none prose-headings:font-semibold prose-h1:text-xl prose-h2:text-lg prose-h3:text-base prose-p:text-sm prose-p:leading-relaxed prose-ul:my-2 prose-ol:my-2 prose-li:my-1 prose-strong:text-gray-900 prose-strong:font-semibold">
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                {completion}
-              </ReactMarkdown>
-            </div>
-          )}
-
-          {/* Empty State */}
-          {!isGenerating && !completion && !completionError && (
-            <div className="text-center py-8">
-              <p className="text-sm text-gray-600">
-                Click &quot;Regenerate&quot; to get your personalized training
-                recommendation
-              </p>
-            </div>
-          )}
+            {/* Empty State */}
+            {!isGenerating && !completion && !completionError && (
+              <div className="text-center py-8">
+                <p className="text-sm text-gray-600">
+                  Click &quot;Regenerate&quot; to get your personalized training
+                  recommendation
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -341,7 +359,10 @@ export default function DashboardPage() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {activities.map((activity: Activity) => (
-                <Card key={activity.id} className="p-4 hover:shadow-md transition-shadow">
+                <Card
+                  key={activity.id}
+                  className="p-4 hover:shadow-md transition-shadow"
+                >
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex-1 min-w-0">
                       <h3 className="font-semibold text-gray-900 text-sm truncate">
@@ -385,24 +406,64 @@ export default function DashboardPage() {
           )}
         </div>
 
-        {/* Upload Training Plan Section */}
-        <Card className="p-8 text-center">
-          <div className="mx-auto w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-4">
-            <CloudUpload className="h-6 w-6 text-gray-600" />
-          </div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
-            Upload Your Training Plan
-          </h3>
-          <p className="text-sm text-gray-600 mb-6 max-w-md mx-auto">
-            Share your current training schedule to get more personalized weekly
-            recommendations
-          </p>
-          <Button className="bg-orange-500 hover:bg-orange-600">
-            <CloudUpload className="mr-2 h-4 w-4" />
-            Upload Plan
-          </Button>
+        {/* Training Plan Section */}
+        <Card className="p-8">
+          {activePlan ? (
+            <div className="text-center">
+              <div className="mx-auto w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mb-4">
+                <CloudUpload className="h-6 w-6 text-green-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Active Training Plan
+              </h3>
+              <p className="text-sm text-gray-900 font-medium mb-1">
+                {activePlan.metadata.name}
+              </p>
+              <p className="text-sm text-gray-600 mb-4">
+                Week {activePlan.currentWeek} of your training
+              </p>
+              {activePlan.metadata.goal && (
+                <p className="text-sm text-gray-600 mb-4">
+                  Goal: {activePlan.metadata.goal}
+                </p>
+              )}
+              <Button
+                variant="outline"
+                onClick={() => setIsUploadDialogOpen(true)}
+              >
+                <CloudUpload className="mr-2 h-4 w-4" />
+                Upload New Plan
+              </Button>
+            </div>
+          ) : (
+            <div className="text-center">
+              <div className="mx-auto w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+                <CloudUpload className="h-6 w-6 text-gray-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Upload Your Training Plan
+              </h3>
+              <p className="text-sm text-gray-600 mb-6 max-w-md mx-auto">
+                Upload your training schedule to get personalized weekly
+                recommendations
+              </p>
+              <Button
+                className="bg-orange-500 hover:bg-orange-600"
+                onClick={() => setIsUploadDialogOpen(true)}
+              >
+                <CloudUpload className="mr-2 h-4 w-4" />
+                Upload Plan
+              </Button>
+            </div>
+          )}
         </Card>
       </main>
+
+      {/* Upload Dialog */}
+      <UploadTrainingPlanDialog
+        open={isUploadDialogOpen}
+        onOpenChange={setIsUploadDialogOpen}
+      />
     </div>
   );
 }
