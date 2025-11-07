@@ -58,12 +58,20 @@ const connectDB = async (): Promise<void> => {
 const startServer = async (): Promise<void> => {
   await connectDB();
 
-  app.listen(config.port, () => {
+  const server = app.listen(config.port, () => {
     log.info(`API server running on http://localhost:${config.port}`);
     log.info(`Frontend URL: ${config.frontendUrl}`);
     log.info(`Environment: ${config.nodeEnv}`);
-    log.info(`Strava Client ID: ${config.strava.clientId ? "✓ Set" : "✗ Missing"}`);
+    log.info(
+      `Strava Client ID: ${config.strava.clientId ? "✓ Set" : "✗ Missing"}`
+    );
   });
+
+  // Configure server timeouts
+  // AI recommendations can take 30-60 seconds, so set generous timeouts
+  server.timeout = 120000; // 2 minutes - overall request timeout
+  server.keepAliveTimeout = 65000; // 65 seconds - keep-alive timeout (slightly higher than typical load balancer timeout)
+  server.headersTimeout = 66000; // 66 seconds - headers timeout (should be higher than keepAliveTimeout)
 };
 
 startServer();
