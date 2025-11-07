@@ -9,19 +9,16 @@ import { stravaService } from "../services/strava.service";
 import { authService } from "../services/auth.service";
 import { aiService } from "../services/ai.service";
 import { trainingPlanService } from "../services/training-plan.service";
+import { formatActivitiesForAI } from "../utils/activity-formatter";
 import { useMockData } from "../utils/mock";
 import { log } from "../utils/logger";
-import {
-  sendSuccess,
-  sendUnauthorized,
-  sendInternalError,
-} from "../utils/response";
+import { sendUnauthorized, sendInternalError } from "../utils/response";
 import {
   UnauthorizedError,
   InternalServerError,
   AppError,
 } from "../utils/error";
-import type { StravaActivity, FormattedActivity } from "../types/strava.types";
+import type { StravaActivity } from "../types/strava.types";
 
 const router = Router();
 
@@ -38,7 +35,8 @@ router.post(
         return;
       }
 
-      const { stravaAccessToken, stravaRefreshToken, stravaTokenExpiresAt } = req.user;
+      const { stravaAccessToken, stravaRefreshToken, stravaTokenExpiresAt } =
+        req.user;
 
       // Check if token is expired and refresh if needed
       let accessToken = stravaAccessToken;
@@ -129,7 +127,12 @@ router.post(
       }
 
       const { planId, userFeedback } = req.body;
-      const { stravaAccessToken, stravaRefreshToken, stravaTokenExpiresAt, userId } = req.user;
+      const {
+        stravaAccessToken,
+        stravaRefreshToken,
+        stravaTokenExpiresAt,
+        userId,
+      } = req.user;
 
       // Fetch training plan from database and verify ownership
       const trainingPlan = await trainingPlanService.getTrainingPlan(
@@ -175,33 +178,32 @@ router.post(
         rawActivities = await stravaService.fetchActivities(accessToken);
       }
 
-      // Format activities for AI service
-      const formattedActivities: FormattedActivity[] = rawActivities
-        .filter((activity) => activity.type === "Run")
-        .map((activity) => ({
-          id: activity.id,
-          name: activity.name,
-          type: activity.type,
-          distance: activity.distance,
-          movingTime: activity.moving_time,
-          averageHeartrate: activity.average_heartrate ?? null,
-          startDate: activity.start_date,
-        }));
+      // Format activities with enhanced metadata for AI service
+      const enhancedActivities = formatActivitiesForAI(rawActivities);
 
-      // Generate recommendations with training plan
-      const recommendations = await aiService.generateRecommendationsWithPlan(
-        formattedActivities,
+      // Generate recommendations with enhanced training plan data
+      const result = await aiService.generateRecommendationsWithEnhancedPlan(
+        enhancedActivities,
         trainingPlan.csvContent,
         trainingPlan.currentWeek,
         userFeedback
       );
 
-      log.info("Recommendations generated successfully with training plan", {
-        userId,
-        planId,
-      });
+      // Set headers for streaming
+      res.setHeader("Content-Type", "text/plain; charset=utf-8");
+      res.setHeader("Cache-Control", "no-cache");
+      res.setHeader("Connection", "keep-alive");
 
-      sendSuccess(res, { recommendations });
+      // Use fullStream to get all parts including text
+      for await (const part of result.fullStream) {
+        if (part.type === "text-delta") {
+          res.write(part.text);
+        }
+      }
+
+      log.info("Streaming recommendations completed successfully");
+
+      res.end();
     } catch (error) {
       if (error instanceof AppError) {
         log.warn("Error generating recommendations with training plan", {
