@@ -1,18 +1,19 @@
-import mongoose from 'mongoose';
-import { TrainingPlan, type ITrainingPlan } from '../models/TrainingPlan';
+import mongoose from "mongoose";
+import { TrainingPlan, type ITrainingPlan } from "../models/TrainingPlan";
 import {
   TrainingPlanVersion,
   type ITrainingPlanVersion,
-} from '../models/TrainingPlanVersion';
-import { log } from '../utils/logger';
+} from "../models/TrainingPlanVersion";
+import { log } from "../utils/logger";
 import {
   AppError,
   InternalServerError,
   NotFoundError,
   ForbiddenError,
-} from '../utils/error';
-import { parseCsvBuffer } from '../utils/csv-parser';
-import { validateCsvStructure, validateCsvFile } from '../utils/csv-validator';
+} from "../utils/error";
+import { parseCsvBuffer } from "../utils/csv-parser";
+import { validateCsvStructure, validateCsvFile } from "../utils/csv-validator";
+import { pdfToCsvService } from "./pdf-to-csv.service";
 import type {
   TrainingPlanResponse,
   TrainingPlanWithContentResponse,
@@ -20,7 +21,7 @@ import type {
   TrainingPlanVersionResponse,
   ListTrainingPlansResponse,
   TrainingPlanUploadRequest,
-} from '../types/api.types';
+} from "../types/api.types";
 
 /**
  * Training Plan Service
@@ -34,19 +35,44 @@ export class TrainingPlanService {
   async createTrainingPlan(
     userId: string,
     file: Express.Multer.File,
-    metadata: TrainingPlanUploadRequest
+    metadata: TrainingPlanUploadRequest,
+    fileType: "csv" | "pdf" = "csv"
   ): Promise<TrainingPlanWithContentResponse> {
     const session = await mongoose.startSession();
     session.startTransaction();
 
     try {
-      log.info('Creating training plan', { userId, metadata });
+      log.info("Creating training plan", { userId, metadata, fileType });
 
-      // Validate file
       validateCsvFile(file);
 
-      // Parse and validate CSV content
-      const csvContent = parseCsvBuffer(file.buffer);
+      let csvContent: string;
+
+      if (fileType === "pdf") {
+        log.info("Converting PDF to CSV", { filename: file.originalname });
+
+        const conversionResult = await pdfToCsvService.convertPdfToCsv(
+          file.buffer
+        );
+
+        if (!conversionResult.success || !conversionResult.csvContent) {
+          const errorMessage =
+            conversionResult.error?.message ||
+            "Failed to convert PDF to training plan format";
+          throw new AppError(errorMessage, 400);
+        }
+
+        csvContent = conversionResult.csvContent;
+
+        log.info("PDF converted to CSV successfully", {
+          csvLength: csvContent.length,
+        });
+      } else {
+        // Handle CSV files - existing path
+        csvContent = parseCsvBuffer(file.buffer);
+      }
+
+      // Validate CSV structure (for both converted PDFs and direct CSV uploads)
       validateCsvStructure(csvContent);
 
       // Create training plan
@@ -61,7 +87,7 @@ export class TrainingPlanService {
           raceDistance: metadata.raceDistance,
           targetTime: metadata.targetTime,
         },
-        source: 'user_upload' as const,
+        source: "user_upload" as const,
         isActive: true,
         currentWeek: 1,
         startDate: new Date(),
@@ -71,7 +97,7 @@ export class TrainingPlanService {
         session,
       });
 
-      log.info('Training plan created', {
+      log.info("Training plan created", {
         trainingPlanId: trainingPlan._id,
         userId,
       });
@@ -82,13 +108,13 @@ export class TrainingPlanService {
         versionNumber: 1,
         csvContent,
         metadata: trainingPlan.metadata,
-        changeType: 'created' as const,
-        changeDescription: 'Initial plan upload',
+        changeType: "created" as const,
+        changeDescription: "Initial plan upload",
       };
 
       await TrainingPlanVersion.create([versionData], { session });
 
-      log.info('Initial version created', {
+      log.info("Initial version created", {
         trainingPlanId: trainingPlan._id,
         versionNumber: 1,
       });
@@ -99,12 +125,12 @@ export class TrainingPlanService {
       return this.formatTrainingPlanWithContent(trainingPlan);
     } catch (error) {
       await session.abortTransaction();
-      log.error('Failed to create training plan', error, { userId });
+      log.error("Failed to create training plan", error, { userId });
 
       if (error instanceof AppError) {
         throw error;
       }
-      throw new InternalServerError('Failed to create training plan', error);
+      throw new InternalServerError("Failed to create training plan", error);
     } finally {
       await session.endSession();
     }
@@ -118,31 +144,28 @@ export class TrainingPlanService {
     userId: string
   ): Promise<TrainingPlanWithContentResponse> {
     try {
-      log.info('Fetching training plan', { planId, userId });
+      log.info("Fetching training plan", { planId, userId });
 
       const trainingPlan = await TrainingPlan.findById(planId);
 
       if (!trainingPlan) {
-        throw new NotFoundError('Training plan not found');
+        throw new NotFoundError("Training plan not found");
       }
 
       // Verify ownership
       if (String(trainingPlan.userId) !== userId) {
         throw new ForbiddenError(
-          'You do not have permission to access this training plan'
+          "You do not have permission to access this training plan"
         );
       }
 
       return this.formatTrainingPlanWithContent(trainingPlan);
     } catch (error) {
-      if (
-        error instanceof NotFoundError ||
-        error instanceof ForbiddenError
-      ) {
+      if (error instanceof NotFoundError || error instanceof ForbiddenError) {
         throw error;
       }
-      log.error('Failed to fetch training plan', error, { planId, userId });
-      throw new InternalServerError('Failed to fetch training plan', error);
+      log.error("Failed to fetch training plan", error, { planId, userId });
+      throw new InternalServerError("Failed to fetch training plan", error);
     }
   }
 
@@ -154,7 +177,7 @@ export class TrainingPlanService {
     isActive?: boolean
   ): Promise<ListTrainingPlansResponse> {
     try {
-      log.info('Fetching user training plans', { userId, isActive });
+      log.info("Fetching user training plans", { userId, isActive });
 
       const query: Record<string, unknown> = {
         userId: new mongoose.Types.ObjectId(userId),
@@ -172,9 +195,9 @@ export class TrainingPlanService {
         plans: trainingPlans.map((plan) => this.formatTrainingPlan(plan)),
       };
     } catch (error) {
-      log.error('Failed to fetch user training plans', error, { userId });
+      log.error("Failed to fetch user training plans", error, { userId });
       throw new InternalServerError(
-        'Failed to fetch user training plans',
+        "Failed to fetch user training plans",
         error
       );
     }
@@ -188,18 +211,18 @@ export class TrainingPlanService {
     userId: string
   ): Promise<TrainingPlanWithVersionsResponse> {
     try {
-      log.info('Fetching training plan with versions', { planId, userId });
+      log.info("Fetching training plan with versions", { planId, userId });
 
       const trainingPlan = await TrainingPlan.findById(planId);
 
       if (!trainingPlan) {
-        throw new NotFoundError('Training plan not found');
+        throw new NotFoundError("Training plan not found");
       }
 
       // Verify ownership
       if (String(trainingPlan.userId) !== userId) {
         throw new ForbiddenError(
-          'You do not have permission to access this training plan'
+          "You do not have permission to access this training plan"
         );
       }
 
@@ -213,18 +236,15 @@ export class TrainingPlanService {
         versions: versions.map((version) => this.formatVersion(version)),
       };
     } catch (error) {
-      if (
-        error instanceof NotFoundError ||
-        error instanceof ForbiddenError
-      ) {
+      if (error instanceof NotFoundError || error instanceof ForbiddenError) {
         throw error;
       }
-      log.error('Failed to fetch training plan with versions', error, {
+      log.error("Failed to fetch training plan with versions", error, {
         planId,
         userId,
       });
       throw new InternalServerError(
-        'Failed to fetch training plan with versions',
+        "Failed to fetch training plan with versions",
         error
       );
     }

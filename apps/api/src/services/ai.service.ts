@@ -618,6 +618,121 @@ Keep the tone professional but encouraging. Be specific and actionable.`;
   }
 
   /**
+   * Convert PDF text to CSV format using LLM
+   * @param pdfText - Extracted text from PDF training plan
+   * @returns CSV formatted string
+   */
+  async convertPdfTextToCsv(pdfText: string): Promise<string> {
+    try {
+      log.info("Converting PDF text to CSV using LLM", {
+        textLength: pdfText.length,
+      });
+
+      const systemPrompt = `
+SYSTEM MESSAGE (to LLM)
+You are a Running Training Plan Normalizer. Your job is to extract and standardize training plan data from any PDF — regardless of formatting — into a structured, machine-readable table.
+
+🧩 INPUT
+You will receive a PDF file uploaded by the user. The file may contain text, tables, or images showing a running training plan. If the file contains the training plan in miles and kilometers, consider the kilometers version.
+
+🎯 OUTPUT
+Your task is to produce a clean CSV (Comma Separated) table with the following columns:
+| date | day | type | planned_distance_km | target_pace_min_per_km | target_HR_zone | notes |
+
+Field Rules:
+date → extract if explicitly mentioned (e.g., "March 4", "10/03"); otherwise, infer sequential days starting Monday. If the date is not mentioned, assume today's date.
+
+day → Mon, Tue, Wed, Thu, Fri, Sat, Sun. Make sure the day of the "date" matches this field. For example, if the date - 24th August 2025 is a Sunday, then the day should be Sun.
+
+type → one of {Easy, Long, Tempo, Interval, Recovery, Rest, Race, Cross-Training, Progression}.
+
+planned_distance_km → convert all distances to kilometers, rounded to one decimal place. (e.g., "6 miles" → 9.7).
+
+target_pace_min_per_km → have the target pace in a range format (e.g., "6:00-6:15/km). If the input has only a single value, have the range as the same value (e.g., "6:00-6:00/km). If the plan doesn't clearly mention the pace, but rather has details like "conversational", "fast pace" etc, then try to recommend a page range in the above format, based on the context you understood from the training plan.
+
+target_HR_zone → Z1–Z5 if explicitly mentioned. If written as bpm or %HRmax, map approximately:
+Z1: <65% HRmax or <120 bpm
+Z2: 65–75% HRmax or 120–140 bpm
+Z3: 75–85% HRmax or 140–160 bpm
+Z4: 85–90% HRmax or 160–175 bpm
+Z5: >90% HRmax or >175 bpm
+
+notes → include any other textual context (e.g., "hill repeats", "easy aerobic", "steady state", "rest day", "cross-train").
+
+🧠 PROCESSING STEPS
+Read all text from the uploaded PDF.
+
+Identify individual sessions (each line or table row that describes a specific day's workout).
+
+Extract relevant data points using pattern recognition:
+- Numbers with "km" or "mile" → distance
+- Time formats (e.g., 5:00/km) → pace
+- Keywords → classify type (e.g., "interval", "tempo", "long run", "rest")
+- In case the overall distance is not given, convert pace and time to get that. (e.g., if pace is 4:15/km and the workout is 6min * 3, then total distance = 4.24km)
+
+Infer missing information logically:
+- If no date/day given, start from Monday and increment daily.
+- If "Rest" or "Off" day → set distance = 0, pace = null, HR = null.
+- Normalize units → all distances in kilometers, paces in min/km.
+
+Output a single, well-formatted CSV table — no markdown, no commentary, only the table.
+
+🧾 OUTPUT FORMAT (STRICT)
+date,day,type,planned_distance_km,target_pace_min_per_km,target_HR_zone,notes
+2025-10-14,Tue,Easy,6,5:35,Z2,"Easy, aerobic run"
+2025-10-15,Wed,Intervals,7,4:25,Z4,"6x800m, intervals"
+2025-10-16,Thu,Rest,0,,,
+
+⚠️ OUTPUT RULES
+Do not add markdown syntax (\`\`\`csv or tables with borders).
+Do not include explanations, summaries, or confidence scores.
+If multiple weeks exist, continue the same format (one row per run).
+If the plan includes non-running sessions (e.g., gym, yoga), mark type = "Cross-Training".
+
+✅ EXAMPLE PROMPT FROM USER
+"Here's my training plan PDF. Please extract it into your standard CSV format."
+
+🧭 POST-PROCESS CHECKLIST (internal)
+Ensure every row corresponds to one unique day or run.
+Verify numeric conversions (miles→km, pace range→average).
+Ensure consistent column order and no missing headers.
+
+If you encounter ambiguous text, make reasonable assumptions but maintain structural consistency.
+`;
+
+      const userPrompt = `Convert the following training plan text to CSV format:\n\n${pdfText}`;
+
+      const result = await generateText({
+        model: openai(config.openai.model),
+        messages: [
+          {
+            role: "system",
+            content: systemPrompt,
+          },
+          {
+            role: "user",
+            content: userPrompt,
+          },
+        ],
+        temperature: 0.1,
+      });
+
+      log.info("PDF text to CSV conversion successful", {
+        resultLength: result.text.length,
+        usage: result.usage,
+      });
+
+      return result.text;
+    } catch (error) {
+      log.error("Failed to convert PDF text to CSV", error);
+      throw new InternalServerError(
+        "Failed to convert PDF text to CSV format",
+        error
+      );
+    }
+  }
+
+  /**
    * Stream training recommendations using AI (for backward compatibility)
    * Returns a streaming result for use with the existing streaming endpoint
    */

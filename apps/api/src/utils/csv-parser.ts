@@ -1,3 +1,4 @@
+import { parse } from 'csv-parse/sync';
 import { AppError } from './error';
 
 /**
@@ -52,38 +53,29 @@ export interface WeekData {
 
 export const parseCsvToWeeksData = (csvContent: string): WeekData[] => {
   try {
-    const lines = csvContent.split('\n').filter((line) => line.trim());
+    // Use csv-parse to properly handle quoted fields and RFC 4180 CSV format
+    const records = parse(csvContent, {
+      columns: true, // Use first row as headers and map to object keys
+      skip_empty_lines: true, // Skip empty lines
+      trim: true, // Trim whitespace from values
+      relax_column_count: false, // Enforce consistent column counts
+    }) as Record<string, string>[];
 
-    if (lines.length < 2) {
-      throw new AppError('CSV must have header and data rows', 400);
+    if (records.length === 0) {
+      throw new AppError('CSV must have at least one data row', 400);
     }
 
-    // Parse header
-    const headers = lines[0].split(',').map((header) => header.trim());
+    // Transform parsed records to WeekData format
+    const weeksData: WeekData[] = records.map((record, index) => {
+      const rowData: WeekData = { week: index + 1 };
 
-    // Parse data rows
-    const weeksData: WeekData[] = [];
-
-    for (let index = 1; index < lines.length; index++) {
-      const line = lines[index].trim();
-      if (!line) continue;
-
-      const values = line.split(',').map((value) => value.trim());
-
-      if (values.length !== headers.length) {
-        throw new AppError(
-          `Row ${index + 1} has ${values.length} columns but header has ${headers.length}`,
-          400
-        );
-      }
-
-      const rowData: WeekData = { week: index };
-      headers.forEach((header, headerIndex) => {
-        rowData[header.toLowerCase()] = values[headerIndex];
+      // Convert all header keys to lowercase and copy values
+      Object.keys(record).forEach((header) => {
+        rowData[header.toLowerCase()] = record[header];
       });
 
-      weeksData.push(rowData);
-    }
+      return rowData;
+    });
 
     return weeksData;
   } catch (error) {

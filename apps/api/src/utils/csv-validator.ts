@@ -33,6 +33,7 @@ export const validateCsvStructure = (csvContent: string): void => {
 
 /**
  * Validate file upload (MIME type and size)
+ * Supports both CSV and PDF files
  */
 export const validateCsvFile = (
   file: Express.Multer.File | undefined
@@ -41,25 +42,52 @@ export const validateCsvFile = (
     throw new AppError('No file uploaded', 400);
   }
 
-  // Check MIME type
-  const allowedMimeTypes = ['text/csv', 'application/csv', 'text/plain'];
+  // Check MIME type - allow both CSV and PDF
+  const csvMimeTypes = ['text/csv', 'application/csv', 'text/plain'];
+  const pdfMimeTypes = ['application/pdf'];
+  const allowedMimeTypes = [...csvMimeTypes, ...pdfMimeTypes];
+
   if (!allowedMimeTypes.includes(file.mimetype)) {
     throw new AppError(
-      'Invalid file type. Only CSV files are allowed',
+      'Invalid file type. Only CSV and PDF files are allowed',
       400
     );
   }
 
-  // Check file size (max 5MB)
-  const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+  // Determine file type
+  const isPdf = pdfMimeTypes.includes(file.mimetype);
+  const isCsv = csvMimeTypes.includes(file.mimetype);
+
+  // Check file size - 5MB for CSV, 10MB for PDF
+  const maxSize = isPdf ? 10 * 1024 * 1024 : 5 * 1024 * 1024;
+  const maxSizeLabel = isPdf ? '10MB' : '5MB';
+
   if (file.size > maxSize) {
-    throw new AppError('File size exceeds 5MB limit', 400);
+    throw new AppError(`File size exceeds ${maxSizeLabel} limit`, 400);
   }
 
   // Check file extension
-  if (!file.originalname.toLowerCase().endsWith('.csv')) {
+  const filename = file.originalname.toLowerCase();
+  const hasValidExtension = filename.endsWith('.csv') || filename.endsWith('.pdf');
+
+  if (!hasValidExtension) {
     throw new AppError(
-      'Invalid file extension. File must have .csv extension',
+      'Invalid file extension. File must have .csv or .pdf extension',
+      400
+    );
+  }
+
+  // Validate extension matches MIME type
+  if (isCsv && !filename.endsWith('.csv')) {
+    throw new AppError(
+      'File extension does not match content type. CSV files must have .csv extension',
+      400
+    );
+  }
+
+  if (isPdf && !filename.endsWith('.pdf')) {
+    throw new AppError(
+      'File extension does not match content type. PDF files must have .pdf extension',
       400
     );
   }

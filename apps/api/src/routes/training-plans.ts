@@ -1,46 +1,62 @@
-import { Router, type Request, type Response } from 'express';
-import multer from 'multer';
-import { authenticateJWT } from '../middleware/auth';
-import { validateParams } from '../middleware/validate';
-import { trainingPlanService } from '../services/training-plan.service';
+import { Router, type Request, type Response } from "express";
+import multer from "multer";
+import { authenticateJWT } from "../middleware/auth";
+import { validateParams } from "../middleware/validate";
+import { trainingPlanService } from "../services/training-plan.service";
 import {
   trainingPlanUploadSchema,
   trainingPlanIdParamSchema,
   listTrainingPlansQuerySchema,
-} from '../validators/training-plan.validator';
-import { log } from '../utils/logger';
+} from "../validators/training-plan.validator";
+import { log } from "../utils/logger";
 import {
   sendSuccess,
   sendCreated,
   sendInternalError,
   sendBadRequest,
-} from '../utils/response';
-import { AppError } from '../utils/error';
+} from "../utils/response";
+import { AppError } from "../utils/error";
 
 const router = Router();
 
 // Configure multer for in-memory file upload
+// Support both CSV (5MB) and PDF (10MB) files
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB
+    fileSize: 10 * 1024 * 1024, // 10MB (max for PDF files)
+  },
+  fileFilter: (_req, file, cb) => {
+    // Accept CSV and PDF files
+    const allowedMimeTypes = [
+      "text/csv",
+      "application/csv",
+      "text/plain",
+      "application/pdf",
+    ];
+
+    if (allowedMimeTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error("Invalid file type. Only CSV and PDF files are allowed"));
+    }
   },
 });
 
 // POST /api/training-plans - Upload a new training plan
 router.post(
-  '/',
+  "/",
   authenticateJWT,
-  upload.single('file'),
+  upload.single("file"),
   async (req: Request, res: Response) => {
     try {
       if (!req.user) {
-        sendBadRequest(res, 'User not authenticated');
+        sendBadRequest(res, "User not authenticated");
         return;
       }
 
       if (!req.file) {
-        sendBadRequest(res, 'No file uploaded');
+        sendBadRequest(res, "No file uploaded");
         return;
       }
 
@@ -54,37 +70,55 @@ router.post(
 
       const metadata = validationResult.data;
 
+      // Detect file type based on MIME type
+      const pdfMimeTypes = ["application/pdf"];
+      const csvMimeTypes = ["text/csv", "application/csv", "text/plain"];
+
+      let fileType: "csv" | "pdf" = "csv";
+      if (pdfMimeTypes.includes(req.file.mimetype)) {
+        fileType = "pdf";
+      } else if (csvMimeTypes.includes(req.file.mimetype)) {
+        fileType = "csv";
+      }
+
+      log.info("Processing training plan upload", {
+        userId: req.user.userId,
+        fileType,
+        filename: req.file.originalname,
+      });
+
       // Create training plan
       const trainingPlan = await trainingPlanService.createTrainingPlan(
         req.user.userId,
         req.file,
-        metadata
+        metadata,
+        fileType
       );
 
-      log.info('Training plan uploaded successfully', {
+      log.info("Training plan uploaded successfully", {
         userId: req.user.userId,
         planId: trainingPlan.id,
       });
 
-      sendCreated(res, trainingPlan, 'Training plan uploaded successfully');
+      sendCreated(res, trainingPlan, "Training plan uploaded successfully");
     } catch (error) {
-      log.error('Error uploading training plan', error);
+      log.error("Error uploading training plan", error);
 
       if (error instanceof AppError) {
         res.status(error.statusCode).json({ error: error.message });
         return;
       }
 
-      sendInternalError(res, 'Failed to upload training plan');
+      sendInternalError(res, "Failed to upload training plan");
     }
   }
 );
 
 // GET /api/training-plans - List all training plans for authenticated user
-router.get('/', authenticateJWT, async (req: Request, res: Response) => {
+router.get("/", authenticateJWT, async (req: Request, res: Response) => {
   try {
     if (!req.user) {
-      sendBadRequest(res, 'User not authenticated');
+      sendBadRequest(res, "User not authenticated");
       return;
     }
 
@@ -106,20 +140,20 @@ router.get('/', authenticateJWT, async (req: Request, res: Response) => {
 
     sendSuccess(res, result);
   } catch (error) {
-    log.error('Error fetching training plans', error);
-    sendInternalError(res, 'Failed to fetch training plans');
+    log.error("Error fetching training plans", error);
+    sendInternalError(res, "Failed to fetch training plans");
   }
 });
 
 // GET /api/training-plans/:id - Get specific training plan by ID
 router.get(
-  '/:id',
+  "/:id",
   authenticateJWT,
   validateParams(trainingPlanIdParamSchema),
   async (req: Request, res: Response) => {
     try {
       if (!req.user) {
-        sendBadRequest(res, 'User not authenticated');
+        sendBadRequest(res, "User not authenticated");
         return;
       }
 
@@ -132,27 +166,29 @@ router.get(
 
       sendSuccess(res, trainingPlan);
     } catch (error) {
-      log.error('Error fetching training plan', error, { planId: req.params.id });
+      log.error("Error fetching training plan", error, {
+        planId: req.params.id,
+      });
 
       if (error instanceof AppError) {
         res.status(error.statusCode).json({ error: error.message });
         return;
       }
 
-      sendInternalError(res, 'Failed to fetch training plan');
+      sendInternalError(res, "Failed to fetch training plan");
     }
   }
 );
 
 // GET /api/training-plans/:id/versions - Get training plan with all versions
 router.get(
-  '/:id/versions',
+  "/:id/versions",
   authenticateJWT,
   validateParams(trainingPlanIdParamSchema),
   async (req: Request, res: Response) => {
     try {
       if (!req.user) {
-        sendBadRequest(res, 'User not authenticated');
+        sendBadRequest(res, "User not authenticated");
         return;
       }
 
@@ -165,7 +201,7 @@ router.get(
 
       sendSuccess(res, result);
     } catch (error) {
-      log.error('Error fetching training plan with versions', error, {
+      log.error("Error fetching training plan with versions", error, {
         planId: req.params.id,
       });
 
@@ -174,7 +210,7 @@ router.get(
         return;
       }
 
-      sendInternalError(res, 'Failed to fetch training plan with versions');
+      sendInternalError(res, "Failed to fetch training plan with versions");
     }
   }
 );
