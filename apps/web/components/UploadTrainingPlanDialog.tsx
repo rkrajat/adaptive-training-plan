@@ -73,6 +73,29 @@ export const UploadTrainingPlanDialog = ({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
+      // Client-side file type validation
+      const fileName = selectedFile.name.toLowerCase();
+      const isValidExtension = fileName.endsWith(".csv") || fileName.endsWith(".pdf");
+
+      if (!isValidExtension) {
+        uploadMutation.reset();
+        alert("Invalid file type. Please upload a CSV or PDF file.");
+        e.target.value = "";
+        return;
+      }
+
+      // Client-side file size validation
+      const isPdf = fileName.endsWith(".pdf");
+      const maxSize = isPdf ? 10 * 1024 * 1024 : 5 * 1024 * 1024; // 10MB for PDF, 5MB for CSV
+      const maxSizeLabel = isPdf ? "10MB" : "5MB";
+
+      if (selectedFile.size > maxSize) {
+        uploadMutation.reset();
+        alert(`File size exceeds ${maxSizeLabel} limit. Please upload a smaller file.`);
+        e.target.value = "";
+        return;
+      }
+
       setFile(selectedFile);
     }
   };
@@ -91,7 +114,7 @@ export const UploadTrainingPlanDialog = ({
               Upload Training Plan
             </DialogTitle>
             <DialogDescription className="text-xs sm:text-sm">
-              Upload your training plan in CSV format to get personalized
+              Upload your training plan in CSV or PDF format to get personalized
               recommendations
             </DialogDescription>
           </DialogHeader>
@@ -100,12 +123,12 @@ export const UploadTrainingPlanDialog = ({
             {/* File Upload */}
             <div className="space-y-1.5 sm:space-y-2">
               <Label htmlFor="file" className="text-xs sm:text-sm">
-                CSV File *
+                Training Plan File (CSV or PDF) *
               </Label>
               <Input
                 id="file"
                 type="file"
-                accept=".csv"
+                accept=".csv,.pdf"
                 onChange={handleFileChange}
                 required
                 className="text-xs sm:text-sm"
@@ -113,6 +136,8 @@ export const UploadTrainingPlanDialog = ({
               {file && (
                 <p className="text-xs sm:text-sm text-gray-600 break-words">
                   Selected: {file.name}
+                  {file.name.toLowerCase().endsWith(".pdf") &&
+                    " (PDF will be converted to CSV)"}
                 </p>
               )}
             </div>
@@ -234,7 +259,9 @@ export const UploadTrainingPlanDialog = ({
               {uploadMutation.isPending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Uploading...
+                  {file?.name.toLowerCase().endsWith(".pdf")
+                    ? "Converting PDF..."
+                    : "Uploading..."}
                 </>
               ) : (
                 <>
