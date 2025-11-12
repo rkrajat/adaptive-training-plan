@@ -1,8 +1,7 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import type { TrainingPlan } from "@adaptive-training-plan/types";
 
-import { isAuthenticated } from "@/lib/auth";
 import { recommendationsApi } from "@/lib/api";
 
 interface UseRecommendationsReturn {
@@ -15,7 +14,7 @@ interface UseRecommendationsReturn {
 
 /**
  * Custom hook to handle AI recommendations generation with streaming
- * Automatically generates recommendations when a training plan is available
+ * Recommendations are generated when the user explicitly requests them
  */
 export const useRecommendations = (
   activePlan: TrainingPlan | undefined
@@ -72,14 +71,6 @@ export const useRecommendations = (
       setIsGenerating(false);
     }
   };
-
-  // Auto-generate recommendations when training plan is available
-  useEffect(() => {
-    if (isAuthenticated() && activePlan && !completion && !isGenerating) {
-      generateRecommendations().catch(console.error);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activePlan?.id]);
 
   // Handle regenerate button click
   const handleRegenerate = (): void => {

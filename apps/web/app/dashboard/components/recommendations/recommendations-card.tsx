@@ -36,7 +36,11 @@ export const RecommendationsCard = ({
             className="bg-orange-500 hover:bg-orange-600 w-full sm:w-auto"
             size="sm"
           >
-            {isGenerating ? "Generating..." : "Regenerate"}
+            {isGenerating
+              ? "Generating..."
+              : completion
+                ? "Regenerate"
+                : "Get Recommendations"}
           </Button>
         </div>
       </CardHeader>
@@ -111,8 +115,8 @@ export const RecommendationsCard = ({
         {!isGenerating && !completion && !error && (
           <div className="text-center py-8">
             <p className="text-sm text-gray-600">
-              Click &quot;Regenerate&quot; to get your personalized training
-              recommendation
+              Click &quot;Get Recommendations&quot; to get your personalized
+              training recommendation
             </p>
           </div>
         )}
