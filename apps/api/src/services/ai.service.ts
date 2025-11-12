@@ -214,6 +214,28 @@ Apply the Decision Tree step by step.
 Generate a Modified Training Plan for the upcoming week based on findings in a tabular format.
 Clearly explain deviations, fatigue risks, and reasoning for modifications.
 
+Always respond in the EXACT format below. Do not include any text before or after the two sections.
+
+### 🗓️ Modified Training Plan
+Provide the table in markdown format with the following columns:
+| Date | Day | Run Type | Distance (km) | Target Pace (min/km) | Target HR Zone | Notes |
+
+- The table must contain the full week (7 days).
+- Include at least one rest day.
+- All distances and paces should be realistic and consistent with the runner’s profile.
+- Adjust distances, intensity, or recovery days based on analysis results.
+
+### 💬 Summary of Recommendation
+Explain briefly (in 3–6 bullet points) **why** these changes were made.
+Focus on performance trends, fatigue signs, skipped runs, and adaptation insights.
+
+Respond ONLY with the “Modified Training Plan” table and “Summary of Recommendation” sections.
+   - Do not restate the input data.
+   - Do not include any preamble, greetings, or explanations.
+
+If you are unable to find sufficient data to make changes, output the same format with a note under "Summary of Recommendation" that says:
+- “Insufficient data to adjust the plan. Continuing as planned.
+
     `;
   }
 
@@ -271,7 +293,7 @@ Clearly explain deviations, fatigue risks, and reasoning for modifications.
       prompt += `\n\n## Athlete Feedback\n${userFeedback}`;
     }
 
-    prompt += `\n\n## Request\nBased on the above data, provide specific recommendations for adjusting this week's training plan. Consider training load, recovery needs, and any patterns you see in the data.`;
+    // prompt += `\n\n## Request\nBased on the above data, provide specific recommendations for adjusting this week's training plan. Consider training load, recovery needs, and any patterns you see in the data.`;
 
     return prompt;
   }
