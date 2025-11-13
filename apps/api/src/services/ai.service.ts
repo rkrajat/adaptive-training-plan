@@ -8,6 +8,7 @@ import type {
   StravaActivity,
   EnhancedFormattedActivity,
 } from "../types/strava.types";
+import type { ExperienceLevel } from "@adaptive-training-plan/types";
 
 /**
  * AI Service
@@ -49,7 +50,7 @@ Recommendation Instructions:
 Take 3 input from the users
 Plan - Recent Activities (Last 30 Days)
 Actual - Current Week Training Plan
-Running Experience - “Beginner”, “Intermediate”, “Expert”
+Running Experience - {provided by the user along with the activities data}
 If the User has given the input already, don’t ask for it again. 
 2. File Mapping Rules
 Consider the data with the name “Recent Activities (Last 30 Days)” as Planned Runs dataset.
@@ -336,7 +337,8 @@ If you are unable to find sufficient data to make changes, output the same forma
   private buildUserPromptWithEnhancedActivities(
     activities: EnhancedFormattedActivity[],
     trainingPlanData: string,
-    userFeedback?: string
+    userFeedback?: string,
+    experienceLevel?: ExperienceLevel
   ): string {
     // Format activities as a structured table
     const activitiesTable = activities
@@ -355,7 +357,17 @@ If you are unable to find sufficient data to make changes, output the same forma
       )
       .join("\n");
 
-    const runningExperience = `Intermediate`;
+    // Map database experience level values to prompt-compatible values
+    const experienceLevelMap: Record<ExperienceLevel, string> = {
+      beginner: "Beginner",
+      intermediate: "Intermediate",
+      advanced: "Expert",
+    };
+
+    // Use provided experience level or default to 'Intermediate'
+    const runningExperience = experienceLevel
+      ? experienceLevelMap[experienceLevel]
+      : "Intermediate";
 
     let prompt = `## Recent Running Activities (Last 30 Days)\n${activitiesTable}\n\n## Training Plan\n${trainingPlanData}\n\n## Running Experience\n${runningExperience}`;
 
@@ -566,7 +578,8 @@ Keep the tone professional but encouraging. Be specific and actionable.`;
     activities: EnhancedFormattedActivity[],
     csvContent: string,
     currentWeek: number,
-    userFeedback?: string
+    userFeedback?: string,
+    experienceLevel?: ExperienceLevel
   ) {
     try {
       log.info("Generating AI recommendations with enhanced activity data", {
@@ -583,7 +596,8 @@ Keep the tone professional but encouraging. Be specific and actionable.`;
       const userPrompt = this.buildUserPromptWithEnhancedActivities(
         activities,
         trainingPlanData,
-        userFeedback
+        userFeedback,
+        experienceLevel
       );
 
       log.debug("AI prompts prepared with enhanced activities", {

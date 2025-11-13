@@ -19,6 +19,7 @@ import {
   AppError,
 } from "../utils/error";
 import type { StravaActivity } from "../types/strava.types";
+import { User } from "../models/User";
 
 const router = Router();
 
@@ -181,12 +182,22 @@ router.post(
       // Format activities with enhanced metadata for AI service
       const enhancedActivities = formatActivitiesForAI(rawActivities);
 
+      // Fetch user's experience level
+      const user = await User.findOne({ _id: userId });
+      const experienceLevel = user?.experienceLevel;
+
+      log.info("Fetched user experience level for recommendations", {
+        userId,
+        experienceLevel,
+      });
+
       // Generate recommendations with enhanced training plan data
       const result = await aiService.generateRecommendationsWithEnhancedPlan(
         enhancedActivities,
         trainingPlan.csvContent,
         trainingPlan.currentWeek,
-        userFeedback
+        userFeedback,
+        experienceLevel
       );
 
       // Set headers for streaming
