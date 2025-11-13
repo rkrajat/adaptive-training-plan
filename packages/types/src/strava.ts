@@ -1,3 +1,5 @@
+import type { ExperienceLevel } from './user.types';
+
 export interface Activity {
   id: number;
   name: string;
@@ -14,4 +16,5 @@ export interface User {
   firstName: string;
   lastName: string;
   profilePhoto: string;
+  experienceLevel?: ExperienceLevel;
 }

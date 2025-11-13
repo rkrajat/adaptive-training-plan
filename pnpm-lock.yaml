@@ -20,6 +20,9 @@ importers:
 
   apps/api:
     dependencies:
+      '@adaptive-training-plan/types':
+        specifier: workspace:*
+        version: link:../../packages/types
       '@ai-sdk/openai':
         specifier: ^2.0.58
         version: 2.0.58(zod@4.1.12)
@@ -201,6 +204,10 @@ importers:
         version: 2.32.0(@typescript-eslint/parser@8.46.2(eslint@9.38.0(jiti@2.6.1))(typescript@5.9.3))(eslint@9.38.0(jiti@2.6.1))
 
   packages/types:
+    dependencies:
+      zod:
+        specifier: ^4.1.12
+        version: 4.1.12
     devDependencies:
       '@adaptive-training-plan/typescript-config':
         specifier: workspace:*

@@ -4,6 +4,7 @@ import type {
   User,
   TrainingPlan,
   TrainingPlanWithContent,
+  ExperienceLevel,
 } from "@adaptive-training-plan/types";
 
 import { getToken, removeToken } from "./auth";
@@ -126,5 +127,21 @@ export const recommendationsApi = {
     );
 
     return response;
+  },
+};
+
+export const userApi = {
+  getProfile: async (): Promise<{ user: User }> => {
+    return api.get("api/users/profile").json<{ user: User }>();
+  },
+
+  updateExperienceLevel: async (
+    experienceLevel: ExperienceLevel
+  ): Promise<{ user: User }> => {
+    return api
+      .patch("api/users/profile/experience-level", {
+        json: { experienceLevel },
+      })
+      .json<{ user: User }>();
   },
 };

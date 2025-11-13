@@ -1,10 +1,12 @@
 import mongoose, { type Document, Schema } from 'mongoose';
+import type { ExperienceLevel } from '@adaptive-training-plan/types';
 
 export interface IUser extends Document {
   stravaId: number;
   firstName: string;
   lastName: string;
   profilePhoto: string;
+  experienceLevel?: ExperienceLevel;
   stravaAccessToken?: string;
   stravaRefreshToken?: string;
   stravaTokenExpiresAt?: Date;
@@ -31,6 +33,11 @@ const userSchema = new Schema<IUser>(
     profilePhoto: {
       type: String,
       required: true,
+    },
+    experienceLevel: {
+      type: String,
+      enum: ['beginner', 'intermediate', 'advanced'],
+      required: false,
     },
     stravaAccessToken: {
       type: String,

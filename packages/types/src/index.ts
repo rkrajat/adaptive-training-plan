@@ -6,3 +6,6 @@ export type {
   TrainingPlanVersion,
   TrainingPlanWithVersions,
 } from './training-plan';
+export type { ExperienceLevel } from './user.types';
+export { experienceLevelSchema, updateExperienceLevelSchema } from './user.schemas';
+export type { UpdateExperienceLevelRequest } from './user.schemas';

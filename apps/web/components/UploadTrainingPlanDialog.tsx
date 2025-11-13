@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { CloudUpload, Loader2, XCircle } from "lucide-react";
+import type { ExperienceLevel } from "@adaptive-training-plan/types";
 
 import { trainingPlansApi } from "@/lib/api";
 import {
@@ -17,6 +18,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { ExperienceLevelSelector } from "@/components/ExperienceLevelSelector";
+import { useUserProfile, useUpdateExperienceLevel } from "@/hooks/use-user-profile";
 
 interface UploadTrainingPlanDialogProps {
   open: boolean;
@@ -28,6 +31,9 @@ export const UploadTrainingPlanDialog = ({
   onOpenChange,
 }: UploadTrainingPlanDialogProps) => {
   const queryClient = useQueryClient();
+  const { data: user } = useUserProfile();
+  const updateExperienceLevel = useUpdateExperienceLevel();
+
   const [file, setFile] = useState<File | null>(null);
   const [name, setName] = useState("");
   const [goal, setGoal] = useState("");
@@ -35,11 +41,26 @@ export const UploadTrainingPlanDialog = ({
   const [raceDate, setRaceDate] = useState("");
   const [raceDistance, setRaceDistance] = useState("");
   const [targetTime, setTargetTime] = useState("");
+  const [experienceLevel, setExperienceLevel] = useState<ExperienceLevel | undefined>(
+    undefined
+  );
+
+  // Sync experience level with user profile when dialog opens
+  useEffect(() => {
+    if (open && user?.experienceLevel) {
+      setExperienceLevel(user.experienceLevel);
+    }
+  }, [open, user?.experienceLevel]);
 
   const uploadMutation = useMutation({
     mutationFn: async () => {
       if (!file || !name) {
         throw new Error("Please provide a file and plan name");
+      }
+
+      // Update experience level if it changed
+      if (experienceLevel && experienceLevel !== user?.experienceLevel) {
+        await updateExperienceLevel.mutateAsync(experienceLevel);
       }
 
       return trainingPlansApi.upload(file, {
@@ -227,6 +248,27 @@ export const UploadTrainingPlanDialog = ({
               />
             </div>
 
+            {/* Experience Level */}
+            <div className="space-y-1.5 sm:space-y-2 pt-2 border-t">
+              <Label className="text-xs sm:text-sm">
+                Running Experience Level
+                {!user?.experienceLevel && (
+                  <span className="ml-1 text-orange-600">*</span>
+                )}
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                {user?.experienceLevel
+                  ? "Current level selected. You can update it here if needed."
+                  : "Please select your experience level to receive personalized recommendations."}
+              </p>
+              <ExperienceLevelSelector
+                value={experienceLevel}
+                onChange={setExperienceLevel}
+                disabled={uploadMutation.isPending}
+                required={!user?.experienceLevel}
+              />
+            </div>
+
             {/* Error Display */}
             {uploadMutation.isError && (
               <Alert variant="destructive" className="text-xs sm:text-sm">
@@ -253,7 +295,12 @@ export const UploadTrainingPlanDialog = ({
             <Button
               type="submit"
               className="bg-orange-500 hover:bg-orange-600 w-full sm:w-auto order-1 sm:order-2"
-              disabled={uploadMutation.isPending || !file || !name}
+              disabled={
+                uploadMutation.isPending ||
+                !file ||
+                !name ||
+                (!user?.experienceLevel && !experienceLevel)
+              }
               size="sm"
             >
               {uploadMutation.isPending ? (

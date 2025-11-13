@@ -10,6 +10,7 @@
     "lint": "eslint src"
   },
   "dependencies": {
+    "@adaptive-training-plan/types": "workspace:*",
     "@ai-sdk/openai": "^2.0.58",
     "ai": "^5.0.82",
     "cors": "^2.8.5",
