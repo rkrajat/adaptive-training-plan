@@ -1,10 +1,17 @@
 "use client";
 
 import type { User } from "@adaptive-training-plan/types";
-import { Zap, LogOut } from "lucide-react";
+import { Zap, LogOut, User as UserIcon, ChevronDown } from "lucide-react";
+import Link from "next/link";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { logout } from "../lib/auth";
 
 interface NavigationProps {
@@ -23,11 +30,11 @@ export const Navigation = ({ user }: NavigationProps) => {
           </span>
         </div>
 
-        {/* User Profile & Logout */}
-        <div className="flex items-center gap-2 sm:gap-4">
-          {user && (
-            <div className="hidden sm:flex items-center gap-3">
-              <Avatar>
+        {/* User Menu Dropdown */}
+        {user && (
+          <DropdownMenu>
+            <DropdownMenuTrigger className="flex items-center gap-2 rounded-md hover:bg-gray-50 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 px-2 py-1">
+              <Avatar className="h-8 w-8">
                 <AvatarImage
                   src={user.profilePhoto}
                   alt={`${user.firstName} ${user.lastName}`}
@@ -37,37 +44,27 @@ export const Navigation = ({ user }: NavigationProps) => {
                   {user.lastName?.[0]}
                 </AvatarFallback>
               </Avatar>
-              <span className="text-sm font-medium">
+              <span className="hidden sm:inline text-sm font-medium">
                 {user.firstName} {user.lastName}
               </span>
-            </div>
-          )}
+              <ChevronDown className="h-4 w-4 text-gray-500" />
+            </DropdownMenuTrigger>
 
-          {user && (
-            <div className="sm:hidden">
-              <Avatar>
-                <AvatarImage
-                  src={user.profilePhoto}
-                  alt={`${user.firstName} ${user.lastName}`}
-                />
-                <AvatarFallback>
-                  {user.firstName?.[0]}
-                  {user.lastName?.[0]}
-                </AvatarFallback>
-              </Avatar>
-            </div>
-          )}
-
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={logout}
-            className="text-xs sm:text-sm"
-          >
-            <LogOut className="mr-1 h-3 w-3 sm:h-4 sm:w-4" />
-            <span className="hidden sm:inline">Logout</span>
-          </Button>
-        </div>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem asChild>
+                <Link href="/profile" className="cursor-pointer">
+                  <UserIcon />
+                  Profile
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={logout} className="cursor-pointer text-red-600">
+                <LogOut />
+                Logout
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </div>
     </nav>
   );

@@ -1,7 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import type { ExperienceLevel } from '@adaptive-training-plan/types';
+import { ArrowLeft } from 'lucide-react';
 import { ExperienceLevelSelector } from '@/components/ExperienceLevelSelector';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -48,6 +50,13 @@ export default function ProfilePage() {
   if (isLoadingProfile) {
     return (
       <div className="container mx-auto max-w-4xl p-6">
+        <Link
+          href="/dashboard"
+          className="mb-4 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to Dashboard
+        </Link>
         <h1 className="mb-6 text-3xl font-bold">Profile Settings</h1>
         <Card className="p-6">
           <div className="animate-pulse">
@@ -61,6 +70,13 @@ export default function ProfilePage() {
 
   return (
     <div className="container mx-auto max-w-4xl p-6">
+      <Link
+        href="/dashboard"
+        className="mb-4 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        Back to Dashboard
+      </Link>
       <h1 className="mb-6 text-3xl font-bold">Profile Settings</h1>
 
       {showSuccess && (
