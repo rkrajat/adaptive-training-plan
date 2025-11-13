@@ -33,12 +33,16 @@ WORKDIR /app
 # Copy package files
 COPY --from=builder /app/package.json /app/pnpm-lock.yaml /app/pnpm-workspace.yaml ./
 COPY --from=builder /app/apps/api/package.json ./apps/api/
+COPY --from=builder /app/packages/types/package.json ./packages/types/
 
 # Install production dependencies only
 RUN pnpm install --prod --frozen-lockfile --filter=api
 
 # Copy built application
 COPY --from=builder /app/apps/api/dist ./apps/api/dist
+
+# Copy built types package (needed as dependency)
+COPY --from=builder /app/packages/types/dist ./packages/types/dist
 
 # Set environment
 ENV NODE_ENV=production
