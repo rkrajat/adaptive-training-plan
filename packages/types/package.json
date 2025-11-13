@@ -13,11 +13,11 @@
     "build": "tsc",
     "dev": "tsc --watch"
   },
+  "dependencies": {
+    "zod": "^4.1.12"
+  },
   "devDependencies": {
     "@adaptive-training-plan/typescript-config": "workspace:*",
     "typescript": "^5.8.0"
-  },
-  "dependencies": {
-    "zod": "^4.1.12"
   }
 }
