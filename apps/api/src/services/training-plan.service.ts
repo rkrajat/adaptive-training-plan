@@ -317,6 +317,77 @@ export class TrainingPlanService {
       updatedAt: version.updatedAt.toISOString(),
     };
   }
+
+  /**
+   * Update training plan start date
+   */
+  async updateStartDate(
+    planId: string,
+    userId: string,
+    startDate: string
+  ): Promise<TrainingPlanWithContentResponse> {
+    try {
+      log.info("Updating training plan start date", { planId, userId });
+
+      const trainingPlan = await TrainingPlan.findById(planId);
+
+      if (!trainingPlan) {
+        throw new NotFoundError("Training plan not found");
+      }
+
+      // Verify ownership
+      if (String(trainingPlan.userId) !== userId) {
+        throw new ForbiddenError(
+          "You do not have permission to update this training plan"
+        );
+      }
+
+      // Update start date
+      trainingPlan.startDate = new Date(startDate);
+      await trainingPlan.save();
+
+      return this.formatTrainingPlanWithContent(trainingPlan);
+    } catch (error) {
+      log.error("Failed to update training plan start date", error, {
+        planId,
+        userId,
+      });
+      throw new InternalServerError(
+        "Failed to update training plan start date",
+        error
+      );
+    }
+  }
+
+  /**
+   * Delete training plan
+   */
+  async deleteTrainingPlan(planId: string, userId: string): Promise<void> {
+    try {
+      log.info("Deleting training plan", { planId, userId });
+
+      const trainingPlan = await TrainingPlan.findById(planId);
+
+      if (!trainingPlan) {
+        throw new NotFoundError("Training plan not found");
+      }
+
+      // Verify ownership
+      if (String(trainingPlan.userId) !== userId) {
+        throw new ForbiddenError(
+          "You do not have permission to delete this training plan"
+        );
+      }
+
+      // Delete the training plan
+      await TrainingPlan.deleteOne({ _id: planId });
+
+      log.info("Training plan deleted successfully", { planId });
+    } catch (error) {
+      log.error("Failed to delete training plan", error, { planId, userId });
+      throw new InternalServerError("Failed to delete training plan", error);
+    }
+  }
 }
 
 // Export singleton instance

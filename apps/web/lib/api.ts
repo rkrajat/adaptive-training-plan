@@ -104,6 +104,19 @@ export const trainingPlansApi = {
   getById: async (id: string): Promise<TrainingPlanWithContent> => {
     return api.get(`api/training-plans/${id}`).json<TrainingPlanWithContent>();
   },
+
+  updateStartDate: async (
+    id: string,
+    startDate: string
+  ): Promise<TrainingPlanWithContent> => {
+    return api
+      .patch(`api/training-plans/${id}`, { json: { startDate } })
+      .json<TrainingPlanWithContent>();
+  },
+
+  delete: async (id: string): Promise<void> => {
+    await api.delete(`api/training-plans/${id}`);
+  },
 };
 
 export const recommendationsApi = {

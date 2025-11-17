@@ -46,3 +46,17 @@ export const listTrainingPlansQuerySchema = z.object({
 export type ListTrainingPlansQuery = z.infer<
   typeof listTrainingPlansQuerySchema
 >;
+
+/**
+ * Update start date validation schema
+ */
+export const updateStartDateSchema = z.object({
+  startDate: z
+    .string()
+    .min(1, 'Start date is required')
+    .refine((date) => !isNaN(Date.parse(date)), {
+      message: 'Invalid date format',
+    }),
+});
+
+export type UpdateStartDateRequest = z.infer<typeof updateStartDateSchema>;
