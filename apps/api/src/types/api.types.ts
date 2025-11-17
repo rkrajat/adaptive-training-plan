@@ -152,5 +152,5 @@ export interface TrainingPlanWithVersionsResponse
  * List training plans response
  */
 export interface ListTrainingPlansResponse {
-  plans: TrainingPlanResponse[];
+  plans: (TrainingPlanResponse | TrainingPlanWithContentResponse)[];
 }

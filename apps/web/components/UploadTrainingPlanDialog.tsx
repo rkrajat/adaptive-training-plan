@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { CloudUpload, Loader2, XCircle } from "lucide-react";
 import type { ExperienceLevel } from "@adaptive-training-plan/types";
@@ -36,26 +36,22 @@ export const UploadTrainingPlanDialog = ({
 
   const [file, setFile] = useState<File | null>(null);
   const [name, setName] = useState("");
+  const [startDate, setStartDate] = useState(
+    new Date().toISOString().split("T")[0]
+  );
   const [goal, setGoal] = useState("");
   const [raceName, setRaceName] = useState("");
   const [raceDate, setRaceDate] = useState("");
   const [raceDistance, setRaceDistance] = useState("");
   const [targetTime, setTargetTime] = useState("");
   const [experienceLevel, setExperienceLevel] = useState<ExperienceLevel | undefined>(
-    undefined
+    user?.experienceLevel
   );
-
-  // Sync experience level with user profile when dialog opens
-  useEffect(() => {
-    if (open && user?.experienceLevel) {
-      setExperienceLevel(user.experienceLevel);
-    }
-  }, [open, user?.experienceLevel]);
 
   const uploadMutation = useMutation({
     mutationFn: async () => {
-      if (!file || !name) {
-        throw new Error("Please provide a file and plan name");
+      if (!file || !name || !startDate) {
+        throw new Error("Please provide a file, plan name, and start date");
       }
 
       // Update experience level if it changed
@@ -65,6 +61,7 @@ export const UploadTrainingPlanDialog = ({
 
       return trainingPlansApi.upload(file, {
         name,
+        startDate,
         goal: goal || undefined,
         raceName: raceName || undefined,
         raceDate: raceDate || undefined,
@@ -73,8 +70,9 @@ export const UploadTrainingPlanDialog = ({
       });
     },
     onSuccess: () => {
-      // Invalidate training plans query to refetch
+      // Invalidate training plans queries to refetch
       queryClient.invalidateQueries({ queryKey: ["trainingPlans"] });
+      queryClient.invalidateQueries({ queryKey: ["trainingPlans", "active"] });
       // Reset form and close dialog
       resetForm();
       onOpenChange(false);
@@ -84,6 +82,7 @@ export const UploadTrainingPlanDialog = ({
   const resetForm = () => {
     setFile(null);
     setName("");
+    setStartDate(new Date().toISOString().split("T")[0]);
     setGoal("");
     setRaceName("");
     setRaceDate("");
@@ -176,6 +175,24 @@ export const UploadTrainingPlanDialog = ({
                 required
                 className="text-xs sm:text-sm"
               />
+            </div>
+
+            {/* Start Date */}
+            <div className="space-y-1.5 sm:space-y-2">
+              <Label htmlFor="startDate" className="text-xs sm:text-sm">
+                Training Plan Start Date *
+              </Label>
+              <Input
+                id="startDate"
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                required
+                className="text-xs sm:text-sm"
+              />
+              <p className="text-xs text-muted-foreground">
+                First day of your training plan
+              </p>
             </div>
 
             {/* Goal */}
@@ -299,6 +316,7 @@ export const UploadTrainingPlanDialog = ({
                 uploadMutation.isPending ||
                 !file ||
                 !name ||
+                !startDate ||
                 (!user?.experienceLevel && !experienceLevel)
               }
               size="sm"

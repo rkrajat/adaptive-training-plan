@@ -4,6 +4,7 @@ import type {
   Activity,
   User,
   TrainingPlan,
+  TrainingPlanWithContent,
 } from "@adaptive-training-plan/types";
 
 import { isAuthenticated } from "@/lib/auth";
@@ -13,7 +14,7 @@ interface UseDashboardDataReturn {
   user: User | undefined;
   activities: Activity[];
   trainingPlans: TrainingPlan[];
-  activePlan: TrainingPlan | undefined;
+  activePlan: TrainingPlanWithContent | undefined;
   isLoading: boolean;
   error: Error | null;
 }
@@ -56,12 +57,27 @@ export const useDashboardData = (): UseDashboardDataReturn => {
     enabled: isAuthenticated(),
   });
 
+  // Fetch active training plan with content
+  const {
+    data: activePlanData,
+    isLoading: isLoadingActivePlan,
+    error: activePlanError,
+  } = useQuery({
+    queryKey: ["trainingPlans", "active"],
+    queryFn: trainingPlansApi.listActive,
+    enabled: isAuthenticated(),
+  });
+
   const activities = activitiesData?.activities || [];
   const trainingPlans = trainingPlansData?.plans || [];
-  const activePlan = trainingPlans.find((plan) => plan.isActive);
+  const activePlan = activePlanData?.plans[0];
 
-  const isLoading = isLoadingUser || isLoadingActivities || isLoadingPlans;
-  const error = (userError || activitiesError || plansError) as Error | null;
+  const isLoading =
+    isLoadingUser || isLoadingActivities || isLoadingPlans || isLoadingActivePlan;
+  const error = (userError ||
+    activitiesError ||
+    plansError ||
+    activePlanError) as Error | null;
 
   return {
     user,

@@ -1,12 +1,14 @@
 import { CloudUpload } from "lucide-react";
 
-import type { TrainingPlan } from "@adaptive-training-plan/types";
+import type { TrainingPlanWithContent } from "@adaptive-training-plan/types";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
+import { TrainingPlanTable } from "./training-plan-table";
+
 interface TrainingPlanSectionProps {
-  activePlan?: TrainingPlan;
+  activePlan?: TrainingPlanWithContent;
   onUploadClick: () => void;
 }
 
@@ -21,29 +23,41 @@ export const TrainingPlanSection = ({
   return (
     <Card className="p-4 sm:p-8">
       {activePlan ? (
-        <div className="text-center">
-          <div className="mx-auto w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-green-100 flex items-center justify-center mb-3 sm:mb-4">
-            <CloudUpload className="h-5 w-5 sm:h-6 sm:w-6 text-green-600" />
+        <div>
+          <div className="mb-6 flex items-center justify-between">
+            <div>
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-1">
+                {activePlan.metadata.name}
+              </h3>
+              <p className="text-xs sm:text-sm text-gray-600">
+                Week {activePlan.currentWeek} of your training
+              </p>
+              {activePlan.metadata.goal && (
+                <p className="text-xs sm:text-sm text-gray-600 mt-1">
+                  Goal: {activePlan.metadata.goal}
+                </p>
+              )}
+            </div>
+            <Button
+              variant="outline"
+              onClick={onUploadClick}
+              size="sm"
+              className="hidden sm:flex"
+            >
+              <CloudUpload className="mr-2 h-4 w-4" />
+              Upload New Plan
+            </Button>
           </div>
-          <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">
-            Active Training Plan
-          </h3>
-          <p className="text-xs sm:text-sm text-gray-900 font-medium mb-1">
-            {activePlan.metadata.name}
-          </p>
-          <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">
-            Week {activePlan.currentWeek} of your training
-          </p>
-          {activePlan.metadata.goal && (
-            <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">
-              Goal: {activePlan.metadata.goal}
-            </p>
-          )}
+          <TrainingPlanTable
+            csvContent={activePlan.csvContent}
+            currentWeek={activePlan.currentWeek}
+            startDate={activePlan.startDate}
+          />
           <Button
             variant="outline"
             onClick={onUploadClick}
             size="sm"
-            className="w-full sm:w-auto"
+            className="w-full sm:hidden mt-4"
           >
             <CloudUpload className="mr-2 h-4 w-4" />
             Upload New Plan

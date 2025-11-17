@@ -195,7 +195,11 @@ export class TrainingPlanService {
       });
 
       return {
-        plans: trainingPlans.map((plan) => this.formatTrainingPlan(plan)),
+        plans: trainingPlans.map((plan) =>
+          isActive
+            ? this.formatTrainingPlanWithContent(plan)
+            : this.formatTrainingPlan(plan)
+        ),
       };
     } catch (error) {
       log.error("Failed to fetch user training plans", error, { userId });
