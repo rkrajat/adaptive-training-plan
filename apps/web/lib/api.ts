@@ -145,3 +145,32 @@ export const userApi = {
       .json<{ user: User }>();
   },
 };
+
+export const feedbackApi = {
+  submitFeedback: async (data: {
+    recommendationId: string;
+    usefulnessRating: number;
+    wouldFollow: boolean;
+    comment?: string;
+  }): Promise<{
+    id: string;
+    userId: string;
+    recommendationId: string;
+    usefulnessRating: number;
+    wouldFollow: boolean;
+    comment: string | null;
+    createdAt: Date;
+    updatedAt: Date;
+    message?: string;
+  }> => {
+    return api.post("api/feedback", { json: data }).json();
+  },
+
+  checkFeedbackStatus: async (
+    recommendationId: string
+  ): Promise<{ hasSubmitted: boolean }> => {
+    return api
+      .get(`api/feedback/status/${recommendationId}`)
+      .json<{ hasSubmitted: boolean }>();
+  },
+};

@@ -1,5 +1,5 @@
-import { AppError } from './error';
 import { parseCsvToWeeksData } from './csv-parser';
+import { AppError } from './error';
 
 /**
  * Validate CSV structure and content according to business rules

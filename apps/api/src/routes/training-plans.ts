@@ -1,13 +1,10 @@
 import { Router, type Request, type Response } from "express";
 import multer from "multer";
+
 import { authenticateJWT } from "../middleware/auth";
 import { validateParams } from "../middleware/validate";
 import { trainingPlanService } from "../services/training-plan.service";
-import {
-  trainingPlanUploadSchema,
-  trainingPlanIdParamSchema,
-  listTrainingPlansQuerySchema,
-} from "../validators/training-plan.validator";
+import { AppError } from "../utils/error";
 import { log } from "../utils/logger";
 import {
   sendSuccess,
@@ -15,7 +12,11 @@ import {
   sendInternalError,
   sendBadRequest,
 } from "../utils/response";
-import { AppError } from "../utils/error";
+import {
+  trainingPlanUploadSchema,
+  trainingPlanIdParamSchema,
+  listTrainingPlansQuerySchema,
+} from "../validators/training-plan.validator";
 
 const router = Router();
 

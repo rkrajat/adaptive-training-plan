@@ -1,6 +1,8 @@
 import { PDFParse } from "pdf-parse";
-import { log } from "../utils/logger";
+
 import { AppError, BadRequestError, InternalServerError } from "../utils/error";
+import { log } from "../utils/logger";
+
 import { aiService } from "./ai.service";
 
 /**

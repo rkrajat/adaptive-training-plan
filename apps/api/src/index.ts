@@ -4,14 +4,15 @@ import mongoose from "mongoose";
 import "dotenv/config";
 
 import { config } from "./config";
-import { log } from "./utils/logger";
-import { apiRateLimiter, authRateLimiter } from "./middleware/rate-limit";
 import { errorHandler, notFoundHandler } from "./middleware/error-handler";
+import { apiRateLimiter, authRateLimiter } from "./middleware/rate-limit";
 import { activitiesRouter } from "./routes/activities";
 import { authRouter } from "./routes/auth";
+import { feedbackRouter } from "./routes/feedback";
 import { recommendationsRouter } from "./routes/recommendations";
 import { trainingPlansRouter } from "./routes/training-plans";
 import { userRouter } from "./routes/user";
+import { log } from "./utils/logger";
 
 const app = express();
 
@@ -31,6 +32,7 @@ app.use(apiRateLimiter);
 // Apply stricter rate limiting to auth routes
 app.use("/api/auth", authRateLimiter, authRouter);
 app.use("/api/activities", activitiesRouter);
+app.use("/api/feedback", feedbackRouter);
 app.use("/api/recommendations", recommendationsRouter);
 app.use("/api/training-plans", trainingPlansRouter);
 app.use("/api/users", userRouter);

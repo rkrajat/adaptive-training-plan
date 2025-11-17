@@ -6,11 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
+import { FeedbackButton } from "../feedback";
+
 interface RecommendationsCardProps {
   completion: string;
   isGenerating: boolean;
   error: Error | null;
   onRegenerate: () => void;
+  recommendationId?: string;
 }
 
 /**
@@ -22,6 +25,7 @@ export const RecommendationsCard = ({
   isGenerating,
   error,
   onRegenerate,
+  recommendationId,
 }: RecommendationsCardProps) => {
   return (
     <Card className="mb-6 sm:mb-8">
@@ -30,18 +34,26 @@ export const RecommendationsCard = ({
           <CardTitle className="text-lg sm:text-xl">
             Weekly Training Recommendation
           </CardTitle>
-          <Button
-            onClick={onRegenerate}
-            disabled={isGenerating}
-            className="bg-orange-500 hover:bg-orange-600 w-full sm:w-auto"
-            size="sm"
-          >
-            {isGenerating
-              ? "Generating..."
-              : completion
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-0">
+            {/* Feedback Button */}
+            {recommendationId && !isGenerating && (
+              <div className="mr-3">
+                <FeedbackButton recommendationId={recommendationId} />
+              </div>
+            )}
+            <Button
+              onClick={onRegenerate}
+              disabled={isGenerating}
+              className="bg-orange-500 hover:bg-orange-600 w-full sm:w-auto"
+              size="sm"
+            >
+              {isGenerating
+                ? "Generating..."
+                : completion
                 ? "Regenerate"
                 : "Get Recommendations"}
-          </Button>
+            </Button>
+          </div>
         </div>
       </CardHeader>
       <CardContent>
@@ -75,38 +87,40 @@ export const RecommendationsCard = ({
 
         {/* Streaming/Completed Content */}
         {completion && (
-          <div className="prose prose-sm sm:prose-base max-w-none prose-headings:font-semibold prose-h1:text-lg sm:prose-h1:text-xl prose-h2:text-base sm:prose-h2:text-lg prose-h3:text-sm sm:prose-h3:text-base prose-p:text-xs sm:prose-p:text-sm prose-p:leading-relaxed prose-ul:my-2 prose-ol:my-2 prose-li:my-1 prose-strong:text-gray-900 prose-strong:font-semibold overflow-hidden break-words">
-            <div className="overflow-x-auto break-words">
-              <ReactMarkdown
-                remarkPlugins={[remarkGfm]}
-                components={{
-                  p: ({ children }) => (
-                    <p className="break-words">{children}</p>
-                  ),
-                  li: ({ children }) => (
-                    <li className="break-words">{children}</li>
-                  ),
-                  code: ({ children, className }) => {
-                    const isInline = !className;
-                    return isInline ? (
-                      <code className="break-words bg-gray-100 px-1 py-0.5 rounded text-xs">
+          <div className="space-y-4">
+            <div className="prose prose-sm sm:prose-base max-w-none prose-headings:font-semibold prose-h1:text-lg sm:prose-h1:text-xl prose-h2:text-base sm:prose-h2:text-lg prose-h3:text-sm sm:prose-h3:text-base prose-p:text-xs sm:prose-p:text-sm prose-p:leading-relaxed prose-ul:my-2 prose-ol:my-2 prose-li:my-1 prose-strong:text-gray-900 prose-strong:font-semibold overflow-hidden break-words">
+              <div className="overflow-x-auto break-words">
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
+                  components={{
+                    p: ({ children }) => (
+                      <p className="break-words">{children}</p>
+                    ),
+                    li: ({ children }) => (
+                      <li className="break-words">{children}</li>
+                    ),
+                    code: ({ children, className }) => {
+                      const isInline = !className;
+                      return isInline ? (
+                        <code className="break-words bg-gray-100 px-1 py-0.5 rounded text-xs">
+                          {children}
+                        </code>
+                      ) : (
+                        <code className="block overflow-x-auto bg-gray-100 p-2 rounded text-xs whitespace-pre">
+                          {children}
+                        </code>
+                      );
+                    },
+                    pre: ({ children }) => (
+                      <pre className="overflow-x-auto bg-gray-100 p-2 rounded text-xs whitespace-pre-wrap break-words">
                         {children}
-                      </code>
-                    ) : (
-                      <code className="block overflow-x-auto bg-gray-100 p-2 rounded text-xs whitespace-pre">
-                        {children}
-                      </code>
-                    );
-                  },
-                  pre: ({ children }) => (
-                    <pre className="overflow-x-auto bg-gray-100 p-2 rounded text-xs whitespace-pre-wrap break-words">
-                      {children}
-                    </pre>
-                  ),
-                }}
-              >
-                {completion}
-              </ReactMarkdown>
+                      </pre>
+                    ),
+                  }}
+                >
+                  {completion}
+                </ReactMarkdown>
+              </div>
             </div>
           </div>
         )}

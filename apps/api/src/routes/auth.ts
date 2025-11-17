@@ -1,8 +1,9 @@
 import { Router, type Request, type Response } from "express";
+
+import { config } from "../config";
 import { authenticateJWT } from "../middleware/auth";
 import { authService } from "../services/auth.service";
 import { stravaService } from "../services/strava.service";
-import { config } from "../config";
 import { log } from "../utils/logger";
 import { sendSuccess, sendUnauthorized, sendInternalError } from "../utils/response";
 

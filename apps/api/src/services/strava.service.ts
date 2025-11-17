@@ -1,14 +1,15 @@
 import strava from "strava-v3";
+
 import { config } from "../config";
-import { log } from "../utils/logger";
-import { StravaApiError, UnauthorizedError } from "../utils/error";
-import { getMockActivities } from "../utils/mock";
 import type {
   StravaActivity,
   StravaRefreshTokenResponse,
   FormattedActivity,
   StravaTokenResponse,
 } from "../types/strava.types";
+import { StravaApiError, UnauthorizedError } from "../utils/error";
+import { log } from "../utils/logger";
+import { getMockActivities } from "../utils/mock";
 
 /**
  * Strava Service
