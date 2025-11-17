@@ -12,6 +12,6 @@ export const useMockData = (): boolean => {
  * Get mock Strava activities
  * Returns activities in the format expected by the application
  */
-export const getMockActivities = (): any[] => {
+export const getMockActivities = (): unknown[] => {
   return mockData.activities;
 };

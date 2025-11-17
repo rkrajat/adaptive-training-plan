@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 /**
  * Submit feedback request body validation schema
@@ -6,18 +6,16 @@ import { z } from 'zod';
 export const submitFeedbackSchema = z.object({
   recommendationId: z
     .string()
-    .regex(/^[0-9a-fA-F]{24}$/, 'Invalid recommendation ID format'),
+    .regex(/^[0-9a-fA-F]{24}$/, "Invalid recommendation ID format"),
   usefulnessRating: z
     .number()
-    .int('Rating must be an integer')
-    .min(1, 'Rating must be at least 1')
-    .max(5, 'Rating must be at most 5'),
-  wouldFollow: z.boolean({
-    invalid_type_error: 'Would follow must be a boolean',
-  }),
+    .int("Rating must be an integer")
+    .min(1, "Rating must be at least 1")
+    .max(5, "Rating must be at most 5"),
+  wouldFollow: z.boolean("Would follow must be a boolean"),
   comment: z
     .string()
-    .max(1000, 'Comment must be at most 1000 characters')
+    .max(1000, "Comment must be at most 1000 characters")
     .trim()
     .optional(),
 });
