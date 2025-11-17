@@ -1,10 +1,11 @@
 import { Router, type Request, type Response } from "express";
+
 import { authenticateJWT } from "../middleware/auth";
 import { stravaService } from "../services/strava.service";
-import { useMockData } from "../utils/mock";
-import { log } from "../utils/logger";
-import { sendSuccess, sendUnauthorized, sendInternalError } from "../utils/response";
 import { UnauthorizedError } from "../utils/error";
+import { log } from "../utils/logger";
+import { useMockData } from "../utils/mock";
+import { sendSuccess, sendUnauthorized, sendInternalError } from "../utils/response";
 
 const router = Router();
 

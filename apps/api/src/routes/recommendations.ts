@@ -1,25 +1,26 @@
 import { Router, type Request, type Response } from "express";
+
 import { authenticateJWT } from "../middleware/auth";
 import { validateBody } from "../middleware/validate";
-import {
-  recommendationsGenerateSchema,
-  recommendationsWithPlanSchema,
-} from "../validators/recommendations.validator";
-import { stravaService } from "../services/strava.service";
-import { authService } from "../services/auth.service";
+import { User } from "../models/User";
 import { aiService } from "../services/ai.service";
+import { authService } from "../services/auth.service";
+import { stravaService } from "../services/strava.service";
 import { trainingPlanService } from "../services/training-plan.service";
+import type { StravaActivity } from "../types/strava.types";
 import { formatActivitiesForAI } from "../utils/activity-formatter";
-import { useMockData } from "../utils/mock";
-import { log } from "../utils/logger";
-import { sendUnauthorized, sendInternalError } from "../utils/response";
 import {
   UnauthorizedError,
   InternalServerError,
   AppError,
 } from "../utils/error";
-import type { StravaActivity } from "../types/strava.types";
-import { User } from "../models/User";
+import { log } from "../utils/logger";
+import { useMockData } from "../utils/mock";
+import { sendUnauthorized, sendInternalError } from "../utils/response";
+import {
+  recommendationsGenerateSchema,
+  recommendationsWithPlanSchema,
+} from "../validators/recommendations.validator";
 
 const router = Router();
 

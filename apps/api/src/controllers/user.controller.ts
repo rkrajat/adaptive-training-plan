@@ -1,7 +1,8 @@
 import type { Request, Response } from 'express';
+
 import { User } from '../models/User';
-import { sendSuccess, sendNotFound, sendInternalError } from '../utils/response';
 import { log } from '../utils/logger';
+import { sendSuccess, sendNotFound, sendInternalError } from '../utils/response';
 
 /**
  * Get user profile including experience level

@@ -1,10 +1,11 @@
 import jwt from "jsonwebtoken";
+
 import { config } from "../config";
-import { log } from "../utils/logger";
-import { UnauthorizedError, InternalServerError } from "../utils/error";
 import { User } from "../models/User";
 import type { JwtPayload, UserProfileResponse } from "../types/api.types";
 import type { StravaTokenResponse } from "../types/strava.types";
+import { UnauthorizedError, InternalServerError } from "../utils/error";
+import { log } from "../utils/logger";
 
 /**
  * Auth Service

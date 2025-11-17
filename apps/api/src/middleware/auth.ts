@@ -1,9 +1,10 @@
 import type { NextFunction, Request, Response } from "express";
+
 import { authService } from "../services/auth.service";
+import type { JwtPayload } from "../types/api.types";
+import { UnauthorizedError } from "../utils/error";
 import { log } from "../utils/logger";
 import { sendUnauthorized, sendInternalError } from "../utils/response";
-import { UnauthorizedError } from "../utils/error";
-import type { JwtPayload } from "../types/api.types";
 
 // Extend Express Request type to include user
 declare global {

@@ -1,7 +1,8 @@
 import { Router } from 'express';
+
+import { getUserProfile, updateExperienceLevel } from '../controllers/user.controller';
 import { authenticateJWT } from '../middleware/auth';
 import { validateBody } from '../middleware/validate';
-import { getUserProfile, updateExperienceLevel } from '../controllers/user.controller';
 import { updateExperienceLevelSchema } from '../validators/user.validator';
 
 const router = Router();

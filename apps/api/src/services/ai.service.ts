@@ -1,14 +1,16 @@
-import { generateText, streamText } from "ai";
+import type { ExperienceLevel } from "@adaptive-training-plan/types";
 import { openai } from "@ai-sdk/openai";
+import { generateText, streamText } from "ai";
+
 import { config } from "../config";
-import { log } from "../utils/logger";
-import { InternalServerError } from "../utils/error";
 import type {
   FormattedActivity,
   StravaActivity,
   EnhancedFormattedActivity,
 } from "../types/strava.types";
-import type { ExperienceLevel } from "@adaptive-training-plan/types";
+import { InternalServerError } from "../utils/error";
+import { log } from "../utils/logger";
+
 
 /**
  * AI Service

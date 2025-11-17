@@ -2,6 +2,7 @@ import type { Request, Response } from 'express';
 import mongoose from 'mongoose';
 
 import { Feedback } from '../models/Feedback';
+import { log } from '../utils/logger';
 import {
   sendSuccess,
   sendCreated,
@@ -9,7 +10,6 @@ import {
   sendNotFound,
   sendInternalError,
 } from '../utils/response';
-import { log } from '../utils/logger';
 
 /**
  * Send a 409 Conflict error

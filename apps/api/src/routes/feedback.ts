@@ -1,13 +1,13 @@
 import { Router } from 'express';
 
-import { authenticateJWT } from '../middleware/auth';
-import { validateBody } from '../middleware/validate';
-import { feedbackRateLimiter } from '../middleware/rate-limit';
 import {
   submitFeedback,
   checkFeedbackStatus,
   getRecommendationFeedback,
 } from '../controllers/feedback.controller';
+import { authenticateJWT } from '../middleware/auth';
+import { feedbackRateLimiter } from '../middleware/rate-limit';
+import { validateBody } from '../middleware/validate';
 import { submitFeedbackSchema } from '../validators/feedback.validator';
 
 const router = Router();

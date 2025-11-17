@@ -1,4 +1,5 @@
 import mongoose, { type Document, Schema } from 'mongoose';
+
 import type { ITrainingPlanMetadata } from './TrainingPlan';
 
 export interface ITrainingPlanVersion extends Document {

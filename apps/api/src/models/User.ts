@@ -1,5 +1,5 @@
-import mongoose, { type Document, Schema } from 'mongoose';
 import type { ExperienceLevel } from '@adaptive-training-plan/types';
+import mongoose, { type Document, Schema } from 'mongoose';
 
 export interface IUser extends Document {
   stravaId: number;
