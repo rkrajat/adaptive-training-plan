@@ -3,6 +3,7 @@ import { useState } from "react";
 import type { TrainingPlan } from "@adaptive-training-plan/types";
 
 import { recommendationsApi } from "@/lib/api";
+import { extractRecommendationMetadata } from "@/lib/stream-utils";
 
 interface UseRecommendationsReturn {
   completion: string;
@@ -68,20 +69,13 @@ export const useRecommendations = (
         setCompletion(accumulated);
       }
 
-      // Extract recommendation ID from the end of the stream
-      // Format: \n\n---RECOMMENDATION_ID:${id}---
-      const idMatch = accumulated.match(
-        /\n\n---RECOMMENDATION_ID:([a-f0-9]{24})---$/,
-      );
-      if (idMatch) {
-        const recId = idMatch[1];
-        setRecommendationId(recId);
+      // Extract metadata (recommendation ID) from the streamed content
+      const { recommendationId: recId, cleanContent } =
+        extractRecommendationMetadata(accumulated);
 
-        // Remove the ID marker from the displayed completion
-        const cleanContent = accumulated.replace(
-          /\n\n---RECOMMENDATION_ID:[a-f0-9]{24}---$/,
-          "",
-        );
+      if (recId) {
+        setRecommendationId(recId);
+        // Update completion with clean content (metadata removed)
         setCompletion(cleanContent);
       }
     } catch (err) {

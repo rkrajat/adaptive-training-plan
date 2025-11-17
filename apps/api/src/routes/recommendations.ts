@@ -211,11 +211,8 @@ router.post(
       res.setHeader("Cache-Control", "no-cache");
       res.setHeader("Connection", "keep-alive");
 
-      // Accumulate streamed content for database storage
+      // Stream AI response in real-time while accumulating for database storage
       let accumulatedContent = "";
-      let recommendationId: string | null = null;
-
-      // Use fullStream to get all parts including text
       for await (const part of result.fullStream) {
         if (part.type === "text-delta") {
           accumulatedContent += part.text;
@@ -226,6 +223,7 @@ router.post(
       log.info("Streaming recommendations completed successfully");
 
       // After streaming completes, save recommendation to database
+      let recommendationId: string | null = null;
       try {
         const recommendation = await Recommendation.create({
           userId,
@@ -253,10 +251,11 @@ router.post(
         });
       }
 
-      // Send recommendation ID as a special marker at the end of the stream
-      // Format: \n\n---RECOMMENDATION_ID:${id}---
+      // Append metadata with recommendation ID at end of stream
+      // Format: __META__:recId=${id}
+      // Note: Frontend will parse and remove this before displaying
       if (recommendationId) {
-        res.write(`\n\n---RECOMMENDATION_ID:${recommendationId}---`);
+        res.write(`__META__:recId=${recommendationId}`);
       }
 
       res.end();
