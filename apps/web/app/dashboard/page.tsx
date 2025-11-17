@@ -29,6 +29,7 @@ export default function DashboardPage() {
   // Handle AI recommendations
   const {
     completion,
+    recommendationId,
     isGenerating,
     error: recommendationError,
     handleRegenerate,
@@ -85,7 +86,7 @@ export default function DashboardPage() {
         isGenerating={isGenerating}
         error={recommendationError}
         onRegenerate={handleRegenerate}
-        recommendationId={activePlan?.id}
+        recommendationId={recommendationId || undefined}
       />
 
       <RecentActivities activities={activities} />

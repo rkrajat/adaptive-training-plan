@@ -1,15 +1,17 @@
-import type { Request, Response } from 'express';
-import mongoose from 'mongoose';
+import type { Request, Response } from "express";
+import mongoose from "mongoose";
 
-import { Feedback } from '../models/Feedback';
-import { log } from '../utils/logger';
+import { Feedback } from "../models/Feedback";
+import { Recommendation } from "../models/Recommendation";
+import { log } from "../utils/logger";
 import {
   sendSuccess,
   sendCreated,
   sendBadRequest,
   sendNotFound,
   sendInternalError,
-} from '../utils/response';
+  sendForbidden,
+} from "../utils/response";
 
 /**
  * Send a 409 Conflict error
@@ -24,13 +26,13 @@ const sendConflict = (res: Response, error: string): void => {
  */
 export const submitFeedback = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
     const userId = req.user?.userId;
 
     if (!userId) {
-      sendBadRequest(res, 'User ID is required');
+      sendBadRequest(res, "User ID is required");
       return;
     }
 
@@ -39,7 +41,21 @@ export const submitFeedback = async (
 
     // Validate recommendationId is a valid ObjectId
     if (!mongoose.Types.ObjectId.isValid(recommendationId)) {
-      sendBadRequest(res, 'Invalid recommendation ID');
+      sendBadRequest(res, "Invalid recommendation ID");
+      return;
+    }
+
+    // Verify recommendation exists
+    const recommendation = await Recommendation.findById(recommendationId);
+
+    if (!recommendation) {
+      sendNotFound(res, "Recommendation not found");
+      return;
+    }
+
+    // Verify recommendation belongs to authenticated user
+    if (recommendation.userId.toString() !== userId) {
+      sendForbidden(res, "This recommendation does not belong to you");
       return;
     }
 
@@ -50,7 +66,7 @@ export const submitFeedback = async (
     });
 
     if (existingFeedback) {
-      sendConflict(res, 'Feedback already submitted for this recommendation');
+      sendConflict(res, "Feedback already submitted for this recommendation");
       return;
     }
 
@@ -65,7 +81,7 @@ export const submitFeedback = async (
 
     await feedback.save();
 
-    log.info('Feedback submitted successfully', {
+    log.info("Feedback submitted successfully", {
       feedbackId: feedback._id,
       userId,
       recommendationId,
@@ -84,24 +100,24 @@ export const submitFeedback = async (
         createdAt: feedback.createdAt,
         updatedAt: feedback.updatedAt,
       },
-      'Feedback submitted successfully'
+      "Feedback submitted successfully",
     );
   } catch (error) {
-    log.error('Error submitting feedback', error);
+    log.error("Error submitting feedback", error);
 
     // Handle duplicate key error (from unique index)
-    if (error instanceof Error && 'code' in error && error.code === 11000) {
-      sendConflict(res, 'Feedback already submitted for this recommendation');
+    if (error instanceof Error && "code" in error && error.code === 11000) {
+      sendConflict(res, "Feedback already submitted for this recommendation");
       return;
     }
 
     // Handle validation errors
     if (error instanceof mongoose.Error.ValidationError) {
-      sendBadRequest(res, 'Validation error', error.errors);
+      sendBadRequest(res, "Validation error", error.errors);
       return;
     }
 
-    sendInternalError(res, 'Failed to submit feedback');
+    sendInternalError(res, "Failed to submit feedback");
   }
 };
 
@@ -111,20 +127,20 @@ export const submitFeedback = async (
  */
 export const checkFeedbackStatus = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
     const userId = req.user?.userId;
     const { recommendationId } = req.params;
 
     if (!userId) {
-      sendBadRequest(res, 'User ID is required');
+      sendBadRequest(res, "User ID is required");
       return;
     }
 
     // Validate recommendationId is a valid ObjectId
     if (!mongoose.Types.ObjectId.isValid(recommendationId)) {
-      sendBadRequest(res, 'Invalid recommendation ID');
+      sendBadRequest(res, "Invalid recommendation ID");
       return;
     }
 
@@ -137,8 +153,8 @@ export const checkFeedbackStatus = async (
       hasSubmitted: !!feedback,
     });
   } catch (error) {
-    log.error('Error checking feedback status', error);
-    sendInternalError(res, 'Failed to check feedback status');
+    log.error("Error checking feedback status", error);
+    sendInternalError(res, "Failed to check feedback status");
   }
 };
 
@@ -148,14 +164,14 @@ export const checkFeedbackStatus = async (
  */
 export const getRecommendationFeedback = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
     const { recommendationId } = req.params;
 
     // Validate recommendationId is a valid ObjectId
     if (!mongoose.Types.ObjectId.isValid(recommendationId)) {
-      sendBadRequest(res, 'Invalid recommendation ID');
+      sendBadRequest(res, "Invalid recommendation ID");
       return;
     }
 
@@ -163,14 +179,14 @@ export const getRecommendationFeedback = async (
       recommendationId,
     })
       .sort({ createdAt: -1 })
-      .populate('userId', 'firstName lastName profilePhoto');
+      .populate("userId", "firstName lastName profilePhoto");
 
     if (!feedbacks || feedbacks.length === 0) {
-      sendNotFound(res, 'No feedback found for this recommendation');
+      sendNotFound(res, "No feedback found for this recommendation");
       return;
     }
 
-    log.info('Recommendation feedback retrieved', {
+    log.info("Recommendation feedback retrieved", {
       recommendationId,
       count: feedbacks.length,
     });
@@ -188,7 +204,7 @@ export const getRecommendationFeedback = async (
       })),
     });
   } catch (error) {
-    log.error('Error retrieving recommendation feedback', error);
-    sendInternalError(res, 'Failed to retrieve feedback');
+    log.error("Error retrieving recommendation feedback", error);
+    sendInternalError(res, "Failed to retrieve feedback");
   }
 };

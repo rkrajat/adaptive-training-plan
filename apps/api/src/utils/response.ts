@@ -4,7 +4,11 @@ import type { Response } from "express";
  * Send a successful JSON response
  * Maintains backward compatibility with existing response formats
  */
-export const sendSuccess = <T>(res: Response, data: T, statusCode = 200): void => {
+export const sendSuccess = <T>(
+  res: Response,
+  data: T,
+  statusCode = 200,
+): void => {
   res.status(statusCode).json(data);
 };
 
@@ -16,7 +20,7 @@ export const sendError = (
   res: Response,
   error: string,
   statusCode = 500,
-  details?: unknown
+  details?: unknown,
 ): void => {
   const response: { error: string; details?: unknown } = { error };
   if (details !== undefined) {
@@ -28,7 +32,11 @@ export const sendError = (
 /**
  * Send a 400 Bad Request error
  */
-export const sendBadRequest = (res: Response, error: string, details?: unknown): void => {
+export const sendBadRequest = (
+  res: Response,
+  error: string,
+  details?: unknown,
+): void => {
   sendError(res, error, 400, details);
 };
 
@@ -37,6 +45,13 @@ export const sendBadRequest = (res: Response, error: string, details?: unknown):
  */
 export const sendUnauthorized = (res: Response, error: string): void => {
   sendError(res, error, 401);
+};
+
+/**
+ * Send a 403 Forbidden error
+ */
+export const sendForbidden = (res: Response, error: string): void => {
+  sendError(res, error, 403);
 };
 
 /**
@@ -49,14 +64,22 @@ export const sendNotFound = (res: Response, error: string): void => {
 /**
  * Send a 500 Internal Server error
  */
-export const sendInternalError = (res: Response, error: string, details?: unknown): void => {
+export const sendInternalError = (
+  res: Response,
+  error: string,
+  details?: unknown,
+): void => {
   sendError(res, error, 500, details);
 };
 
 /**
  * Send a 201 Created response
  */
-export const sendCreated = <T>(res: Response, data: T, message?: string): void => {
+export const sendCreated = <T>(
+  res: Response,
+  data: T,
+  message?: string,
+): void => {
   const response = message ? { data, message } : data;
   res.status(201).json(response);
 };

@@ -6,6 +6,7 @@ import { recommendationsApi } from "@/lib/api";
 
 interface UseRecommendationsReturn {
   completion: string;
+  recommendationId: string | null;
   isGenerating: boolean;
   error: Error | null;
   generateRecommendations: (userFeedback?: string) => Promise<void>;
@@ -17,31 +18,33 @@ interface UseRecommendationsReturn {
  * Recommendations are generated when the user explicitly requests them
  */
 export const useRecommendations = (
-  activePlan: TrainingPlan | undefined
+  activePlan: TrainingPlan | undefined,
 ): UseRecommendationsReturn => {
   const [completion, setCompletion] = useState<string>("");
+  const [recommendationId, setRecommendationId] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
   const generateRecommendations = async (
-    userFeedback?: string
+    userFeedback?: string,
   ): Promise<void> => {
     setIsGenerating(true);
     setError(null);
     setCompletion("");
+    setRecommendationId(null);
 
     try {
       // Check if user has an active training plan
       if (!activePlan) {
         throw new Error(
-          "Please upload a training plan first to get recommendations"
+          "Please upload a training plan first to get recommendations",
         );
       }
 
       // Use the new endpoint with training plan
       const response: Response = await recommendationsApi.generateWithPlan(
         activePlan.id,
-        userFeedback
+        userFeedback,
       );
 
       const reader = response.body?.getReader();
@@ -64,6 +67,23 @@ export const useRecommendations = (
         accumulated += chunk;
         setCompletion(accumulated);
       }
+
+      // Extract recommendation ID from the end of the stream
+      // Format: \n\n---RECOMMENDATION_ID:${id}---
+      const idMatch = accumulated.match(
+        /\n\n---RECOMMENDATION_ID:([a-f0-9]{24})---$/,
+      );
+      if (idMatch) {
+        const recId = idMatch[1];
+        setRecommendationId(recId);
+
+        // Remove the ID marker from the displayed completion
+        const cleanContent = accumulated.replace(
+          /\n\n---RECOMMENDATION_ID:[a-f0-9]{24}---$/,
+          "",
+        );
+        setCompletion(cleanContent);
+      }
     } catch (err) {
       console.error("Error generating recommendations:", err);
       setError(err as Error);
@@ -79,6 +99,7 @@ export const useRecommendations = (
 
   return {
     completion,
+    recommendationId,
     isGenerating,
     error,
     generateRecommendations,

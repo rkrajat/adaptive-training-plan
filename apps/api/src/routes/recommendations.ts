@@ -1,7 +1,12 @@
 import { Router, type Request, type Response } from "express";
 
+import {
+  getRecommendationById,
+  getUserRecommendationHistory,
+} from "../controllers/recommendation.controller";
 import { authenticateJWT } from "../middleware/auth";
 import { validateBody } from "../middleware/validate";
+import { Recommendation } from "../models/Recommendation";
 import { User } from "../models/User";
 import { aiService } from "../services/ai.service";
 import { authService } from "../services/auth.service";
@@ -46,7 +51,7 @@ router.post(
       const refreshedTokens = await stravaService.checkAndRefreshToken(
         stravaAccessToken,
         stravaRefreshToken,
-        stravaTokenExpiresAt
+        stravaTokenExpiresAt,
       );
 
       if (refreshedTokens) {
@@ -58,7 +63,7 @@ router.post(
           req.user.userId,
           refreshedTokens.access_token,
           refreshedTokens.refresh_token,
-          refreshedTokens.expires_at
+          refreshedTokens.expires_at,
         );
       }
 
@@ -112,7 +117,7 @@ router.post(
         log.error("Error during streaming recommendations", error);
       }
     }
-  }
+  },
 );
 
 // POST /api/recommendations/generate-with-plan - Generate AI recommendations with training plan from database
@@ -139,7 +144,7 @@ router.post(
       // Fetch training plan from database and verify ownership
       const trainingPlan = await trainingPlanService.getTrainingPlan(
         planId,
-        userId
+        userId,
       );
 
       log.info("Training plan fetched for recommendations", {
@@ -154,7 +159,7 @@ router.post(
       const refreshedTokens = await stravaService.checkAndRefreshToken(
         stravaAccessToken,
         stravaRefreshToken,
-        stravaTokenExpiresAt
+        stravaTokenExpiresAt,
       );
 
       if (refreshedTokens) {
@@ -166,7 +171,7 @@ router.post(
           userId,
           refreshedTokens.access_token,
           refreshedTokens.refresh_token,
-          refreshedTokens.expires_at
+          refreshedTokens.expires_at,
         );
       }
 
@@ -198,22 +203,61 @@ router.post(
         trainingPlan.csvContent,
         trainingPlan.currentWeek,
         userFeedback,
-        experienceLevel
+        experienceLevel,
       );
 
-      // Set headers for streaming
+      // Set headers for streaming (must be set before any res.write())
       res.setHeader("Content-Type", "text/plain; charset=utf-8");
       res.setHeader("Cache-Control", "no-cache");
       res.setHeader("Connection", "keep-alive");
 
+      // Accumulate streamed content for database storage
+      let accumulatedContent = "";
+      let recommendationId: string | null = null;
+
       // Use fullStream to get all parts including text
       for await (const part of result.fullStream) {
         if (part.type === "text-delta") {
+          accumulatedContent += part.text;
           res.write(part.text);
         }
       }
 
       log.info("Streaming recommendations completed successfully");
+
+      // After streaming completes, save recommendation to database
+      try {
+        const recommendation = await Recommendation.create({
+          userId,
+          trainingPlanId: planId,
+          weekNumber: trainingPlan.currentWeek,
+          content: accumulatedContent,
+          athleteInputFeedback: userFeedback || null,
+          isRegenerated: false,
+        });
+
+        recommendationId = String(recommendation._id);
+
+        log.info("Recommendation saved to database", {
+          recommendationId: recommendation._id,
+          userId,
+          trainingPlanId: planId,
+          weekNumber: trainingPlan.currentWeek,
+        });
+      } catch (dbError) {
+        // Log error but don't break streaming - graceful degradation
+        log.error("Failed to save recommendation to database", {
+          error: dbError,
+          userId,
+          trainingPlanId: planId,
+        });
+      }
+
+      // Send recommendation ID as a special marker at the end of the stream
+      // Format: \n\n---RECOMMENDATION_ID:${id}---
+      if (recommendationId) {
+        res.write(`\n\n---RECOMMENDATION_ID:${recommendationId}---`);
+      }
 
       res.end();
     } catch (error) {
@@ -240,7 +284,13 @@ router.post(
       log.error("Unexpected error in recommendations with plan route", error);
       sendInternalError(res, "Internal server error");
     }
-  }
+  },
 );
+
+// GET /api/recommendations/user/history - Get user's recommendation history
+router.get("/user/history", authenticateJWT, getUserRecommendationHistory);
+
+// GET /api/recommendations/:id - Get single recommendation by ID
+router.get("/:id", authenticateJWT, getRecommendationById);
 
 export { router as recommendationsRouter };
