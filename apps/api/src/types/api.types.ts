@@ -97,6 +97,7 @@ export interface TrainingPlanMetadata {
  */
 export interface TrainingPlanUploadRequest {
   name: string;
+  startDate: string;
   goal?: string;
   raceName?: string;
   raceDate?: string;

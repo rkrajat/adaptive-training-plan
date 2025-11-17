@@ -93,7 +93,7 @@ export class TrainingPlanService {
         source: "user_upload" as const,
         isActive: true,
         currentWeek: 1,
-        startDate: new Date(),
+        startDate: new Date(metadata.startDate),
       };
 
       const [trainingPlan] = await TrainingPlan.create([trainingPlanData], {

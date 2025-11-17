@@ -5,6 +5,12 @@ import { z } from 'zod';
  */
 export const trainingPlanUploadSchema = z.object({
   name: z.string().min(1, 'Training plan name is required').max(200),
+  startDate: z
+    .string()
+    .min(1, 'Start date is required')
+    .refine((date) => !isNaN(Date.parse(date)), {
+      message: 'Invalid date format',
+    }),
   goal: z.string().max(500).optional(),
   raceName: z.string().max(200).optional(),
   raceDate: z
