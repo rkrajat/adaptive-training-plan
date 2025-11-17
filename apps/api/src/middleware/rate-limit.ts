@@ -49,3 +49,27 @@ export const authRateLimiter = rateLimit({
     });
   },
 });
+
+/**
+ * Rate limiter for feedback submission endpoints
+ * Prevents spam and abuse of feedback system
+ */
+export const feedbackRateLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000, // 1 minute
+  max: 10, // Limit each IP to 10 submissions per minute
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    error: "Too many feedback submissions, please try again later.",
+  },
+  handler: (req, res) => {
+    log.warn("Feedback rate limit exceeded", {
+      ip: req.ip,
+      path: req.path,
+      method: req.method,
+    });
+    res.status(429).json({
+      error: "Too many feedback submissions, please try again later.",
+    });
+  },
+});

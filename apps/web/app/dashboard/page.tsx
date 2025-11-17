@@ -85,6 +85,7 @@ export default function DashboardPage() {
         isGenerating={isGenerating}
         error={recommendationError}
         onRegenerate={handleRegenerate}
+        recommendationId={activePlan?.id}
       />
 
       <RecentActivities activities={activities} />
