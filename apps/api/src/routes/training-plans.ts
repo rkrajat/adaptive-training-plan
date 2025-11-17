@@ -16,6 +16,7 @@ import {
   trainingPlanUploadSchema,
   trainingPlanIdParamSchema,
   listTrainingPlansQuerySchema,
+  updateStartDateSchema,
 } from "../validators/training-plan.validator";
 
 const router = Router();
@@ -212,6 +213,94 @@ router.get(
       }
 
       sendInternalError(res, "Failed to fetch training plan with versions");
+    }
+  }
+);
+
+// PATCH /api/training-plans/:id - Update training plan start date
+router.patch(
+  "/:id",
+  authenticateJWT,
+  validateParams(trainingPlanIdParamSchema),
+  async (req: Request, res: Response) => {
+    try {
+      if (!req.user) {
+        sendBadRequest(res, "User not authenticated");
+        return;
+      }
+
+      const { id } = req.params;
+
+      // Validate request body
+      const validationResult = updateStartDateSchema.safeParse(req.body);
+
+      if (!validationResult.success) {
+        sendBadRequest(res, validationResult.error.issues[0].message);
+        return;
+      }
+
+      const { startDate } = validationResult.data;
+
+      await trainingPlanService.updateStartDate(
+        id,
+        req.user.userId,
+        startDate
+      );
+
+      log.info("Training plan start date updated successfully", {
+        userId: req.user.userId,
+        planId: id,
+      });
+
+      sendSuccess(res, { message: "Start date updated successfully" });
+    } catch (error) {
+      log.error("Error updating training plan start date", error, {
+        planId: req.params.id,
+      });
+
+      if (error instanceof AppError) {
+        res.status(error.statusCode).json({ error: error.message });
+        return;
+      }
+
+      sendInternalError(res, "Failed to update start date");
+    }
+  }
+);
+
+// DELETE /api/training-plans/:id - Delete training plan
+router.delete(
+  "/:id",
+  authenticateJWT,
+  validateParams(trainingPlanIdParamSchema),
+  async (req: Request, res: Response) => {
+    try {
+      if (!req.user) {
+        sendBadRequest(res, "User not authenticated");
+        return;
+      }
+
+      const { id } = req.params;
+
+      await trainingPlanService.deleteTrainingPlan(id, req.user.userId);
+
+      log.info("Training plan deleted successfully", {
+        userId: req.user.userId,
+        planId: id,
+      });
+
+      sendSuccess(res, { message: "Training plan deleted successfully" });
+    } catch (error) {
+      log.error("Error deleting training plan", error, {
+        planId: req.params.id,
+      });
+
+      if (error instanceof AppError) {
+        res.status(error.statusCode).json({ error: error.message });
+        return;
+      }
+
+      sendInternalError(res, "Failed to delete training plan");
     }
   }
 );

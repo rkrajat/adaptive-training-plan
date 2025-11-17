@@ -55,7 +55,8 @@ export class TrainingPlanService {
         log.info("Converting PDF to CSV", { filename: file.originalname });
 
         const conversionResult = await pdfToCsvService.convertPdfToCsv(
-          file.buffer
+          file.buffer,
+          metadata.startDate
         );
 
         if (!conversionResult.success || !conversionResult.csvContent) {
@@ -93,7 +94,7 @@ export class TrainingPlanService {
         source: "user_upload" as const,
         isActive: true,
         currentWeek: 1,
-        startDate: new Date(),
+        startDate: new Date(metadata.startDate),
       };
 
       const [trainingPlan] = await TrainingPlan.create([trainingPlanData], {
@@ -195,7 +196,11 @@ export class TrainingPlanService {
       });
 
       return {
-        plans: trainingPlans.map((plan) => this.formatTrainingPlan(plan)),
+        plans: trainingPlans.map((plan) =>
+          isActive
+            ? this.formatTrainingPlanWithContent(plan)
+            : this.formatTrainingPlan(plan)
+        ),
       };
     } catch (error) {
       log.error("Failed to fetch user training plans", error, { userId });
@@ -312,6 +317,77 @@ export class TrainingPlanService {
       createdAt: version.createdAt.toISOString(),
       updatedAt: version.updatedAt.toISOString(),
     };
+  }
+
+  /**
+   * Update training plan start date
+   */
+  async updateStartDate(
+    planId: string,
+    userId: string,
+    startDate: string
+  ): Promise<TrainingPlanWithContentResponse> {
+    try {
+      log.info("Updating training plan start date", { planId, userId });
+
+      const trainingPlan = await TrainingPlan.findById(planId);
+
+      if (!trainingPlan) {
+        throw new NotFoundError("Training plan not found");
+      }
+
+      // Verify ownership
+      if (String(trainingPlan.userId) !== userId) {
+        throw new ForbiddenError(
+          "You do not have permission to update this training plan"
+        );
+      }
+
+      // Update start date
+      trainingPlan.startDate = new Date(startDate);
+      await trainingPlan.save();
+
+      return this.formatTrainingPlanWithContent(trainingPlan);
+    } catch (error) {
+      log.error("Failed to update training plan start date", error, {
+        planId,
+        userId,
+      });
+      throw new InternalServerError(
+        "Failed to update training plan start date",
+        error
+      );
+    }
+  }
+
+  /**
+   * Delete training plan
+   */
+  async deleteTrainingPlan(planId: string, userId: string): Promise<void> {
+    try {
+      log.info("Deleting training plan", { planId, userId });
+
+      const trainingPlan = await TrainingPlan.findById(planId);
+
+      if (!trainingPlan) {
+        throw new NotFoundError("Training plan not found");
+      }
+
+      // Verify ownership
+      if (String(trainingPlan.userId) !== userId) {
+        throw new ForbiddenError(
+          "You do not have permission to delete this training plan"
+        );
+      }
+
+      // Delete the training plan
+      await TrainingPlan.deleteOne({ _id: planId });
+
+      log.info("Training plan deleted successfully", { planId });
+    } catch (error) {
+      log.error("Failed to delete training plan", error, { planId, userId });
+      throw new InternalServerError("Failed to delete training plan", error);
+    }
   }
 }
 
