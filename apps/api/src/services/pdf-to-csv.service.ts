@@ -113,15 +113,17 @@ export class PdfToCsvService {
   /**
    * Convert extracted PDF text to CSV format using LLM
    * @param text - Extracted text from PDF
+   * @param startDate - Training plan start date in YYYY-MM-DD format
    * @returns CSV formatted string
    */
-  async convertTextToCsvWithLlm(text: string): Promise<string> {
+  async convertTextToCsvWithLlm(text: string, startDate: string): Promise<string> {
     try {
       log.info("Converting PDF text to CSV using LLM", {
         textLength: text.length,
+        startDate,
       });
 
-      const csvResult = await aiService.convertPdfTextToCsv(text);
+      const csvResult = await aiService.convertPdfTextToCsv(text, startDate);
 
       // Extract CSV content from LLM response
       // Handle potential markdown code blocks
@@ -168,11 +170,12 @@ export class PdfToCsvService {
   /**
    * Main orchestration method to convert PDF to CSV
    * @param pdfBuffer - PDF file buffer
+   * @param startDate - Training plan start date in YYYY-MM-DD format
    * @returns Conversion result with CSV content or error
    */
-  async convertPdfToCsv(pdfBuffer: Buffer): Promise<PdfConversionResult> {
+  async convertPdfToCsv(pdfBuffer: Buffer, startDate: string): Promise<PdfConversionResult> {
     try {
-      log.info("Starting PDF to CSV conversion");
+      log.info("Starting PDF to CSV conversion", { startDate });
 
       // Step 1: Extract text from PDF
       const extractedText = await this.extractTextFromPdf(pdfBuffer);
@@ -181,7 +184,7 @@ export class PdfToCsvService {
       this.validatePdfContent(extractedText);
 
       // Step 3: Convert to CSV using LLM
-      const csvContent = await this.convertTextToCsvWithLlm(extractedText);
+      const csvContent = await this.convertTextToCsvWithLlm(extractedText, startDate);
 
       // Step 4: Final validation - ensure CSV has content
       if (!csvContent || csvContent.trim().length === 0) {

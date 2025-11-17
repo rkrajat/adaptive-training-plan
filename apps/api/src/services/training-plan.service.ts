@@ -55,7 +55,8 @@ export class TrainingPlanService {
         log.info("Converting PDF to CSV", { filename: file.originalname });
 
         const conversionResult = await pdfToCsvService.convertPdfToCsv(
-          file.buffer
+          file.buffer,
+          metadata.startDate
         );
 
         if (!conversionResult.success || !conversionResult.csvContent) {

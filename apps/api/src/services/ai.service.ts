@@ -11,7 +11,6 @@ import type {
 import { InternalServerError } from "../utils/error";
 import { log } from "../utils/logger";
 
-
 /**
  * AI Service
  * Handles AI-powered recommendations using Vercel AI SDK
@@ -636,12 +635,17 @@ Keep the tone professional but encouraging. Be specific and actionable.`;
   /**
    * Convert PDF text to CSV format using LLM
    * @param pdfText - Extracted text from PDF training plan
+   * @param startDate - Training plan start date in YYYY-MM-DD format
    * @returns CSV formatted string
    */
-  async convertPdfTextToCsv(pdfText: string): Promise<string> {
+  async convertPdfTextToCsv(
+    pdfText: string,
+    startDate: string
+  ): Promise<string> {
     try {
       log.info("Converting PDF text to CSV using LLM", {
         textLength: pdfText.length,
+        startDate,
       });
 
       const systemPrompt = `
@@ -649,14 +653,18 @@ SYSTEM MESSAGE (to LLM)
 You are a Running Training Plan Normalizer. Your job is to extract and standardize training plan data from any PDF — regardless of formatting — into a structured, machine-readable table.
 
 🧩 INPUT
-You will receive a PDF file uploaded by the user. The file may contain text, tables, or images showing a running training plan. If the file contains the training plan in miles and kilometers, consider the kilometers version.
+You will receive a PDF file or the extracted text from the PDF by the user. The file may contain text, tables, or images showing a running training plan. If the file contains the training plan in miles and kilometers, consider the kilometers version.
+
+📅 TRAINING PLAN START DATE
+The user has specified that this training plan starts on: ${startDate}
+Use this as the starting date for the training plan. If the PDF contains explicit dates, use those. Otherwise, start from ${startDate} and increment sequentially for each day.
 
 🎯 OUTPUT
 Your task is to produce a clean CSV (Comma Separated) table with the following columns:
 | date | day | type | planned_distance_km | target_pace_min_per_km | target_HR_zone | notes |
 
 Field Rules:
-date → extract if explicitly mentioned (e.g., "March 4", "10/03"); otherwise, infer sequential days starting Monday. If the date is not mentioned, assume today's date.
+date → extract if explicitly mentioned in the PDF (e.g., "March 4", "10/03"); otherwise, infer sequential days starting from ${startDate}. The first training day should use ${startDate} as the date.
 
 day → Mon, Tue, Wed, Thu, Fri, Sat, Sun. Make sure the day of the "date" matches this field. For example, if the date - 24th August 2025 is a Sunday, then the day should be Sun.
 
