@@ -16,7 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { parseCsvContent } from '@/lib/utils/csv-parser';
+import { formatHeader, parseCsvContent } from '@/lib/utils/csv-parser';
 
 interface TrainingPlanTableProps {
   csvContent: string;
@@ -234,7 +234,7 @@ export const TrainingPlanTable = ({
                       <TableRow>
                         {headers.map((header) => (
                           <TableHead key={header} className="whitespace-nowrap">
-                            {header}
+                            {formatHeader(header)}
                           </TableHead>
                         ))}
                       </TableRow>

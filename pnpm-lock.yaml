@@ -144,6 +144,9 @@ importers:
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
+      csv-parse:
+        specifier: ^6.1.0
+        version: 6.1.0
       ky:
         specifier: ^1.13.0
         version: 1.13.0
