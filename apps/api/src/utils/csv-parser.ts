@@ -1,6 +1,6 @@
-import { parse } from 'csv-parse/sync';
+import { parse } from "csv-parse/sync";
 
-import { AppError } from './error';
+import { AppError } from "./error";
 
 /**
  * Parse CSV content from buffer to string
@@ -9,27 +9,27 @@ import { AppError } from './error';
  */
 export const parseCsvBuffer = (buffer: Buffer): string => {
   try {
-    const csvContent = buffer.toString('utf-8').trim();
+    const csvContent = buffer.toString("utf-8").trim();
 
     if (!csvContent) {
-      throw new AppError('CSV file is empty', 400);
+      throw new AppError("CSV file is empty", 400);
     }
 
     // Basic validation: ensure it has at least some CSV-like structure
-    const lines = csvContent.split('\n').filter((line) => line.trim());
+    const lines = csvContent.split("\n").filter((line) => line.trim());
 
     if (lines.length < 2) {
       throw new AppError(
-        'CSV file must contain at least a header row and one data row',
+        "CSV file must contain at least a header row and one data row",
         400
       );
     }
 
     // Check if first line looks like a header (contains commas)
     const headerLine = lines[0];
-    if (!headerLine.includes(',')) {
+    if (!headerLine.includes(",")) {
       throw new AppError(
-        'CSV file must be comma-separated with a header row',
+        "CSV file must be comma-separated with a header row",
         400
       );
     }
@@ -63,7 +63,7 @@ export const parseCsvToWeeksData = (csvContent: string): WeekData[] => {
     }) as Record<string, string>[];
 
     if (records.length === 0) {
-      throw new AppError('CSV must have at least one data row', 400);
+      throw new AppError("CSV must have at least one data row", 400);
     }
 
     // Transform parsed records to WeekData format

@@ -25,7 +25,6 @@ import { log } from "../utils/logger";
 
 import { pdfToCsvService } from "./pdf-to-csv.service";
 
-
 /**
  * Training Plan Service
  * Handles training plan CRUD operations and version management

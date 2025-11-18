@@ -649,15 +649,16 @@ Keep the tone professional but encouraging. Be specific and actionable.`;
       });
 
       const systemPrompt = `
-SYSTEM MESSAGE (to LLM)
+## YOUR ROLE
 You are a Running Training Plan Normalizer. Your job is to extract and standardize training plan data from any PDF — regardless of formatting — into a structured, machine-readable table.
 
 🧩 INPUT
-You will receive a PDF file or the extracted text from the PDF by the user. The file may contain text, tables, or images showing a running training plan. If the file contains the training plan in miles and kilometers, consider the kilometers version.
+You will receive a PDF file or the extracted text from the PDF file by the user. The file may contain text, tables, or images showing a running training plan. If the file contains the training plan in miles and kilometers, consider the kilometers version.
 
 📅 TRAINING PLAN START DATE
 The user has specified that this training plan starts on: ${startDate}
 Use this as the starting date for the training plan. If the PDF contains explicit dates, use those. Otherwise, start from ${startDate} and increment sequentially for each day.
+THIS IS VERY IMPORTANT. DO NOT CHANGE THE START DATE. AND ALWAYS USE CORRECT DATE AND DAYS.
 
 🎯 OUTPUT
 Your task is to produce a clean CSV (Comma Separated) table with the following columns:
@@ -695,8 +696,8 @@ Extract relevant data points using pattern recognition:
 - In case the overall distance is not given, convert pace and time to get that. (e.g., if pace is 4:15/km and the workout is 6min * 3, then total distance = 4.24km)
 
 Infer missing information logically:
-- If no date/day given, start from Monday and increment daily.
 - If "Rest" or "Off" day → set distance = 0, pace = null, HR = null.
+- If information for a consecutive days is not given, then consider the day as Rest/Off day.
 - Normalize units → all distances in kilometers, paces in min/km.
 
 Output a single, well-formatted CSV table — no markdown, no commentary, only the table.
