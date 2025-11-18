@@ -19,7 +19,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ExperienceLevelSelector } from "@/components/ExperienceLevelSelector";
-import { useUserProfile, useUpdateExperienceLevel } from "@/hooks/use-user-profile";
+import {
+  useUserProfile,
+  useUpdateExperienceLevel,
+} from "@/hooks/use-user-profile";
 
 interface UploadTrainingPlanDialogProps {
   open: boolean;
@@ -44,14 +47,16 @@ export const UploadTrainingPlanDialog = ({
   const [raceDate, setRaceDate] = useState("");
   const [raceDistance, setRaceDistance] = useState("");
   const [targetTime, setTargetTime] = useState("");
-  const [experienceLevel, setExperienceLevel] = useState<ExperienceLevel | undefined>(
-    user?.experienceLevel
-  );
+  const [experienceLevel, setExperienceLevel] = useState<
+    ExperienceLevel | undefined
+  >(user?.experienceLevel);
 
   const uploadMutation = useMutation({
     mutationFn: async () => {
-      if (!file || !name || !startDate) {
-        throw new Error("Please provide a file, plan name, and start date");
+      if (!file || !name || !startDate || !experienceLevel) {
+        throw new Error(
+          "Please provide a file, plan name, start date, and experience level"
+        );
       }
 
       // Update experience level if it changed
@@ -88,6 +93,11 @@ export const UploadTrainingPlanDialog = ({
     setRaceDate("");
     setRaceDistance("");
     setTargetTime("");
+    if (user?.experienceLevel) {
+      setExperienceLevel(user.experienceLevel);
+    } else {
+      setExperienceLevel(undefined);
+    }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -95,7 +105,8 @@ export const UploadTrainingPlanDialog = ({
     if (selectedFile) {
       // Client-side file type validation
       const fileName = selectedFile.name.toLowerCase();
-      const isValidExtension = fileName.endsWith(".csv") || fileName.endsWith(".pdf");
+      const isValidExtension =
+        fileName.endsWith(".csv") || fileName.endsWith(".pdf");
 
       if (!isValidExtension) {
         uploadMutation.reset();
@@ -111,7 +122,9 @@ export const UploadTrainingPlanDialog = ({
 
       if (selectedFile.size > maxSize) {
         uploadMutation.reset();
-        alert(`File size exceeds ${maxSizeLabel} limit. Please upload a smaller file.`);
+        alert(
+          `File size exceeds ${maxSizeLabel} limit. Please upload a smaller file.`
+        );
         e.target.value = "";
         return;
       }
@@ -269,9 +282,7 @@ export const UploadTrainingPlanDialog = ({
             <div className="space-y-1.5 sm:space-y-2 pt-2 border-t">
               <Label className="text-xs sm:text-sm">
                 Running Experience Level
-                {!user?.experienceLevel && (
-                  <span className="ml-1 text-orange-600">*</span>
-                )}
+                <span className="ml-1 text-orange-600">*</span>
               </Label>
               <p className="text-xs text-muted-foreground">
                 {user?.experienceLevel
@@ -317,7 +328,7 @@ export const UploadTrainingPlanDialog = ({
                 !file ||
                 !name ||
                 !startDate ||
-                (!user?.experienceLevel && !experienceLevel)
+                !experienceLevel
               }
               size="sm"
             >
