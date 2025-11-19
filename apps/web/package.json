@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@adaptive-training-plan/types": "workspace:*",
+    "@adaptive-training-plan/utils": "workspace:*",
     "@radix-ui/react-avatar": "^1.1.10",
     "@radix-ui/react-collapsible": "^1.1.12",
     "@radix-ui/react-dialog": "^1.1.15",

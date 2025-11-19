@@ -29,6 +29,9 @@ importers:
       '@adaptive-training-plan/types':
         specifier: workspace:*
         version: link:../../packages/types
+      '@adaptive-training-plan/utils':
+        specifier: workspace:*
+        version: link:../../packages/utils
       '@ai-sdk/openai':
         specifier: ^2.0.58
         version: 2.0.58(zod@4.1.12)
@@ -108,6 +111,9 @@ importers:
       '@adaptive-training-plan/types':
         specifier: workspace:*
         version: link:../../packages/types
+      '@adaptive-training-plan/utils':
+        specifier: workspace:*
+        version: link:../../packages/utils
       '@radix-ui/react-avatar':
         specifier: ^1.1.10
         version: 1.1.10(@types/react-dom@19.2.2(@types/react@19.2.2))(@types/react@19.2.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -241,6 +247,25 @@ importers:
         version: 5.9.3
 
   packages/typescript-config: {}
+
+  packages/utils:
+    dependencies:
+      '@adaptive-training-plan/types':
+        specifier: workspace:*
+        version: link:../types
+      csv-parse:
+        specifier: ^5.6.0
+        version: 5.6.0
+    devDependencies:
+      '@adaptive-training-plan/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      '@types/node':
+        specifier: ^22.10.5
+        version: 22.18.12
+      typescript:
+        specifier: ^5.8.0
+        version: 5.9.3
 
 packages:
 
@@ -1894,6 +1919,9 @@ packages:
 
   csstype@3.1.3:
     resolution: {integrity: sha512-M1uQkMl8rQK/szD0LNhtqxIPLpimGm8sOBwU7lLnCpSbTyY3yeU1Vc7l4KT5zT4s/yOxHH5O7tIuuLOCnLADRw==}
+
+  csv-parse@5.6.0:
+    resolution: {integrity: sha512-l3nz3euub2QMg5ouu5U09Ew9Wf6/wQ8I++ch1loQ0ljmzhmfZYrH9fflS22i/PQEvsPvxCwxgz5q7UB8K1JO4Q==}
 
   csv-parse@6.1.0:
     resolution: {integrity: sha512-CEE+jwpgLn+MmtCpVcPtiCZpVtB6Z2OKPTr34pycYYoL7sxdOkXDdQ4lRiw6ioC0q6BLqhc6cKweCVvral8yhw==}
@@ -5653,6 +5681,8 @@ snapshots:
   cssesc@3.0.0: {}
 
   csstype@3.1.3: {}
+
+  csv-parse@5.6.0: {}
 
   csv-parse@6.1.0: {}
 

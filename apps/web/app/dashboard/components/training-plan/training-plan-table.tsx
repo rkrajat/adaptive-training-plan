@@ -1,13 +1,17 @@
-'use client';
+"use client";
 
-import { useMemo, useState } from 'react';
-import { ChevronDown, ChevronRight } from 'lucide-react';
+import { useMemo, useState } from "react";
+import { ChevronDown, ChevronRight } from "lucide-react";
+import {
+  formatHeader,
+  groupTrainingPlanByWeek,
+} from "@adaptive-training-plan/utils";
 
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from '@/components/ui/collapsible';
+} from "@/components/ui/collapsible";
 import {
   Table,
   TableBody,
@@ -15,46 +19,13 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import { formatHeader, parseCsvContent } from '@/lib/utils/csv-parser';
+} from "@/components/ui/table";
 
 interface TrainingPlanTableProps {
   csvContent: string;
   currentWeek: number;
   startDate: string;
 }
-
-interface GroupedWeekData {
-  weekNumber: number;
-  rows: Record<string, string>[];
-}
-
-/**
- * Calculate week number from a date string and training plan start date
- */
-const calculateWeekFromDate = (dateString: string, startDateString: string): number => {
-  try {
-    const rowDate = new Date(dateString);
-    const startDate = new Date(startDateString);
-
-    // Validate dates
-    if (isNaN(rowDate.getTime()) || isNaN(startDate.getTime())) {
-      return -1;
-    }
-
-    // Calculate difference in days
-    const diffTime = rowDate.getTime() - startDate.getTime();
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-
-    // Calculate week number (1-indexed)
-    const weekNumber = Math.floor(diffDays / 7) + 1;
-
-    // Handle dates before start date
-    return weekNumber < 1 ? -1 : weekNumber;
-  } catch {
-    return -1;
-  }
-};
 
 /**
  * Training Plan Table component
@@ -65,89 +36,11 @@ export const TrainingPlanTable = ({
   currentWeek,
   startDate,
 }: TrainingPlanTableProps) => {
-  // Parse CSV content and group by week
-  const { headers, groupedWeeks, error } = useMemo(() => {
-    try {
-      const parsed = parseCsvContent(csvContent);
-
-      // Try to find 'week' column first (case-insensitive)
-      const weekHeader = parsed.headers.find(
-        (header) => header.toLowerCase() === 'week'
-      );
-
-      // If no week column, try to find 'date' column for calculation
-      const dateHeader = weekHeader
-        ? null
-        : parsed.headers.find((header) => header.toLowerCase() === 'date');
-
-      // If neither week nor date column exists, return error
-      if (!weekHeader && !dateHeader) {
-        return {
-          headers: [],
-          groupedWeeks: [],
-          error: 'CSV content must contain either a "week" or "date" column',
-        };
-      }
-
-      // Group rows by week number
-      const weekMap = new Map<number, Record<string, string>[]>();
-
-      for (const row of parsed.rows) {
-        let weekNumber: number;
-
-        if (weekHeader) {
-          // Use existing week column
-          const weekValue = row[weekHeader];
-          weekNumber = parseInt(weekValue, 10);
-
-          if (isNaN(weekNumber)) {
-            console.warn(`Invalid week number: ${weekValue}`);
-            continue;
-          }
-        } else if (dateHeader) {
-          // Calculate week from date
-          const dateValue = row[dateHeader];
-          weekNumber = calculateWeekFromDate(dateValue, startDate);
-
-          if (weekNumber === -1) {
-            console.warn(`Invalid date or date before start date: ${dateValue}`);
-            continue;
-          }
-        } else {
-          continue;
-        }
-
-        if (!weekMap.has(weekNumber)) {
-          weekMap.set(weekNumber, []);
-        }
-
-        weekMap.get(weekNumber)?.push(row);
-      }
-
-      // Convert to sorted array
-      const grouped: GroupedWeekData[] = Array.from(weekMap.entries())
-        .map(([weekNumber, rows]) => ({
-          weekNumber,
-          rows,
-        }))
-        .sort((weekA, weekB) => weekA.weekNumber - weekB.weekNumber);
-
-      return {
-        headers: parsed.headers,
-        groupedWeeks: grouped,
-        error: null,
-      };
-    } catch (parseError) {
-      return {
-        headers: [],
-        groupedWeeks: [],
-        error:
-          parseError instanceof Error
-            ? parseError.message
-            : 'Failed to parse CSV content',
-      };
-    }
-  }, [csvContent, startDate]);
+  // Parse CSV content and group by week using shared utility
+  const { headers, groupedWeeks, error } = useMemo(
+    () => groupTrainingPlanByWeek(csvContent, startDate),
+    [csvContent, startDate]
+  );
 
   // Track which weeks are expanded (current week is expanded by default)
   const [expandedWeeks, setExpandedWeeks] = useState<Set<number>>(
@@ -198,8 +91,8 @@ export const TrainingPlanTable = ({
             <div
               className={`rounded-lg border ${
                 isCurrentWeek
-                  ? 'border-orange-300 bg-orange-50'
-                  : 'border-gray-200 bg-white'
+                  ? "border-orange-300 bg-orange-50"
+                  : "border-gray-200 bg-white"
               }`}
             >
               <CollapsibleTrigger className="flex w-full items-center justify-between p-4 text-left hover:bg-gray-50/50">
@@ -211,7 +104,7 @@ export const TrainingPlanTable = ({
                   )}
                   <h3
                     className={`text-base font-semibold ${
-                      isCurrentWeek ? 'text-orange-900' : 'text-gray-900'
+                      isCurrentWeek ? "text-orange-900" : "text-gray-900"
                     }`}
                   >
                     Week {week.weekNumber}
@@ -223,7 +116,7 @@ export const TrainingPlanTable = ({
                   </h3>
                 </div>
                 <span className="text-sm text-gray-600">
-                  {week.rows.length} {week.rows.length === 1 ? 'day' : 'days'}
+                  {week.rows.length} {week.rows.length === 1 ? "day" : "days"}
                 </span>
               </CollapsibleTrigger>
 
@@ -243,8 +136,11 @@ export const TrainingPlanTable = ({
                       {week.rows.map((row, rowIndex) => (
                         <TableRow key={rowIndex}>
                           {headers.map((header) => (
-                            <TableCell key={header} className="whitespace-nowrap">
-                              {row[header] || '-'}
+                            <TableCell
+                              key={header}
+                              className="whitespace-nowrap"
+                            >
+                              {row[header] || "-"}
                             </TableCell>
                           ))}
                         </TableRow>

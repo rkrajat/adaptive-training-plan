@@ -1,4 +1,5 @@
 import type { ExperienceLevel } from "@adaptive-training-plan/types";
+import { groupTrainingPlanByWeek } from "@adaptive-training-plan/utils";
 import { openai } from "@ai-sdk/openai";
 import { generateText, streamText } from "ai";
 
@@ -243,28 +244,66 @@ If you are unable to find sufficient data to make changes, output the same forma
 
   /**
    * Format training plan CSV for AI prompt context
+   * Uses shared utility for accurate CSV parsing and week grouping
    */
-  formatTrainingPlanForPrompt(csvContent: string, currentWeek: number): string {
-    const lines = csvContent.split("\n").filter((line) => line.trim());
+  formatTrainingPlanForPrompt(
+    csvContent: string,
+    currentWeek: number,
+    startDate: string
+  ): string {
+    // Use shared utility to properly parse and group training plan by week
+    const { headers, groupedWeeks, error } = groupTrainingPlanByWeek(
+      csvContent,
+      startDate
+    );
 
-    if (lines.length < 2) {
+    if (error || groupedWeeks.length === 0) {
       return "No training plan data available";
     }
 
-    // Include header and some context around current week
-    const header = lines[0];
+    // Include context around current week (previous week to +2 weeks)
     const startWeek = Math.max(1, currentWeek - 1);
-    const endWeek = Math.min(lines.length - 1, currentWeek + 2);
+    const endWeek = currentWeek + 2;
 
-    let formattedPlan = `Training Plan Structure:\n${header}\n\n`;
-    formattedPlan += `Current Week (Week ${currentWeek}) and Context:\n`;
+    // Filter weeks in the context window
+    const relevantWeeks = groupedWeeks.filter(
+      (week: { weekNumber: number; rows: Record<string, string>[] }) =>
+        week.weekNumber >= startWeek && week.weekNumber <= endWeek
+    );
 
-    for (let index = startWeek; index <= endWeek; index++) {
-      if (lines[index]) {
-        const weekMarker = index === currentWeek ? ">>> " : "    ";
-        formattedPlan += `${weekMarker}Week ${index}: ${lines[index]}\n`;
-      }
+    if (relevantWeeks.length === 0) {
+      return `No training data available for week ${currentWeek}`;
     }
+
+    // Format header
+    let formattedPlan = `Training Plan Structure:\n`;
+    formattedPlan += `Headers: ${headers.join(", ")}\n\n`;
+    formattedPlan += `Current Week (Week ${currentWeek}) and Context:\n\n`;
+
+    // Format each week's data
+    for (const week of relevantWeeks) {
+      const weekMarker = week.weekNumber === currentWeek ? ">>> " : "    ";
+      formattedPlan += `${weekMarker}Week ${week.weekNumber}:\n`;
+
+      // Format each day in the week
+      for (const row of week.rows) {
+        formattedPlan += `${weekMarker}  `;
+        // Create a compact representation of the row
+        const rowData = headers
+          .map((header: string) => `${header}: ${row[header] || "N/A"}`)
+          .join(", ");
+        formattedPlan += `${rowData}\n`;
+      }
+
+      formattedPlan += "\n";
+    }
+
+    log.debug("Training plan formatted for AI prompt", {
+      totalWeeks: groupedWeeks.length,
+      relevantWeeks: relevantWeeks.length,
+      currentWeek,
+      formattedLength: formattedPlan.length,
+    });
 
     return formattedPlan;
   }
@@ -369,6 +408,12 @@ If you are unable to find sufficient data to make changes, output the same forma
     const runningExperience = experienceLevel
       ? experienceLevelMap[experienceLevel]
       : "Intermediate";
+
+    console.log("=======", {
+      activitiesTable,
+      trainingPlanData,
+      runningExperience,
+    });
 
     let prompt = `## Recent Running Activities (Last 30 Days)\n${activitiesTable}\n\n## Training Plan\n${trainingPlanData}\n\n## Running Experience\n${runningExperience}`;
 
@@ -513,6 +558,7 @@ Keep the tone professional but encouraging. Be specific and actionable.`;
     activities: FormattedActivity[],
     csvContent: string,
     currentWeek: number,
+    startDate: string,
     userFeedback?: string
   ): Promise<string> {
     try {
@@ -525,7 +571,8 @@ Keep the tone professional but encouraging. Be specific and actionable.`;
       const systemPrompt = this.buildSystemPrompt();
       const trainingPlanData = this.formatTrainingPlanForPrompt(
         csvContent,
-        currentWeek
+        currentWeek,
+        startDate
       );
       const userPrompt = this.buildUserPromptWithTrainingPlan(
         activities,
@@ -579,6 +626,7 @@ Keep the tone professional but encouraging. Be specific and actionable.`;
     activities: EnhancedFormattedActivity[],
     csvContent: string,
     currentWeek: number,
+    startDate: string,
     userFeedback?: string,
     experienceLevel?: ExperienceLevel
   ) {
@@ -592,7 +640,8 @@ Keep the tone professional but encouraging. Be specific and actionable.`;
       const systemPrompt = this.buildSystemPrompt();
       const trainingPlanData = this.formatTrainingPlanForPrompt(
         csvContent,
-        currentWeek
+        currentWeek,
+        startDate
       );
       const userPrompt = this.buildUserPromptWithEnhancedActivities(
         activities,

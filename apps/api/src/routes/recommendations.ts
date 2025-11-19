@@ -202,8 +202,9 @@ router.post(
         enhancedActivities,
         trainingPlan.csvContent,
         trainingPlan.currentWeek,
+        trainingPlan.startDate,
         userFeedback,
-        experienceLevel,
+        experienceLevel
       );
 
       // Set headers for streaming (must be set before any res.write())
