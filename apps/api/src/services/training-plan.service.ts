@@ -1,3 +1,4 @@
+import { getCurrentWeekNumber } from "@adaptive-training-plan/utils";
 import mongoose from "mongoose";
 
 import { TrainingPlan, type ITrainingPlan } from "../models/TrainingPlan";
@@ -92,7 +93,6 @@ export class TrainingPlanService {
         },
         source: "user_upload" as const,
         isActive: true,
-        currentWeek: 1,
         startDate: new Date(metadata.startDate),
       };
 
@@ -261,6 +261,9 @@ export class TrainingPlanService {
    * Format training plan for API response (without CSV content)
    */
   private formatTrainingPlan(plan: ITrainingPlan): TrainingPlanResponse {
+    // Calculate current week dynamically based on start date
+    const currentWeek = getCurrentWeekNumber(plan.startDate);
+
     return {
       id: String(plan._id),
       userId: String(plan.userId),
@@ -274,7 +277,7 @@ export class TrainingPlanService {
       },
       source: plan.source,
       isActive: plan.isActive,
-      currentWeek: plan.currentWeek,
+      currentWeek,
       startDate: plan.startDate.toISOString(),
       createdAt: plan.createdAt.toISOString(),
       updatedAt: plan.updatedAt.toISOString(),

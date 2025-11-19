@@ -243,6 +243,7 @@ If you are unable to find sufficient data to make changes, output the same forma
   }
 
   /**
+   * @deprecated
    * Format training plan CSV for AI prompt context
    * Uses shared utility for accurate CSV parsing and week grouping
    */
@@ -340,6 +341,7 @@ If you are unable to find sufficient data to make changes, output the same forma
   }
 
   /**
+   * @deprecated
    * Build user prompt with training plan from database
    */
   private buildUserPromptWithTrainingPlan(
@@ -409,12 +411,6 @@ If you are unable to find sufficient data to make changes, output the same forma
       ? experienceLevelMap[experienceLevel]
       : "Intermediate";
 
-    console.log("=======", {
-      activitiesTable,
-      trainingPlanData,
-      runningExperience,
-    });
-
     let prompt = `## Recent Running Activities (Last 30 Days)\n${activitiesTable}\n\n## Training Plan\n${trainingPlanData}\n\n## Running Experience\n${runningExperience}`;
 
     if (userFeedback) {
@@ -427,6 +423,7 @@ If you are unable to find sufficient data to make changes, output the same forma
   }
 
   /**
+   * @deprecated
    * Build prompt from raw Strava activities (for backward compatibility with existing route)
    */
   buildPromptFromRawActivities(activities: StravaActivity[]): string {
@@ -496,6 +493,7 @@ Keep the tone professional but encouraging. Be specific and actionable.`;
   }
 
   /**
+   * @deprecated
    * Generate training recommendations using AI
    */
   async generateRecommendations(
@@ -552,6 +550,7 @@ Keep the tone professional but encouraging. Be specific and actionable.`;
   }
 
   /**
+   * @deprecated
    * Generate training recommendations with training plan from database
    */
   async generateRecommendationsWithPlan(

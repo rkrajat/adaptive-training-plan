@@ -1,3 +1,4 @@
+import { getCurrentWeekNumber } from "@adaptive-training-plan/utils";
 import type { Request, Response } from "express";
 import mongoose from "mongoose";
 
@@ -38,7 +39,7 @@ export const getRecommendationById = async (
     // Find recommendation with trainingPlan population
     const recommendation = await Recommendation.findById(id).populate(
       "trainingPlanId",
-      "metadata.name currentWeek",
+      "metadata.name startDate"
     );
 
     if (!recommendation) {
@@ -50,7 +51,7 @@ export const getRecommendationById = async (
     if (recommendation.userId.toString() !== userId) {
       sendForbidden(
         res,
-        "Access denied: This recommendation does not belong to you",
+        "Access denied: This recommendation does not belong to you"
       );
       return;
     }
@@ -59,8 +60,11 @@ export const getRecommendationById = async (
     const trainingPlan = recommendation.trainingPlanId as unknown as {
       _id: mongoose.Types.ObjectId;
       metadata: { name: string };
-      currentWeek: number;
+      startDate: Date;
     };
+
+    // Calculate current week dynamically
+    const currentWeek = getCurrentWeekNumber(trainingPlan.startDate);
 
     sendSuccess(res, {
       id: recommendation._id,
@@ -68,7 +72,7 @@ export const getRecommendationById = async (
       trainingPlan: {
         id: trainingPlan._id,
         name: trainingPlan.metadata.name,
-        currentWeek: trainingPlan.currentWeek,
+        currentWeek,
       },
       weekNumber: recommendation.weekNumber,
       content: recommendation.content,

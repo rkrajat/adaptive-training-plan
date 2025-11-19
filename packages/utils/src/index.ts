@@ -9,6 +9,7 @@ export {
 export {
   groupTrainingPlanByWeek,
   calculateWeekFromDate,
+  getCurrentWeekNumber,
   type GroupedWeekData,
   type GroupedTrainingPlanResult,
 } from "./training-plan-formatter";

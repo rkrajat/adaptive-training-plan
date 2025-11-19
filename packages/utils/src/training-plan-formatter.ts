@@ -52,6 +52,52 @@ export const calculateWeekFromDate = (
 };
 
 /**
+ * Calculate current week number based on training plan start date and today's date
+ *
+ * This function dynamically calculates which week of the training plan the user is currently in.
+ * Week 1 starts on the startDate, Week 2 starts 7 days later, etc.
+ *
+ * @param startDate - Training plan start date (string or Date object)
+ * @returns Current week number (0 if plan hasn't started, 1+ for active weeks)
+ *
+ * @example
+ * // Plan started 14 days ago
+ * getCurrentWeekNumber('2024-01-01') // Returns 3
+ *
+ * @example
+ * // Plan starts tomorrow
+ * getCurrentWeekNumber('2024-12-31') // Returns 0
+ */
+export const getCurrentWeekNumber = (startDate: string | Date): number => {
+  try {
+    // Get today's date
+    const today = new Date();
+    const todayString = today.toISOString().split("T")[0]; // YYYY-MM-DD format
+
+    // Convert startDate to string format if it's a Date object
+    const startDateString =
+      typeof startDate === "string"
+        ? startDate
+        : startDate.toISOString().split("T")[0];
+
+    // Use existing calculateWeekFromDate function
+    const weekNumber = calculateWeekFromDate(todayString, startDateString);
+
+    // If weekNumber is -1, it means today is before the start date
+    // Return 0 to indicate the plan hasn't started yet
+    if (weekNumber === -1) {
+      return 0;
+    }
+
+    // Return the calculated week number (1+)
+    return weekNumber;
+  } catch {
+    // In case of any error, default to week 1
+    return 1;
+  }
+};
+
+/**
  * Group training plan rows by week number
  *
  * This function intelligently handles two scenarios:

@@ -15,7 +15,6 @@ export interface ITrainingPlan extends Document {
   metadata: ITrainingPlanMetadata;
   source: 'user_upload' | 'ai_generated';
   isActive: boolean;
-  currentWeek: number;
   startDate: Date;
   createdAt: Date;
   updatedAt: Date;
@@ -73,12 +72,6 @@ const trainingPlanSchema = new Schema<ITrainingPlan>(
       required: true,
       default: true,
       index: true,
-    },
-    currentWeek: {
-      type: Number,
-      required: true,
-      default: 1,
-      min: 1,
     },
     startDate: {
       type: Date,
