@@ -135,7 +135,7 @@ export interface TrainingPlanVersionResponse {
   trainingPlanId: string;
   versionNumber: number;
   metadata: TrainingPlanMetadata;
-  changeType: 'created' | 'updated' | 'ai_modified';
+  changeType: 'created' | 'updated' | 'ai_modified' | 'start_date_updated';
   changeDescription?: string;
   createdAt: string;
   updatedAt: string;

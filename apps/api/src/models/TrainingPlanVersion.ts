@@ -7,7 +7,7 @@ export interface ITrainingPlanVersion extends Document {
   versionNumber: number;
   csvContent: string;
   metadata: ITrainingPlanMetadata;
-  changeType: 'created' | 'updated' | 'ai_modified';
+  changeType: 'created' | 'updated' | 'ai_modified' | 'start_date_updated';
   changeDescription?: string;
   createdAt: Date;
   updatedAt: Date;
@@ -61,7 +61,7 @@ const trainingPlanVersionSchema = new Schema<ITrainingPlanVersion>(
     },
     changeType: {
       type: String,
-      enum: ['created', 'updated', 'ai_modified'],
+      enum: ['created', 'updated', 'ai_modified', 'start_date_updated'],
       required: true,
     },
     changeDescription: {

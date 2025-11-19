@@ -15,7 +15,8 @@
   },
   "dependencies": {
     "@adaptive-training-plan/types": "workspace:*",
-    "csv-parse": "^5.6.0"
+    "csv-parse": "^5.6.0",
+    "csv-stringify": "^6.6.0"
   },
   "devDependencies": {
     "@adaptive-training-plan/typescript-config": "workspace:*",

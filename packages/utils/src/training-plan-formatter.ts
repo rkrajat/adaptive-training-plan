@@ -1,3 +1,5 @@
+import { stringify } from "csv-stringify/sync";
+
 import { parseCsvContent } from "./csv-parser";
 
 /**
@@ -155,9 +157,7 @@ export const groupTrainingPlanByWeek = (
         weekNumber = calculateWeekFromDate(dateValue, startDate);
 
         if (weekNumber === -1) {
-          console.warn(
-            `Invalid date or date before start date: ${dateValue}`
-          );
+          console.warn(`Invalid date or date before start date: ${dateValue}`);
           continue;
         }
       } else {
@@ -193,5 +193,99 @@ export const groupTrainingPlanByWeek = (
           ? parseError.message
           : "Failed to parse CSV content",
     };
+  }
+};
+
+/**
+ * Recalculate dates in CSV content based on new start date
+ * Uses sequential date assignment to ensure valid dates and day-of-week synchronization
+ *
+ * @param csvContent - Raw CSV string content
+ * @param oldStartDate - Original training plan start date (YYYY-MM-DD) - not used but kept for API compatibility
+ * @param newStartDate - New training plan start date (YYYY-MM-DD)
+ * @returns Updated CSV string with recalculated sequential dates
+ *
+ * @example
+ * const oldCsv = "date,day,type\n2024-01-01,Mon,Easy\n2024-01-02,Tue,Tempo"
+ * const newCsv = recalculateCsvDates(oldCsv, "2024-01-01", "2024-02-01")
+ * // Returns: "date,day,type\n2024-02-01,Thu,Easy\n2024-02-02,Fri,Tempo"
+ */
+export const recalculateCsvDates = (
+  csvContent: string,
+  _oldStartDate: string,
+  newStartDate: string
+): string => {
+  try {
+    const parsed = parseCsvContent(csvContent);
+
+    // Find date column (case-insensitive)
+    const dateHeader = parsed.headers.find(
+      (header) => header.toLowerCase() === "date"
+    );
+
+    if (!dateHeader) {
+      // No date column - return original content unchanged
+      return csvContent;
+    }
+
+    // Find day column (case-insensitive) - optional
+    const dayHeader = parsed.headers.find(
+      (header) => header.toLowerCase() === "day"
+    );
+
+    // Day names mapping (Sunday = 0, Monday = 1, ..., Saturday = 6)
+    const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+    // Parse the new start date
+    const startDate = new Date(newStartDate);
+
+    // Validate start date
+    if (isNaN(startDate.getTime())) {
+      console.error("Invalid new start date:", newStartDate);
+      return csvContent;
+    }
+
+    // Update each row's date sequentially
+    const updatedRows = parsed.rows.map((row, index) => {
+      // Calculate date for this row: startDate + index days
+      // Using getTime() + milliseconds ensures proper date arithmetic
+      // Handles month/year boundaries and leap years automatically
+      const currentDate = new Date(
+        startDate.getTime() + index * 24 * 60 * 60 * 1000
+      );
+
+      // Format date as YYYY-MM-DD
+      const formattedDate = currentDate.toISOString().split("T")[0];
+
+      // Calculate day of week (0 = Sunday, 6 = Saturday)
+      const dayOfWeek = dayNames[currentDate.getDay()];
+
+      // Update the row with new date and day
+      const updatedRow = {
+        ...row,
+        [dateHeader]: formattedDate,
+      };
+
+      // Update day column if it exists
+      if (dayHeader) {
+        updatedRow[dayHeader] = dayOfWeek;
+      }
+
+      return updatedRow;
+    });
+
+    // Rebuild CSV string using csv-stringify for proper RFC 4180 escaping
+    // This ensures values with commas, quotes, or newlines are properly quoted
+    const csvString = stringify(updatedRows, {
+      header: true,
+      columns: parsed.headers,
+    });
+
+    // Remove trailing newline added by stringify to match original format
+    return csvString.trim();
+  } catch (error) {
+    // If any error occurs, return original content
+    console.error("Failed to recalculate CSV dates:", error);
+    return csvContent;
   }
 };

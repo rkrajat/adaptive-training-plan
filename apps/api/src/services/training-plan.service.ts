@@ -1,4 +1,7 @@
-import { getCurrentWeekNumber } from "@adaptive-training-plan/utils";
+import {
+  getCurrentWeekNumber,
+  recalculateCsvDates,
+} from "@adaptive-training-plan/utils";
 import mongoose from "mongoose";
 
 import { TrainingPlan, type ITrainingPlan } from "../models/TrainingPlan";
@@ -323,12 +326,16 @@ export class TrainingPlanService {
 
   /**
    * Update training plan start date
+   * Recalculates CSV dates to maintain consistency with the new start date
    */
   async updateStartDate(
     planId: string,
     userId: string,
     startDate: string
   ): Promise<TrainingPlanWithContentResponse> {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
     try {
       log.info("Updating training plan start date", { planId, userId });
 
@@ -345,20 +352,74 @@ export class TrainingPlanService {
         );
       }
 
-      // Update start date
+      const oldStartDate = trainingPlan.startDate.toISOString().split("T")[0];
+      const newStartDate = startDate;
+
+      // Recalculate CSV dates to match new start date
+      const updatedCsvContent = recalculateCsvDates(
+        trainingPlan.csvContent,
+        oldStartDate,
+        newStartDate
+      );
+
+      log.info("CSV dates recalculated for new start date", {
+        planId,
+        oldStartDate,
+        newStartDate,
+      });
+
+      // Update both start date and CSV content
       trainingPlan.startDate = new Date(startDate);
-      await trainingPlan.save();
+      trainingPlan.csvContent = updatedCsvContent;
+      await trainingPlan.save({ session });
+
+      // Create a new version to track this change
+      const latestVersion = await TrainingPlanVersion.findOne({
+        trainingPlanId: planId,
+      }).sort({ versionNumber: -1 });
+
+      const newVersionNumber = (latestVersion?.versionNumber || 0) + 1;
+
+      await TrainingPlanVersion.create(
+        [
+          {
+            trainingPlanId: trainingPlan._id,
+            versionNumber: newVersionNumber,
+            csvContent: updatedCsvContent,
+            metadata: trainingPlan.metadata,
+            changeType: "start_date_updated" as const,
+            changeDescription: `Start date updated from ${oldStartDate} to ${newStartDate}`,
+          },
+        ],
+        { session }
+      );
+
+      log.info("Training plan version created for start date update", {
+        planId,
+        versionNumber: newVersionNumber,
+      });
+
+      // Commit transaction
+      await session.commitTransaction();
 
       return this.formatTrainingPlanWithContent(trainingPlan);
     } catch (error) {
+      await session.abortTransaction();
       log.error("Failed to update training plan start date", error, {
         planId,
         userId,
       });
+
+      if (error instanceof NotFoundError || error instanceof ForbiddenError) {
+        throw error;
+      }
+
       throw new InternalServerError(
         "Failed to update training plan start date",
         error
       );
+    } finally {
+      await session.endSession();
     }
   }
 
