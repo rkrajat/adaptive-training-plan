@@ -5,6 +5,7 @@ import type {
   TrainingPlan,
   TrainingPlanWithContent,
   ExperienceLevel,
+  WeeklySummaryData,
 } from "@adaptive-training-plan/types";
 
 import { getToken, removeToken } from "./auth";
@@ -59,6 +60,17 @@ export const authApi = {
 export const activitiesApi = {
   list: async (): Promise<{ activities: Activity[] }> => {
     return api.get("api/activities").json<{ activities: Activity[] }>();
+  },
+
+  getWeeklySummary: async (
+    startDate: string,
+    week: number
+  ): Promise<WeeklySummaryData> => {
+    return api
+      .get("api/activities/weekly-summary", {
+        searchParams: { startDate, week: week.toString() },
+      })
+      .json<WeeklySummaryData>();
   },
 };
 
