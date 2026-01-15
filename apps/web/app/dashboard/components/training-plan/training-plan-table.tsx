@@ -123,10 +123,13 @@ export const TrainingPlanTable = ({
               <CollapsibleContent>
                 <div className="overflow-x-auto border-t">
                   <Table>
-                    <TableHeader>
+                    <TableHeader className="bg-gray-100">
                       <TableRow>
                         {headers.map((header) => (
-                          <TableHead key={header} className="whitespace-nowrap">
+                          <TableHead
+                            key={header}
+                            className="whitespace-nowrap text-bold"
+                          >
                             {formatHeader(header)}
                           </TableHead>
                         ))}
