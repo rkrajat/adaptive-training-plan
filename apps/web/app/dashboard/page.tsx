@@ -12,7 +12,6 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 import { DashboardLayout } from "./components/dashboard-layout";
-import { DashboardStats } from "./components/dashboard-stats";
 import { RecommendationsCard } from "./components/recommendations";
 import { RecentActivities } from "./components/activities";
 import { TrainingPlanSection } from "./components/training-plan";
@@ -80,8 +79,6 @@ export default function DashboardPage() {
 
   return (
     <DashboardLayout user={user}>
-      <DashboardStats />
-
       {activePlan && (
         <WeeklyRunsReport
           currentWeek={activePlan.currentWeek}
