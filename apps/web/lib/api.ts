@@ -6,6 +6,10 @@ import type {
   TrainingPlanWithContent,
   ExperienceLevel,
   WeeklySummaryData,
+  ActiveRecommendationResponse,
+  AcceptRecommendationResponse,
+  RejectAction,
+  RejectRecommendationResponse,
 } from "@adaptive-training-plan/types";
 
 import { getToken, removeToken } from "./auth";
@@ -160,6 +164,29 @@ export const recommendationsApi = {
     );
 
     return response;
+  },
+
+  getActive: async (): Promise<ActiveRecommendationResponse> => {
+    return api
+      .get("api/recommendations/active")
+      .json<ActiveRecommendationResponse>();
+  },
+
+  accept: async (recommendationId: string): Promise<AcceptRecommendationResponse> => {
+    return api
+      .post(`api/recommendations/${recommendationId}/accept`)
+      .json<AcceptRecommendationResponse>();
+  },
+
+  reject: async (
+    recommendationId: string,
+    action: RejectAction
+  ): Promise<RejectRecommendationResponse> => {
+    return api
+      .post(`api/recommendations/${recommendationId}/reject`, {
+        json: { action },
+      })
+      .json<RejectRecommendationResponse>();
   },
 };
 

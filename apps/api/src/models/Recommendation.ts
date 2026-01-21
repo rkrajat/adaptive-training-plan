@@ -1,4 +1,8 @@
+import type { RecommendationStatus } from "@adaptive-training-plan/types";
 import mongoose, { type Document, Schema } from "mongoose";
+
+// Re-export for convenience
+export type { RecommendationStatus } from "@adaptive-training-plan/types";
 
 export interface IRecommendation extends Document {
   userId: mongoose.Types.ObjectId;
@@ -8,6 +12,10 @@ export interface IRecommendation extends Document {
   athleteInputFeedback?: string;
   isRegenerated: boolean;
   previousRecommendationId?: mongoose.Types.ObjectId;
+  status: RecommendationStatus;
+  acceptedAt?: Date;
+  rejectedAt?: Date;
+  expiresAt?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -54,6 +62,25 @@ const recommendationSchema = new Schema<IRecommendation>(
       ref: "Recommendation",
       default: null,
     },
+    status: {
+      type: String,
+      enum: ["pending", "accepted", "rejected", "expired"],
+      default: "pending",
+      index: true,
+    },
+    acceptedAt: {
+      type: Date,
+      default: null,
+    },
+    rejectedAt: {
+      type: Date,
+      default: null,
+    },
+    expiresAt: {
+      type: Date,
+      default: null,
+      index: true,
+    },
   },
   {
     timestamps: true,
@@ -69,6 +96,12 @@ recommendationSchema.index(
 
 // Index for efficient chronological queries
 recommendationSchema.index({ createdAt: -1 }, { name: "created_date_index" });
+
+// Compound index for efficient active recommendation queries
+recommendationSchema.index(
+  { userId: 1, status: 1, expiresAt: 1 },
+  { name: "user_active_recommendation_index" },
+);
 
 export const Recommendation = mongoose.model<IRecommendation>(
   "Recommendation",

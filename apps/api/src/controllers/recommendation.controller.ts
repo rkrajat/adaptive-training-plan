@@ -3,6 +3,12 @@ import type { Request, Response } from "express";
 import mongoose from "mongoose";
 
 import { Recommendation } from "../models/Recommendation";
+import { recommendationAcceptanceService } from "../services/recommendation-acceptance.service";
+import {
+  NotFoundError,
+  ForbiddenError,
+  BadRequestError,
+} from "../utils/error";
 import { log } from "../utils/logger";
 import {
   sendSuccess,
@@ -12,6 +18,7 @@ import {
   sendBadRequest,
   sendUnauthorized,
 } from "../utils/response";
+import type { RejectRecommendationRequest } from "../validators/recommendation-acceptance.validator";
 
 /**
  * Get a single recommendation by ID
@@ -183,5 +190,132 @@ export const getUserRecommendationHistory = async (
   } catch (error) {
     log.error("Error fetching recommendation history", error);
     sendInternalError(res, "Failed to fetch recommendation history");
+  }
+};
+
+/**
+ * Get active recommendation for authenticated user
+ * GET /api/recommendations/active
+ */
+export const getActiveRecommendation = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const userId = req.user?.userId;
+
+    if (!userId) {
+      sendUnauthorized(res, "User not authenticated");
+      return;
+    }
+
+    const activeRecommendation =
+      await recommendationAcceptanceService.getActiveRecommendation(userId);
+
+    if (!activeRecommendation) {
+      sendSuccess(res, { recommendation: null });
+      return;
+    }
+
+    sendSuccess(res, { recommendation: activeRecommendation });
+  } catch (error) {
+    log.error("Error fetching active recommendation", error);
+    sendInternalError(res, "Failed to fetch active recommendation");
+  }
+};
+
+/**
+ * Accept a recommendation
+ * POST /api/recommendations/:id/accept
+ */
+export const acceptRecommendation = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const userId = req.user?.userId;
+    const { id } = req.params;
+
+    if (!userId) {
+      sendUnauthorized(res, "User not authenticated");
+      return;
+    }
+
+    // Validate MongoDB ObjectId format
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      sendBadRequest(res, "Invalid recommendation ID format");
+      return;
+    }
+
+    const acceptedRecommendation =
+      await recommendationAcceptanceService.acceptRecommendation(id, userId);
+
+    sendSuccess(res, { recommendation: acceptedRecommendation });
+  } catch (error) {
+    if (error instanceof NotFoundError) {
+      sendNotFound(res, error.message);
+      return;
+    }
+    if (error instanceof ForbiddenError) {
+      sendForbidden(res, error.message);
+      return;
+    }
+    if (error instanceof BadRequestError) {
+      sendBadRequest(res, error.message);
+      return;
+    }
+
+    log.error("Error accepting recommendation", error);
+    sendInternalError(res, "Failed to accept recommendation");
+  }
+};
+
+/**
+ * Reject a recommendation
+ * POST /api/recommendations/:id/reject
+ */
+export const rejectRecommendation = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const userId = req.user?.userId;
+    const { id } = req.params;
+    const { action } = req.body as RejectRecommendationRequest;
+
+    if (!userId) {
+      sendUnauthorized(res, "User not authenticated");
+      return;
+    }
+
+    // Validate MongoDB ObjectId format
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      sendBadRequest(res, "Invalid recommendation ID format");
+      return;
+    }
+
+    const result = await recommendationAcceptanceService.rejectRecommendation(
+      id,
+      userId,
+      action
+    );
+
+    sendSuccess(res, result);
+  } catch (error) {
+    if (error instanceof NotFoundError) {
+      sendNotFound(res, error.message);
+      return;
+    }
+    if (error instanceof ForbiddenError) {
+      sendForbidden(res, error.message);
+      return;
+    }
+    if (error instanceof BadRequestError) {
+      sendBadRequest(res, error.message);
+      return;
+    }
+
+    log.error("Error rejecting recommendation", error);
+    sendInternalError(res, "Failed to reject recommendation");
   }
 };

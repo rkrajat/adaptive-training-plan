@@ -3,6 +3,9 @@ import { Router, type Request, type Response } from "express";
 import {
   getRecommendationById,
   getUserRecommendationHistory,
+  getActiveRecommendation,
+  acceptRecommendation,
+  rejectRecommendation,
 } from "../controllers/recommendation.controller";
 import { authenticateJWT } from "../middleware/auth";
 import { validateBody } from "../middleware/validate";
@@ -22,6 +25,7 @@ import {
 import { log } from "../utils/logger";
 import { useMockData } from "../utils/mock";
 import { sendUnauthorized, sendInternalError } from "../utils/response";
+import { rejectRecommendationSchema } from "../validators/recommendation-acceptance.validator";
 import {
   recommendationsGenerateSchema,
   recommendationsWithPlanSchema,
@@ -289,6 +293,20 @@ router.post(
 
 // GET /api/recommendations/user/history - Get user's recommendation history
 router.get("/user/history", authenticateJWT, getUserRecommendationHistory);
+
+// GET /api/recommendations/active - Get user's active (accepted, non-expired) recommendation
+router.get("/active", authenticateJWT, getActiveRecommendation);
+
+// POST /api/recommendations/:id/accept - Accept a recommendation
+router.post("/:id/accept", authenticateJWT, acceptRecommendation);
+
+// POST /api/recommendations/:id/reject - Reject a recommendation with action
+router.post(
+  "/:id/reject",
+  authenticateJWT,
+  validateBody(rejectRecommendationSchema),
+  rejectRecommendation
+);
 
 // GET /api/recommendations/:id - Get single recommendation by ID
 router.get("/:id", authenticateJWT, getRecommendationById);
