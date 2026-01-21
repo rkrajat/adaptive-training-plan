@@ -64,14 +64,14 @@ export const TrainingPlanSection = ({
           <div>
             <div className="mb-6 flex items-center justify-between">
               <div>
-                <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-1">
+                <h3 className="text-base sm:text-lg font-semibold text-foreground mb-1">
                   {activePlan.metadata.name}
                 </h3>
-                <p className="text-xs sm:text-sm text-gray-600">
+                <p className="text-xs sm:text-sm text-muted-foreground">
                   Week {activePlan.currentWeek} of your training
                 </p>
                 {activePlan.metadata.goal && (
-                  <p className="text-xs sm:text-sm text-gray-600 mt-1">
+                  <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                     Goal: {activePlan.metadata.goal}
                   </p>
                 )}
@@ -141,13 +141,13 @@ export const TrainingPlanSection = ({
           </div>
         ) : (
           <div className="text-center">
-            <div className="mx-auto w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gray-100 flex items-center justify-center mb-3 sm:mb-4">
-              <CloudUpload className="h-5 w-5 sm:h-6 sm:w-6 text-gray-600" />
+            <div className="mx-auto w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-muted flex items-center justify-center mb-3 sm:mb-4">
+              <CloudUpload className="h-5 w-5 sm:h-6 sm:w-6 text-muted-foreground" />
             </div>
-            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">
+            <h3 className="text-base sm:text-lg font-semibold text-foreground mb-2">
               Upload Your Training Plan
             </h3>
-            <p className="text-xs sm:text-sm text-gray-600 mb-4 sm:mb-6 max-w-md mx-auto px-2">
+            <p className="text-xs sm:text-sm text-muted-foreground mb-4 sm:mb-6 max-w-md mx-auto px-2">
               Upload your training schedule to get personalized weekly
               recommendations
             </p>

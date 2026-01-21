@@ -12,6 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { logout } from "../lib/auth";
 
 interface NavigationProps {
@@ -20,20 +21,24 @@ interface NavigationProps {
 
 export const Navigation = ({ user }: NavigationProps) => {
   return (
-    <nav className="border-b border-gray-200 bg-white">
+    <nav className="border-b border-border bg-background">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
         {/* Logo */}
         <div className="flex items-center gap-2">
           <Zap className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
-          <span className="text-lg sm:text-xl font-semibold text-gray-900">
+          <span className="text-lg sm:text-xl font-semibold text-foreground">
             AdaptiveRunning
           </span>
         </div>
 
-        {/* User Menu Dropdown */}
-        {user && (
+        {/* Right side: Theme Toggle and User Menu */}
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+
+          {/* User Menu Dropdown */}
+          {user && (
           <DropdownMenu>
-            <DropdownMenuTrigger className="flex items-center gap-2 rounded-md hover:bg-gray-50 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 px-2 py-1">
+            <DropdownMenuTrigger className="flex items-center gap-2 rounded-md hover:bg-accent transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 px-2 py-1">
               <Avatar className="h-8 w-8">
                 <AvatarImage
                   src={user.profilePhoto}
@@ -47,7 +52,7 @@ export const Navigation = ({ user }: NavigationProps) => {
               <span className="hidden sm:inline text-sm font-medium">
                 {user.firstName} {user.lastName}
               </span>
-              <ChevronDown className="h-4 w-4 text-gray-500" />
+              <ChevronDown className="h-4 w-4 text-muted-foreground" />
             </DropdownMenuTrigger>
 
             <DropdownMenuContent align="end" className="w-48">
@@ -64,7 +69,8 @@ export const Navigation = ({ user }: NavigationProps) => {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-        )}
+          )}
+        </div>
       </div>
     </nav>
   );

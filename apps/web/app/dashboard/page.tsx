@@ -41,10 +41,10 @@ export default function DashboardPage() {
   // Loading state
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
+      <div className="flex min-h-screen items-center justify-center bg-background px-4">
         <div className="text-center">
           <Loader2 className="inline-block h-8 w-8 sm:h-12 sm:w-12 animate-spin text-blue-600" />
-          <p className="mt-4 text-sm sm:text-lg text-gray-700">
+          <p className="mt-4 text-sm sm:text-lg text-muted-foreground">
             Loading your data...
           </p>
         </div>
@@ -55,7 +55,7 @@ export default function DashboardPage() {
   // Error state
   if (error) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
+      <div className="flex min-h-screen items-center justify-center bg-background px-4">
         <div className="w-full max-w-md">
           <Alert variant="destructive">
             <XCircle className="h-4 w-4" />

@@ -60,8 +60,8 @@ export default function ProfilePage() {
         <h1 className="mb-6 text-3xl font-bold">Profile Settings</h1>
         <Card className="p-6">
           <div className="animate-pulse">
-            <div className="mb-4 h-6 w-48 rounded bg-gray-200"></div>
-            <div className="h-32 w-full rounded bg-gray-200"></div>
+            <div className="mb-4 h-6 w-48 rounded bg-muted"></div>
+            <div className="h-32 w-full rounded bg-muted"></div>
           </div>
         </Card>
       </div>
@@ -80,13 +80,13 @@ export default function ProfilePage() {
       <h1 className="mb-6 text-3xl font-bold">Profile Settings</h1>
 
       {showSuccess && (
-        <Alert className="mb-6 border-green-500 bg-green-50 text-green-800">
+        <Alert className="mb-6 border-green-500 bg-green-50 text-green-800 dark:bg-green-950 dark:text-green-200">
           Experience level updated successfully!
         </Alert>
       )}
 
       {showError && (
-        <Alert className="mb-6 border-red-500 bg-red-50 text-red-800">
+        <Alert className="mb-6 border-red-500 bg-red-50 text-red-800 dark:bg-red-950 dark:text-red-200">
           Failed to update experience level. Please try again.
         </Alert>
       )}

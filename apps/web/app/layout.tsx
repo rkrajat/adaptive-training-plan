@@ -15,14 +15,31 @@ export const viewport: Viewport = {
   maximumScale: 5,
 };
 
+// Script to prevent flash of wrong theme on page load
+const themeScript = `
+  (function() {
+    try {
+      var stored = localStorage.getItem('adaptive-training-theme');
+      var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      var theme = stored === 'dark' || stored === 'light' ? stored : (stored === 'system' || !stored) && prefersDark ? 'dark' : 'light';
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark');
+      }
+    } catch (e) {}
+  })();
+`;
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body>
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
+      <body className="transition-colors duration-150">
         <Providers>{children}</Providers>
       </body>
     </html>

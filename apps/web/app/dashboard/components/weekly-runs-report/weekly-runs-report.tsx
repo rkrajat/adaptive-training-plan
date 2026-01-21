@@ -160,7 +160,7 @@ export const WeeklyRunsReport = ({
   }
 
   return (
-    <Card className="mb-6 border-orange-200 bg-orange-50/30">
+    <Card className="mb-6 border-orange-200 bg-orange-50/30 dark:border-orange-800 dark:bg-orange-950/20">
       <CardHeader className="pb-2">
         <CardTitle className="text-sm font-medium flex items-center gap-2">
           <Activity className="h-4 w-4 text-orange-600" />
