@@ -1,6 +1,8 @@
+import type {
+  RecommendationStatus,
+  TrainingPlan,
+} from "@adaptive-training-plan/types";
 import { useState } from "react";
-
-import type { TrainingPlan } from "@adaptive-training-plan/types";
 
 import { recommendationsApi } from "@/lib/api";
 import { extractRecommendationMetadata } from "@/lib/stream-utils";
@@ -8,10 +10,14 @@ import { extractRecommendationMetadata } from "@/lib/stream-utils";
 interface UseRecommendationsReturn {
   completion: string;
   recommendationId: string | null;
+  recommendationStatus: RecommendationStatus | undefined;
   isGenerating: boolean;
   error: Error | null;
   generateRecommendations: (userFeedback?: string) => Promise<void>;
   handleRegenerate: () => void;
+  setCompletion: (content: string) => void;
+  setRecommendationId: (id: string | null) => void;
+  setRecommendationStatus: (status: RecommendationStatus | undefined) => void;
 }
 
 /**
@@ -23,6 +29,9 @@ export const useRecommendations = (
 ): UseRecommendationsReturn => {
   const [completion, setCompletion] = useState<string>("");
   const [recommendationId, setRecommendationId] = useState<string | null>(null);
+  const [recommendationStatus, setRecommendationStatus] = useState<
+    RecommendationStatus | undefined
+  >(undefined);
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
@@ -33,6 +42,7 @@ export const useRecommendations = (
     setError(null);
     setCompletion("");
     setRecommendationId(null);
+    setRecommendationStatus(undefined);
 
     try {
       // Check if user has an active training plan
@@ -77,6 +87,8 @@ export const useRecommendations = (
         setRecommendationId(recId);
         // Update completion with clean content (metadata removed)
         setCompletion(cleanContent);
+        // New recommendations start as pending
+        setRecommendationStatus("pending");
       }
     } catch (err) {
       console.error("Error generating recommendations:", err);
@@ -94,9 +106,13 @@ export const useRecommendations = (
   return {
     completion,
     recommendationId,
+    recommendationStatus,
     isGenerating,
     error,
     generateRecommendations,
     handleRegenerate,
+    setCompletion,
+    setRecommendationId,
+    setRecommendationStatus,
   };
 };

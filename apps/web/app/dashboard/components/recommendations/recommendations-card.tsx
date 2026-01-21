@@ -7,6 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 import { FeedbackButton } from "../feedback";
+import { AcceptRejectButtons } from "./accept-reject-buttons";
+import type { RecommendationStatus } from "./types";
 
 interface RecommendationsCardProps {
   completion: string;
@@ -14,6 +16,11 @@ interface RecommendationsCardProps {
   error: Error | null;
   onRegenerate: () => void;
   recommendationId?: string;
+  recommendationStatus?: RecommendationStatus;
+  onAccept?: () => void;
+  onReject?: () => void;
+  isAccepting?: boolean;
+  isRejecting?: boolean;
 }
 
 /**
@@ -26,7 +33,18 @@ export const RecommendationsCard = ({
   error,
   onRegenerate,
   recommendationId,
+  recommendationStatus,
+  onAccept,
+  onReject,
+  isAccepting = false,
+  isRejecting = false,
 }: RecommendationsCardProps) => {
+  const showAcceptReject =
+    recommendationStatus === "pending" &&
+    !isGenerating &&
+    completion &&
+    onAccept &&
+    onReject;
   return (
     <Card className="mb-6 sm:mb-8">
       <CardHeader>
@@ -34,24 +52,33 @@ export const RecommendationsCard = ({
           <CardTitle className="text-lg sm:text-xl">
             Weekly Training Recommendation
           </CardTitle>
-          <div className="flex flex-col sm:flex-row gap-2 sm:gap-0">
-            {/* Feedback Button */}
-            {recommendationId && !isGenerating && (
-              <div className="mr-3">
-                <FeedbackButton recommendationId={recommendationId} />
-              </div>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+            {/* Accept/Reject Buttons - only for pending recommendations */}
+            {showAcceptReject && (
+              <AcceptRejectButtons
+                onAccept={onAccept}
+                onReject={onReject}
+                isAccepting={isAccepting}
+                isRejecting={isRejecting}
+              />
             )}
+            {/* Feedback Button - only for accepted recommendations */}
+            {recommendationId &&
+              !isGenerating &&
+              recommendationStatus === "accepted" && (
+                <FeedbackButton recommendationId={recommendationId} />
+              )}
             <Button
               onClick={onRegenerate}
-              disabled={isGenerating}
+              disabled={isGenerating || isAccepting || isRejecting}
               className="bg-orange-500 hover:bg-orange-600 w-full sm:w-auto"
               size="sm"
             >
               {isGenerating
                 ? "Generating..."
                 : completion
-                ? "Regenerate"
-                : "Get Recommendations"}
+                  ? "Regenerate"
+                  : "Get Recommendations"}
             </Button>
           </div>
         </div>

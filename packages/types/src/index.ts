@@ -14,3 +14,12 @@ export type {
   WeeklySummaryResponse,
   WeeklyRunsReportProps,
 } from './weekly-summary';
+export type {
+  RecommendationStatus,
+  RejectAction,
+  ActiveRecommendation,
+  ActiveRecommendationResponse,
+  AcceptRecommendationResponse,
+  RejectRecommendationRequest,
+  RejectRecommendationResponse,
+} from './recommendation';

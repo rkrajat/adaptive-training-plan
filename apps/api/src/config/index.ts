@@ -50,6 +50,11 @@ const configSchema = z.object({
       .default(15 * 60 * 1000), // 15 minutes
     maxRequests: z.number().int().positive().default(100),
   }),
+
+  // Recommendation Settings
+  recommendation: z.object({
+    expiryDayOfWeek: z.number().int().min(0).max(6).default(0), // 0=Sunday through 6=Saturday
+  }),
 });
 
 const parseConfig = () => {
@@ -88,6 +93,11 @@ const parseConfig = () => {
         : undefined,
       maxRequests: process.env.RATE_LIMIT_MAX_REQUESTS
         ? parseInt(process.env.RATE_LIMIT_MAX_REQUESTS, 10)
+        : undefined,
+    },
+    recommendation: {
+      expiryDayOfWeek: process.env.RECOMMENDATION_EXPIRY_DAY_OF_WEEK
+        ? parseInt(process.env.RECOMMENDATION_EXPIRY_DAY_OF_WEEK, 10)
         : undefined,
     },
   };

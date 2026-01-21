@@ -1,18 +1,29 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, XCircle } from "lucide-react";
+import { toast } from "sonner";
 
 import { useAuthGuard } from "@/hooks/use-auth-guard";
 import { useDashboardData } from "@/hooks/use-dashboard-data";
 import { useRecommendations } from "@/hooks/use-recommendations";
+import {
+  useActiveRecommendation,
+  useAcceptRecommendation,
+  useRejectRecommendation,
+} from "@/hooks/use-recommendation-acceptance";
 import { UploadTrainingPlanDialog } from "@/components/UploadTrainingPlanDialog";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 import { DashboardLayout } from "./components/dashboard-layout";
-import { RecommendationsCard } from "./components/recommendations";
+import {
+  RecommendationsCard,
+  RejectDialog,
+  ReplaceConfirmationDialog,
+} from "./components/recommendations";
+import type { RejectAction } from "./components/recommendations";
 import { RecentActivities } from "./components/activities";
 import { TrainingPlanSection } from "./components/training-plan";
 import { WeeklyRunsReport } from "./components/weekly-runs-report";
@@ -30,13 +41,110 @@ export default function DashboardPage() {
   const {
     completion,
     recommendationId,
+    recommendationStatus,
     isGenerating,
     error: recommendationError,
     handleRegenerate,
+    generateRecommendations,
+    setCompletion,
+    setRecommendationId,
+    setRecommendationStatus,
   } = useRecommendations(activePlan);
 
-  // State for upload dialog
+  // Fetch active recommendation on mount
+  const { data: activeRecommendation } = useActiveRecommendation();
+
+  // Accept/reject mutations
+  const acceptMutation = useAcceptRecommendation();
+  const rejectMutation = useRejectRecommendation();
+
+  // State for dialogs
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
+  const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
+  const [isReplaceDialogOpen, setIsReplaceDialogOpen] = useState(false);
+
+  // Load active recommendation on mount
+  useEffect(() => {
+    if (activeRecommendation && !completion) {
+      setCompletion(activeRecommendation.content);
+      setRecommendationId(activeRecommendation.id);
+      setRecommendationStatus(activeRecommendation.status);
+    }
+  }, [activeRecommendation, completion, setCompletion, setRecommendationId, setRecommendationStatus]);
+
+  // Handle regenerate click - show confirmation if active recommendation exists
+  const handleRegenerateClick = () => {
+    if (activeRecommendation) {
+      setIsReplaceDialogOpen(true);
+    } else {
+      handleRegenerate();
+    }
+  };
+
+  // Confirm replacement and generate new
+  const handleConfirmReplace = () => {
+    setIsReplaceDialogOpen(false);
+    handleRegenerate();
+  };
+
+  // Handle accept recommendation
+  const handleAccept = () => {
+    if (!recommendationId) return;
+
+    acceptMutation.mutate(recommendationId, {
+      onSuccess: () => {
+        setRecommendationStatus("accepted");
+        toast.success("Recommendation accepted!", {
+          description: "Your training plan is now active for this week.",
+        });
+      },
+      onError: (err) => {
+        toast.error("Failed to accept recommendation", {
+          description: err.message,
+        });
+      },
+    });
+  };
+
+  // Handle reject button click - open dialog
+  const handleRejectClick = () => {
+    setIsRejectDialogOpen(true);
+  };
+
+  // Handle reject action selection
+  const handleRejectAction = (action: RejectAction) => {
+    if (!recommendationId) return;
+
+    rejectMutation.mutate(
+      { recommendationId, action },
+      {
+        onSuccess: (data) => {
+          setIsRejectDialogOpen(false);
+          setRecommendationStatus("rejected");
+
+          if (data.action === "generate_new") {
+            toast.info("Generating new recommendation...");
+            // Clear current and generate new
+            setCompletion("");
+            setRecommendationId(null);
+            setRecommendationStatus(undefined);
+            generateRecommendations().catch(console.error);
+          } else {
+            toast.success("Recommendation discarded");
+            // Clear state to show empty state
+            setCompletion("");
+            setRecommendationId(null);
+            setRecommendationStatus(undefined);
+          }
+        },
+        onError: (err) => {
+          toast.error("Failed to reject recommendation", {
+            description: err.message,
+          });
+        },
+      }
+    );
+  };
 
   // Loading state
   if (isLoading) {
@@ -90,8 +198,13 @@ export default function DashboardPage() {
         completion={completion}
         isGenerating={isGenerating}
         error={recommendationError}
-        onRegenerate={handleRegenerate}
+        onRegenerate={handleRegenerateClick}
         recommendationId={recommendationId || undefined}
+        recommendationStatus={recommendationStatus}
+        onAccept={handleAccept}
+        onReject={handleRejectClick}
+        isAccepting={acceptMutation.isPending}
+        isRejecting={rejectMutation.isPending}
       />
 
       <RecentActivities activities={activities} />
@@ -104,6 +217,20 @@ export default function DashboardPage() {
       <UploadTrainingPlanDialog
         open={isUploadDialogOpen}
         onOpenChange={setIsUploadDialogOpen}
+      />
+
+      <RejectDialog
+        isOpen={isRejectDialogOpen}
+        onClose={() => setIsRejectDialogOpen(false)}
+        onSelectAction={handleRejectAction}
+        isLoading={rejectMutation.isPending}
+      />
+
+      <ReplaceConfirmationDialog
+        isOpen={isReplaceDialogOpen}
+        onClose={() => setIsReplaceDialogOpen(false)}
+        onConfirm={handleConfirmReplace}
+        isLoading={isGenerating}
       />
     </DashboardLayout>
   );
