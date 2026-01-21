@@ -62,16 +62,16 @@ export const TrainingPlanTable = ({
   // Handle errors
   if (error) {
     return (
-      <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-center">
-        <p className="text-sm text-red-800">{error}</p>
+      <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-center">
+        <p className="text-sm text-destructive">{error}</p>
       </div>
     );
   }
 
   if (groupedWeeks.length === 0) {
     return (
-      <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 text-center">
-        <p className="text-sm text-gray-600">No training data available</p>
+      <div className="rounded-lg border border-border bg-muted p-4 text-center">
+        <p className="text-sm text-muted-foreground">No training data available</p>
       </div>
     );
   }
@@ -91,39 +91,39 @@ export const TrainingPlanTable = ({
             <div
               className={`rounded-lg border ${
                 isCurrentWeek
-                  ? "border-orange-300 bg-orange-50"
-                  : "border-gray-200 bg-white"
+                  ? "border-orange-300 bg-orange-50 dark:bg-orange-950/30 dark:border-orange-700"
+                  : "border-border bg-card"
               }`}
             >
-              <CollapsibleTrigger className="flex w-full items-center justify-between p-4 text-left hover:bg-gray-50/50">
+              <CollapsibleTrigger className="flex w-full items-center justify-between p-4 text-left hover:bg-accent/50">
                 <div className="flex items-center gap-3">
                   {isExpanded ? (
-                    <ChevronDown className="h-5 w-5 text-gray-600" />
+                    <ChevronDown className="h-5 w-5 text-muted-foreground" />
                   ) : (
-                    <ChevronRight className="h-5 w-5 text-gray-600" />
+                    <ChevronRight className="h-5 w-5 text-muted-foreground" />
                   )}
                   <h3
                     className={`text-base font-semibold ${
-                      isCurrentWeek ? "text-orange-900" : "text-gray-900"
+                      isCurrentWeek ? "text-orange-900 dark:text-orange-300" : "text-foreground"
                     }`}
                   >
                     Week {week.weekNumber}
                     {isCurrentWeek && (
-                      <span className="ml-2 text-sm font-normal text-orange-700">
+                      <span className="ml-2 text-sm font-normal text-orange-700 dark:text-orange-400">
                         (Current Week)
                       </span>
                     )}
                   </h3>
                 </div>
-                <span className="text-sm text-gray-600">
+                <span className="text-sm text-muted-foreground">
                   {week.rows.length} {week.rows.length === 1 ? "day" : "days"}
                 </span>
               </CollapsibleTrigger>
 
               <CollapsibleContent>
-                <div className="overflow-x-auto border-t">
+                <div className="overflow-x-auto border-t border-border">
                   <Table>
-                    <TableHeader className="bg-gray-100">
+                    <TableHeader className="bg-muted">
                       <TableRow>
                         {headers.map((header) => (
                           <TableHead

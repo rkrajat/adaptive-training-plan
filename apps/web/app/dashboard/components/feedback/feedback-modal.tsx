@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { Loader2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -41,15 +41,13 @@ export const FeedbackModal = ({
   const [wouldFollow, setWouldFollow] = useState<boolean>(false);
   const [comment, setComment] = useState<string>('');
 
-  // Reset form when modal opens/closes
-  useEffect(() => {
-    if (!isOpen) {
-      // Reset form state when modal closes
-      setRating(0);
-      setWouldFollow(false);
-      setComment('');
-    }
-  }, [isOpen]);
+  // Reset form and close modal
+  const handleClose = useCallback(() => {
+    setRating(0);
+    setWouldFollow(false);
+    setComment('');
+    onClose();
+  }, [onClose]);
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
@@ -72,7 +70,7 @@ export const FeedbackModal = ({
   const maxCharacters = 1000;
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[500px]">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
@@ -162,7 +160,7 @@ export const FeedbackModal = ({
             <Button
               type="button"
               variant="outline"
-              onClick={onClose}
+              onClick={handleClose}
               disabled={isSubmitting}
             >
               Cancel

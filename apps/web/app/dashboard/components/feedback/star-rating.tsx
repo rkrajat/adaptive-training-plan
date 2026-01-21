@@ -89,7 +89,7 @@ export const StarRating = ({
                 ${
                   isFilled
                     ? 'fill-yellow-400 text-yellow-400'
-                    : 'fill-none text-gray-300'
+                    : 'fill-none text-muted-foreground/50'
                 }
                 ${!disabled && 'hover:text-yellow-300'}
               `}

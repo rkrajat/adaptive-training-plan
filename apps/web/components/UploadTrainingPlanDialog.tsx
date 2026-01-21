@@ -167,7 +167,7 @@ export const UploadTrainingPlanDialog = ({
                 className="text-xs sm:text-sm"
               />
               {file && (
-                <p className="text-xs sm:text-sm text-gray-600 break-words">
+                <p className="text-xs sm:text-sm text-muted-foreground break-words">
                   Selected: {file.name}
                   {file.name.toLowerCase().endsWith(".pdf") &&
                     " (PDF will be converted to CSV)"}

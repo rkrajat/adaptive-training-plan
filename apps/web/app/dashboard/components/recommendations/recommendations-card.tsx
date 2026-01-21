@@ -60,10 +60,10 @@ export const RecommendationsCard = ({
         {/* Loading State */}
         {isGenerating && !completion && (
           <div className="space-y-4">
-            <div className="h-4 bg-gray-200 rounded animate-pulse w-3/4"></div>
-            <div className="h-4 bg-gray-200 rounded animate-pulse w-full"></div>
-            <div className="h-4 bg-gray-200 rounded animate-pulse w-5/6"></div>
-            <div className="h-4 bg-gray-200 rounded animate-pulse w-2/3"></div>
+            <div className="h-4 bg-muted rounded animate-pulse w-3/4"></div>
+            <div className="h-4 bg-muted rounded animate-pulse w-full"></div>
+            <div className="h-4 bg-muted rounded animate-pulse w-5/6"></div>
+            <div className="h-4 bg-muted rounded animate-pulse w-2/3"></div>
           </div>
         )}
 
@@ -88,7 +88,7 @@ export const RecommendationsCard = ({
         {/* Streaming/Completed Content */}
         {completion && (
           <div className="space-y-4">
-            <div className="prose prose-sm sm:prose-base max-w-none prose-headings:font-semibold prose-h1:text-lg sm:prose-h1:text-xl prose-h2:text-base sm:prose-h2:text-lg prose-h3:text-sm sm:prose-h3:text-base prose-p:text-xs sm:prose-p:text-sm prose-p:leading-relaxed prose-ul:my-2 prose-ol:my-2 prose-li:my-1 prose-strong:text-gray-900 prose-strong:font-semibold overflow-hidden break-words">
+            <div className="prose prose-sm sm:prose-base max-w-none dark:prose-invert prose-headings:font-semibold prose-h1:text-lg sm:prose-h1:text-xl prose-h2:text-base sm:prose-h2:text-lg prose-h3:text-sm sm:prose-h3:text-base prose-p:text-xs sm:prose-p:text-sm prose-p:leading-relaxed prose-ul:my-2 prose-ol:my-2 prose-li:my-1 prose-strong:text-foreground prose-strong:font-semibold overflow-hidden break-words">
               <div className="overflow-x-auto break-words">
                 <ReactMarkdown
                   remarkPlugins={[remarkGfm]}
@@ -102,17 +102,17 @@ export const RecommendationsCard = ({
                     code: ({ children, className }) => {
                       const isInline = !className;
                       return isInline ? (
-                        <code className="break-words bg-gray-100 px-1 py-0.5 rounded text-xs">
+                        <code className="break-words bg-muted px-1 py-0.5 rounded text-xs">
                           {children}
                         </code>
                       ) : (
-                        <code className="block overflow-x-auto bg-gray-100 p-2 rounded text-xs whitespace-pre">
+                        <code className="block overflow-x-auto bg-muted p-2 rounded text-xs whitespace-pre">
                           {children}
                         </code>
                       );
                     },
                     pre: ({ children }) => (
-                      <pre className="overflow-x-auto bg-gray-100 p-2 rounded text-xs whitespace-pre-wrap break-words">
+                      <pre className="overflow-x-auto bg-muted p-2 rounded text-xs whitespace-pre-wrap break-words">
                         {children}
                       </pre>
                     ),
@@ -128,7 +128,7 @@ export const RecommendationsCard = ({
         {/* Empty State */}
         {!isGenerating && !completion && !error && (
           <div className="text-center py-8">
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-muted-foreground">
               Click &quot;Get Recommendations&quot; to get your personalized
               training recommendation
             </p>

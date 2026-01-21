@@ -18,11 +18,11 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 px-4">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-background px-4">
       {/* Logo */}
       <div className="mb-8 flex items-center gap-2">
         <Zap className="h-8 w-8 text-blue-600" />
-        <span className="text-2xl font-bold text-gray-900">AdaptiveRunning</span>
+        <span className="text-2xl font-bold text-foreground">AdaptiveRunning</span>
       </div>
 
       <p className="mb-8 text-center text-muted-foreground">
@@ -69,7 +69,7 @@ export default function LoginPage() {
       {/* Back to Home Link */}
       <Link
         href="/"
-        className="mt-6 flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900 transition-colors"
+        className="mt-6 flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
       >
         <ArrowLeft className="h-4 w-4" />
         Back to Home

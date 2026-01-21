@@ -16,14 +16,14 @@ interface RecentActivitiesProps {
 export const RecentActivities = ({ activities }: RecentActivitiesProps) => {
   return (
     <div className="mb-6 sm:mb-8">
-      <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-3 sm:mb-4">
+      <h2 className="text-lg sm:text-xl font-bold text-foreground mb-3 sm:mb-4">
         Recent Activities
       </h2>
 
       {activities.length === 0 ? (
         <Card className="p-6 sm:p-12 text-center">
-          <Archive className="mx-auto h-8 w-8 sm:h-12 sm:w-12 text-gray-400" />
-          <h3 className="mt-3 sm:mt-4 text-base sm:text-lg font-semibold">No activities found</h3>
+          <Archive className="mx-auto h-8 w-8 sm:h-12 sm:w-12 text-muted-foreground" />
+          <h3 className="mt-3 sm:mt-4 text-base sm:text-lg font-semibold text-foreground">No activities found</h3>
           <p className="mt-2 text-xs sm:text-sm text-muted-foreground">
             You haven&apos;t logged any activities in the last 30 days.
           </p>
