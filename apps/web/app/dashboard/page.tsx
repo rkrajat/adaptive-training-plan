@@ -17,6 +17,8 @@ import { UploadTrainingPlanDialog } from "@/components/UploadTrainingPlanDialog"
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
+import { OnboardingTour } from "@/components/onboarding";
+
 import { DashboardLayout } from "./components/dashboard-layout";
 import {
   RecommendationsCard,
@@ -187,6 +189,11 @@ export default function DashboardPage() {
 
   return (
     <DashboardLayout user={user}>
+      <OnboardingTour
+        hasActivePlan={!!activePlan}
+        hasRecommendation={!!completion && recommendationStatus === "pending"}
+      />
+
       {activePlan && (
         <WeeklyRunsReport
           currentWeek={activePlan.currentWeek}

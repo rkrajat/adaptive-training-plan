@@ -46,7 +46,7 @@ export const RecommendationsCard = ({
     onAccept &&
     onReject;
   return (
-    <Card className="mb-6 sm:mb-8">
+    <Card className="mb-6 sm:mb-8" data-tour="recommendations-card">
       <CardHeader>
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0">
           <CardTitle className="text-lg sm:text-xl">
