@@ -59,7 +59,7 @@ export const TrainingPlanSection = ({
 
   return (
     <>
-      <Card className="p-4 sm:p-8">
+      <Card className="p-4 sm:p-8" data-tour="training-plan-section">
         {activePlan ? (
           <div>
             <div className="mb-6 flex items-center justify-between">

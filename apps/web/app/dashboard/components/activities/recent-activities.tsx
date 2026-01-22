@@ -15,7 +15,7 @@ interface RecentActivitiesProps {
  */
 export const RecentActivities = ({ activities }: RecentActivitiesProps) => {
   return (
-    <div className="mb-6 sm:mb-8">
+    <div className="mb-6 sm:mb-8" data-tour="recent-activities">
       <h2 className="text-lg sm:text-xl font-bold text-foreground mb-3 sm:mb-4">
         Recent Activities
       </h2>

@@ -1,7 +1,7 @@
 "use client";
 
 import type { User } from "@adaptive-training-plan/types";
-import { Zap, LogOut, User as UserIcon, ChevronDown } from "lucide-react";
+import { Zap, LogOut, User as UserIcon, ChevronDown, Repeat } from "lucide-react";
 import Link from "next/link";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -14,12 +14,18 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { logout } from "../lib/auth";
+import { resetOnboardingTour } from "@/hooks/use-onboarding-tour";
 
 interface NavigationProps {
   user?: User;
 }
 
 export const Navigation = ({ user }: NavigationProps) => {
+  const handleReplayTour = () => {
+    resetOnboardingTour();
+    window.location.reload();
+  };
+
   return (
     <nav className="border-b border-border bg-background">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
@@ -37,38 +43,42 @@ export const Navigation = ({ user }: NavigationProps) => {
 
           {/* User Menu Dropdown */}
           {user && (
-          <DropdownMenu>
-            <DropdownMenuTrigger className="flex items-center gap-2 rounded-md hover:bg-accent transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 px-2 py-1">
-              <Avatar className="h-8 w-8">
-                <AvatarImage
-                  src={user.profilePhoto}
-                  alt={`${user.firstName} ${user.lastName}`}
-                />
-                <AvatarFallback>
-                  {user.firstName?.[0]}
-                  {user.lastName?.[0]}
-                </AvatarFallback>
-              </Avatar>
-              <span className="hidden sm:inline text-sm font-medium">
-                {user.firstName} {user.lastName}
-              </span>
-              <ChevronDown className="h-4 w-4 text-muted-foreground" />
-            </DropdownMenuTrigger>
+            <DropdownMenu>
+              <DropdownMenuTrigger className="flex items-center gap-2 rounded-md hover:bg-accent transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 px-2 py-1" data-tour="user-menu">
+                <Avatar className="h-8 w-8">
+                  <AvatarImage
+                    src={user.profilePhoto}
+                    alt={`${user.firstName} ${user.lastName}`}
+                  />
+                  <AvatarFallback>
+                    {user.firstName?.[0]}
+                    {user.lastName?.[0]}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="hidden sm:inline text-sm font-medium">
+                  {user.firstName} {user.lastName}
+                </span>
+                <ChevronDown className="h-4 w-4 text-muted-foreground" />
+              </DropdownMenuTrigger>
 
-            <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuItem asChild>
-                <Link href="/profile" className="cursor-pointer">
-                  <UserIcon />
-                  Profile
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={logout} className="cursor-pointer text-red-600">
-                <LogOut />
-                Logout
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem asChild>
+                  <Link href="/profile" className="cursor-pointer">
+                    <UserIcon />
+                    Profile
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleReplayTour} className="cursor-pointer" data-tour="help-menu-item">
+                  <Repeat />
+                  Replay Tour
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={logout} className="cursor-pointer text-red-600">
+                  <LogOut />
+                  Logout
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           )}
         </div>
       </div>

@@ -100,3 +100,15 @@
     overflow-wrap: break-word;
   }
 }
+
+/* React Joyride tour customizations */
+.react-joyride__spotlight {
+  border-radius: 8px !important;
+  background-color: transparent !important;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5) !important;
+}
+
+.react-joyride__overlay {
+  mix-blend-mode: unset !important;
+  background-color: transparent !important;
+}
