@@ -1,4 +1,4 @@
-import type { ExperienceLevel } from "@adaptive-training-plan/types";
+import type { ExperienceLevel, TrainingPaces } from "@adaptive-training-plan/types";
 import { groupTrainingPlanByWeek } from "@adaptive-training-plan/utils";
 import { openai } from "@ai-sdk/openai";
 import { generateText, streamText } from "ai";
@@ -11,6 +11,7 @@ import type {
 } from "../types/strava.types";
 import { InternalServerError } from "../utils/error";
 import { log } from "../utils/logger";
+import { formatPace } from "../utils/pace-formatter";
 
 /**
  * AI Service
@@ -209,6 +210,22 @@ For next week:
     - Set Target Pace / HR Zone
     - Ensure at least 1 rest day
     - Ensure long run ≤ 30–35% of total weekly mileage
+
+6. TRAINING PACE SELECTION RULES (IMPORTANT)
+You may receive two sources of training paces:
+A) PLAN-EMBEDDED PACES: Paces specified in the training plan CSV (target_pace_min_per_km column)
+B) VDOT-CALCULATED PACES: A separate "Training Pace Zones" section with paces derived from the athlete's race goal
+
+PRIORITY ORDER - ALWAYS follow this hierarchy:
+1. FIRST PRIORITY: Use paces from the training plan if they exist
+   - If the plan has multiple pace groups or pace recommendations, select the most appropriate pace based on the athlete's target finish time and the workout type
+   - Use your expert judgment to match the right pace group to each workout
+2. FALLBACK: Only use VDOT-calculated paces when the training plan does NOT specify target paces
+   - The VDOT paces are provided as a fallback reference only
+   - Use them to fill in gaps when the plan lacks pace guidance
+
+NEVER override plan-specified paces with VDOT-calculated paces. The coach who created the plan knows the athlete's specific needs.
+
 5.Instruction to LLM:
 When all the inputs are provided - a) Plan - Recent Activities (Last 30 Days) b) Actual - Current Week Training Plan c) Running Experience - “Beginner”, “Intermediate”, “Expert” are provided:
 Parse each input using the schema definitions.
@@ -374,13 +391,33 @@ If you are unable to find sufficient data to make changes, output the same forma
   }
 
   /**
+   * Format training paces for AI prompt context
+   * These are VDOT-calculated fallback paces - plan-embedded paces take priority
+   */
+  private formatTrainingPacesForPrompt(paces: TrainingPaces): string {
+    return `## Training Pace Zones (VDOT-Calculated - FALLBACK ONLY)
+**IMPORTANT**: These paces are calculated from the athlete's race goal using VDOT formula.
+Use these ONLY when the training plan does NOT specify target paces. Plan-embedded paces ALWAYS take priority.
+
+| Zone | Pace Range |
+|------|------------|
+| Easy/Recovery | ${formatPace(paces.easy.maxPace)} - ${formatPace(paces.easy.minPace)} /km |
+| Long Run | ${formatPace(paces.longRun.maxPace)} - ${formatPace(paces.longRun.minPace)} /km |
+| Marathon | ${formatPace(paces.marathon.maxPace)} - ${formatPace(paces.marathon.minPace)} /km |
+| Threshold/Tempo | ${formatPace(paces.threshold.maxPace)} - ${formatPace(paces.threshold.minPace)} /km |
+| Interval | ${formatPace(paces.interval.maxPace)} - ${formatPace(paces.interval.minPace)} /km |
+| Repetition | ${formatPace(paces.repetition.maxPace)} - ${formatPace(paces.repetition.minPace)} /km |`;
+  }
+
+  /**
    * Build user prompt with enhanced activity data and training plan from database
    */
   private buildUserPromptWithEnhancedActivities(
     activities: EnhancedFormattedActivity[],
     trainingPlanData: string,
     userFeedback?: string,
-    experienceLevel?: ExperienceLevel
+    experienceLevel?: ExperienceLevel,
+    trainingPaces?: TrainingPaces
   ): string {
     // Format activities as a structured table
     const activitiesTable = activities
@@ -412,6 +449,11 @@ If you are unable to find sufficient data to make changes, output the same forma
       : "Intermediate";
 
     let prompt = `## Recent Running Activities (Last 30 Days)\n${activitiesTable}\n\n## Training Plan\n${trainingPlanData}\n\n## Running Experience\n${runningExperience}`;
+
+    // Add training paces if available (calculated from VDOT or plan-embedded)
+    if (trainingPaces) {
+      prompt += `\n\n${this.formatTrainingPacesForPrompt(trainingPaces)}`;
+    }
 
     if (userFeedback) {
       prompt += `\n\n## Athlete Feedback\n${userFeedback}`;
@@ -620,6 +662,7 @@ Keep the tone professional but encouraging. Be specific and actionable.`;
 
   /**
    * Generate training recommendations with enhanced activity data and training plan from database
+   * Includes training paces from VDOT calculation when available
    */
   generateRecommendationsWithEnhancedPlan(
     activities: EnhancedFormattedActivity[],
@@ -627,13 +670,15 @@ Keep the tone professional but encouraging. Be specific and actionable.`;
     currentWeek: number,
     startDate: string,
     userFeedback?: string,
-    experienceLevel?: ExperienceLevel
+    experienceLevel?: ExperienceLevel,
+    trainingPaces?: TrainingPaces
   ) {
     try {
       log.info("Generating AI recommendations with enhanced activity data", {
         activitiesCount: activities.length,
         currentWeek,
         hasFeedback: !!userFeedback,
+        hasTrainingPaces: !!trainingPaces,
       });
 
       const systemPrompt = this.buildSystemPrompt();
@@ -646,7 +691,8 @@ Keep the tone professional but encouraging. Be specific and actionable.`;
         activities,
         trainingPlanData,
         userFeedback,
-        experienceLevel
+        experienceLevel,
+        trainingPaces
       );
 
       log.debug("AI prompts prepared with enhanced activities", {

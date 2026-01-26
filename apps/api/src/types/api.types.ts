@@ -1,3 +1,10 @@
+import type {
+  RaceGoal,
+  TrainingPaces,
+} from '@adaptive-training-plan/types';
+
+import type { FormattedTrainingPaces } from '../utils/pace-formatter';
+
 import type { FormattedActivity } from "./strava.types";
 
 /**
@@ -94,6 +101,7 @@ export interface TrainingPlanMetadata {
 
 /**
  * Training plan upload request
+ * raceGoal is required for VDOT calculation
  */
 export interface TrainingPlanUploadRequest {
   name: string;
@@ -103,6 +111,10 @@ export interface TrainingPlanUploadRequest {
   raceDate?: string;
   raceDistance?: string;
   targetTime?: string;
+  raceGoal: {
+    distance: 5000 | 10000 | 21097.5 | 42195;
+    targetTimeSeconds: number;
+  };
 }
 
 /**
@@ -154,4 +166,27 @@ export interface TrainingPlanWithVersionsResponse
  */
 export interface ListTrainingPlansResponse {
   plans: (TrainingPlanResponse | TrainingPlanWithContentResponse)[];
+}
+
+/**
+ * User training paces response
+ */
+export interface UserPacesResponse {
+  raceGoal: {
+    distance: number;
+    distanceLabel: string;
+    targetTimeSeconds: number;
+    vdot: number;
+    calculatedAt: string;
+  } | null;
+  paces: TrainingPaces | null;
+  formatted: FormattedTrainingPaces | null;
+}
+
+/**
+ * Update race goal response
+ */
+export interface UpdateRaceGoalResponse {
+  raceGoal: RaceGoal;
+  formatted: FormattedTrainingPaces;
 }

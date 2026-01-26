@@ -97,7 +97,7 @@ export default function DashboardPage() {
       onSuccess: () => {
         setRecommendationStatus("accepted");
         toast.success("Recommendation accepted!", {
-          description: "Your training plan is now active for this week.",
+          description: "Your recommendation is saved for this week.",
         });
       },
       onError: (err) => {

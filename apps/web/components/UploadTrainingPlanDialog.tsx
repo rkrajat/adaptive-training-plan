@@ -3,7 +3,10 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { CloudUpload, Loader2, XCircle } from "lucide-react";
-import type { ExperienceLevel } from "@adaptive-training-plan/types";
+import type {
+  ExperienceLevel,
+  RaceGoalInput as RaceGoalInputType,
+} from "@adaptive-training-plan/types";
 
 import { trainingPlansApi } from "@/lib/api";
 import {
@@ -19,6 +22,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ExperienceLevelSelector } from "@/components/ExperienceLevelSelector";
+import { RaceGoalInput } from "@/components/RaceGoalInput";
 import {
   useUserProfile,
   useUpdateExperienceLevel,
@@ -45,17 +49,16 @@ export const UploadTrainingPlanDialog = ({
   const [goal, setGoal] = useState("");
   const [raceName, setRaceName] = useState("");
   const [raceDate, setRaceDate] = useState("");
-  const [raceDistance, setRaceDistance] = useState("");
-  const [targetTime, setTargetTime] = useState("");
   const [experienceLevel, setExperienceLevel] = useState<
     ExperienceLevel | undefined
   >(user?.experienceLevel);
+  const [raceGoal, setRaceGoal] = useState<RaceGoalInputType | undefined>(undefined);
 
   const uploadMutation = useMutation({
     mutationFn: async () => {
-      if (!file || !name || !startDate || !experienceLevel) {
+      if (!file || !name || !startDate || !experienceLevel || !raceGoal) {
         throw new Error(
-          "Please provide a file, plan name, start date, and experience level"
+          "Please provide a file, plan name, start date, race goal, and experience level"
         );
       }
 
@@ -70,8 +73,7 @@ export const UploadTrainingPlanDialog = ({
         goal: goal || undefined,
         raceName: raceName || undefined,
         raceDate: raceDate || undefined,
-        raceDistance: raceDistance || undefined,
-        targetTime: targetTime || undefined,
+        raceGoal,
       });
     },
     onSuccess: () => {
@@ -91,8 +93,7 @@ export const UploadTrainingPlanDialog = ({
     setGoal("");
     setRaceName("");
     setRaceDate("");
-    setRaceDistance("");
-    setTargetTime("");
+    setRaceGoal(undefined);
     if (user?.experienceLevel) {
       setExperienceLevel(user.experienceLevel);
     } else {
@@ -208,6 +209,22 @@ export const UploadTrainingPlanDialog = ({
               </p>
             </div>
 
+            {/* Race Goal - VDOT Calculation */}
+            <div className="space-y-1.5 sm:space-y-2 pt-2 border-t">
+              <Label className="text-xs sm:text-sm font-medium">
+                Race Goal for Training Paces
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                If your training plan includes target paces, those will be used.
+                Otherwise, paces will be calculated from your goal using the VDOT formula.
+              </p>
+              <RaceGoalInput
+                value={raceGoal}
+                onChange={setRaceGoal}
+                disabled={uploadMutation.isPending}
+              />
+            </div>
+
             {/* Goal */}
             <div className="space-y-1.5 sm:space-y-2">
               <Label htmlFor="goal" className="text-xs sm:text-sm">
@@ -246,34 +263,6 @@ export const UploadTrainingPlanDialog = ({
                 type="date"
                 value={raceDate}
                 onChange={(e) => setRaceDate(e.target.value)}
-                className="text-xs sm:text-sm"
-              />
-            </div>
-
-            {/* Race Distance */}
-            <div className="space-y-1.5 sm:space-y-2">
-              <Label htmlFor="raceDistance" className="text-xs sm:text-sm">
-                Race Distance (Optional)
-              </Label>
-              <Input
-                id="raceDistance"
-                placeholder="e.g., 42.2km"
-                value={raceDistance}
-                onChange={(e) => setRaceDistance(e.target.value)}
-                className="text-xs sm:text-sm"
-              />
-            </div>
-
-            {/* Target Time */}
-            <div className="space-y-1.5 sm:space-y-2">
-              <Label htmlFor="targetTime" className="text-xs sm:text-sm">
-                Target Time (Optional)
-              </Label>
-              <Input
-                id="targetTime"
-                placeholder="e.g., 3:30:00"
-                value={targetTime}
-                onChange={(e) => setTargetTime(e.target.value)}
                 className="text-xs sm:text-sm"
               />
             </div>
@@ -328,7 +317,8 @@ export const UploadTrainingPlanDialog = ({
                 !file ||
                 !name ||
                 !startDate ||
-                !experienceLevel
+                !experienceLevel ||
+                !raceGoal
               }
               size="sm"
             >
