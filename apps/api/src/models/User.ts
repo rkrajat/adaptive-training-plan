@@ -10,6 +10,7 @@ export interface IUser extends Document {
   stravaAccessToken?: string;
   stravaRefreshToken?: string;
   stravaTokenExpiresAt?: Date;
+  lastActivitySyncAt?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -46,6 +47,9 @@ const userSchema = new Schema<IUser>(
       type: String,
     },
     stravaTokenExpiresAt: {
+      type: Date,
+    },
+    lastActivitySyncAt: {
       type: Date,
     },
   },

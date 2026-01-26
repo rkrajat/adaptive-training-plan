@@ -1,3 +1,4 @@
+export { Activity } from "./Activity";
 export { User, type IUser } from "./User";
 export { TrainingPlan, type ITrainingPlan } from "./TrainingPlan";
 export {

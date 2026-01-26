@@ -2,6 +2,8 @@ import { Router, type Request, type Response } from "express";
 
 import { authenticateJWT } from "../middleware/auth";
 import { validateQuery } from "../middleware/validate";
+import { activitySyncService } from "../services/activity-sync.service";
+import { activityService } from "../services/activity.service";
 import { stravaService } from "../services/strava.service";
 import { weeklySummaryService } from "../services/weekly-summary.service";
 import { UnauthorizedError } from "../utils/error";
@@ -19,7 +21,7 @@ import {
 
 const router = Router();
 
-// GET /api/activities - Fetch activities from Strava (last 30 days)
+// GET /api/activities - Fetch activities from local database (synced from Strava)
 router.get("/", authenticateJWT, async (req: Request, res: Response) => {
   try {
     if (!req.user) {
@@ -27,24 +29,34 @@ router.get("/", authenticateJWT, async (req: Request, res: Response) => {
       return;
     }
 
-    const { stravaAccessToken } = req.user;
+    const { userId, stravaAccessToken } = req.user;
 
-    // Fetch and format activities (with mock fallback if enabled)
-    const formattedActivities =
-      await stravaService.getActivitiesWithMockFallback(
-        stravaAccessToken,
-        useMockData()
-      );
-
-    sendSuccess(res, { activities: formattedActivities });
-  } catch (error) {
-    if (error instanceof UnauthorizedError) {
-      log.warn("Strava access token expired or invalid");
-      sendUnauthorized(res, error.message);
+    // Check if using mock data - fall back to Strava API
+    if (useMockData()) {
+      const formattedActivities =
+        await stravaService.getActivitiesWithMockFallback(
+          stravaAccessToken,
+          true
+        );
+      sendSuccess(res, { activities: formattedActivities });
       return;
     }
 
-    log.error("Error fetching activities from Strava", error);
+    // Fetch activities from local database
+    const activities = await activityService.getActivitiesByUserId(userId);
+
+    // If no activities found, return empty array with helpful message
+    if (activities.length === 0) {
+      sendSuccess(res, {
+        activities: [],
+        message: "No activities found. Activities may not have been synced yet.",
+      });
+      return;
+    }
+
+    sendSuccess(res, { activities });
+  } catch (error) {
+    log.error("Error fetching activities from database", error);
     sendInternalError(res, "Failed to fetch activities");
   }
 });
@@ -100,5 +112,20 @@ router.get(
     }
   }
 );
+
+// POST /api/activities/sync - Trigger bulk sync of activities for all users
+// No authentication required - intended for internal/admin use or scheduled jobs
+router.post("/sync", async (_req: Request, res: Response) => {
+  try {
+    log.info("Activity sync endpoint triggered");
+
+    const summary = await activitySyncService.syncAllUsers();
+
+    sendSuccess(res, summary);
+  } catch (error) {
+    log.error("Error during activity sync", error);
+    sendInternalError(res, "Failed to sync activities");
+  }
+});
 
 export { router as activitiesRouter };
