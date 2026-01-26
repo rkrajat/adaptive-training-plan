@@ -10,6 +10,7 @@ import type {
   AcceptRecommendationResponse,
   RejectAction,
   RejectRecommendationResponse,
+  RaceGoalInput,
 } from "@adaptive-training-plan/types";
 
 import { getToken, removeToken } from "./auth";
@@ -97,8 +98,7 @@ export const trainingPlansApi = {
       goal?: string;
       raceName?: string;
       raceDate?: string;
-      raceDistance?: string;
-      targetTime?: string;
+      raceGoal: RaceGoalInput;
     }
   ): Promise<TrainingPlanWithContent> => {
     const formData = new FormData();
@@ -108,9 +108,9 @@ export const trainingPlansApi = {
     if (metadata.goal) formData.append("goal", metadata.goal);
     if (metadata.raceName) formData.append("raceName", metadata.raceName);
     if (metadata.raceDate) formData.append("raceDate", metadata.raceDate);
-    if (metadata.raceDistance)
-      formData.append("raceDistance", metadata.raceDistance);
-    if (metadata.targetTime) formData.append("targetTime", metadata.targetTime);
+    // Send race goal as FormData nested fields
+    formData.append("raceGoal[distance]", metadata.raceGoal.distance.toString());
+    formData.append("raceGoal[targetTimeSeconds]", metadata.raceGoal.targetTimeSeconds.toString());
 
     return api
       .post("api/training-plans", { body: formData })

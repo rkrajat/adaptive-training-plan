@@ -4,6 +4,7 @@ import multer from "multer";
 import { authenticateJWT } from "../middleware/auth";
 import { validateParams } from "../middleware/validate";
 import { trainingPlanService } from "../services/training-plan.service";
+import type { TrainingPlanUploadRequest } from "../types/api.types";
 import { AppError } from "../utils/error";
 import { log } from "../utils/logger";
 import {
@@ -70,7 +71,8 @@ router.post(
         return;
       }
 
-      const metadata = validationResult.data;
+      // Type assertion - the schema validates raceGoal is present via refine()
+      const metadata = validationResult.data as TrainingPlanUploadRequest;
 
       // Detect file type based on MIME type
       const pdfMimeTypes = ["application/pdf"];

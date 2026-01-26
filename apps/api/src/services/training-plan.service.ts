@@ -1,3 +1,4 @@
+import type { RaceDistance, RaceGoal } from "@adaptive-training-plan/types";
 import {
   getCurrentWeekNumber,
   recalculateCsvDates,
@@ -9,6 +10,7 @@ import {
   TrainingPlanVersion,
   type ITrainingPlanVersion,
 } from "../models/TrainingPlanVersion";
+import { User } from "../models/User";
 import type {
   TrainingPlanResponse,
   TrainingPlanWithContentResponse,
@@ -28,6 +30,7 @@ import {
 import { log } from "../utils/logger";
 
 import { pdfToCsvService } from "./pdf-to-csv.service";
+import { vdotService } from "./vdot.service";
 
 /**
  * Training Plan Service
@@ -81,6 +84,30 @@ export class TrainingPlanService {
 
       // Validate CSV structure (for both converted PDFs and direct CSV uploads)
       validateCsvStructure(csvContent);
+
+      // Calculate VDOT and training paces from race goal
+      let raceGoal: RaceGoal | undefined;
+      if (metadata.raceGoal) {
+        raceGoal = vdotService.createRaceGoal(
+          metadata.raceGoal.distance as RaceDistance,
+          metadata.raceGoal.targetTimeSeconds
+        );
+
+        log.info("VDOT calculated for race goal", {
+          userId,
+          distance: raceGoal.distanceLabel,
+          vdot: raceGoal.vdot,
+        });
+
+        // Update user with race goal and training paces
+        await User.findByIdAndUpdate(
+          userId,
+          { raceGoal },
+          { session }
+        );
+
+        log.info("User race goal updated", { userId, vdot: raceGoal.vdot });
+      }
 
       // Create training plan
       const trainingPlanData = {
