@@ -13,6 +13,7 @@ import {
   useAcceptRecommendation,
   useRejectRecommendation,
 } from "@/hooks/use-recommendation-acceptance";
+import { useTrainingStatus } from "@/hooks/use-training-status";
 import { UploadTrainingPlanDialog } from "@/components/UploadTrainingPlanDialog";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -28,6 +29,11 @@ import {
 import type { RejectAction } from "./components/recommendations";
 import { RecentActivities } from "./components/activities";
 import { TrainingPlanSection } from "./components/training-plan";
+import {
+  TrainingStatusBanner,
+  TrainingStatusBannerSkeleton,
+  isSuccessResponse,
+} from "./components/training-status";
 import { WeeklyRunsReport } from "./components/weekly-runs-report";
 
 export default function DashboardPage() {
@@ -55,6 +61,12 @@ export default function DashboardPage() {
 
   // Fetch active recommendation on mount
   const { data: activeRecommendation } = useActiveRecommendation();
+
+  // Fetch training status (only when user has an active plan)
+  const {
+    data: trainingStatusData,
+    isLoading: isTrainingStatusLoading,
+  } = useTrainingStatus({ enabled: !!activePlan });
 
   // Accept/reject mutations
   const acceptMutation = useAcceptRecommendation();
@@ -192,7 +204,18 @@ export default function DashboardPage() {
       <OnboardingTour
         hasActivePlan={!!activePlan}
         hasRecommendation={!!completion && recommendationStatus === "pending"}
+        hasTrainingStatus={!!trainingStatusData && isSuccessResponse(trainingStatusData)}
       />
+
+      {/* Training Status Banner - shown at top when eligible */}
+      {isTrainingStatusLoading && activePlan && <TrainingStatusBannerSkeleton />}
+      {trainingStatusData && isSuccessResponse(trainingStatusData) && (
+        <TrainingStatusBanner
+          status={trainingStatusData.status}
+          rationale={trainingStatusData.rationale}
+          currentWeek={trainingStatusData.currentWeek}
+        />
+      )}
 
       {activePlan && (
         <WeeklyRunsReport

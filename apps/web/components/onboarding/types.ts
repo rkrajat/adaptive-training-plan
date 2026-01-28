@@ -29,4 +29,5 @@ export type TourTooltipProps = TooltipRenderProps;
 export interface OnboardingTourProps {
   hasActivePlan?: boolean;
   hasRecommendation?: boolean;
+  hasTrainingStatus?: boolean;
 }

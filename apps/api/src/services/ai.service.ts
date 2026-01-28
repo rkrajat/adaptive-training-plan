@@ -14,6 +14,20 @@ import { log } from "../utils/logger";
 import { formatPace } from "../utils/pace-formatter";
 
 /**
+ * Training status types for status indicator
+ */
+export type TrainingStatusType = "on_track" | "slightly_off_track" | "off_track";
+
+/**
+ * Training status response from AI
+ */
+export interface TrainingStatusResult {
+  status: TrainingStatusType;
+  rationale: string;
+  confidence: number;
+}
+
+/**
  * AI Service
  * Handles AI-powered recommendations using Vercel AI SDK
  */
@@ -888,6 +902,344 @@ If you encounter ambiguous text, make reasonable assumptions but maintain struct
         "Failed to generate training recommendations",
         error
       );
+    }
+  }
+
+  /**
+   * Build the system prompt for training status assessment
+   * Focused on determining if training is on track, slightly off track, or off track
+   */
+  buildStatusSystemPrompt(): string {
+    return `You are an expert running coach assistant. Your sole task is to assess whether a runner's training is on track based on their recent activity data compared to their training plan.
+
+## Your Role
+- Analyze training adherence objectively
+- Provide a single status assessment with brief rationale
+- Be conservative - only mark as "on_track" when truly confident
+
+## Confidence Requirement
+You must be at least 90% confident in your assessment. If you cannot reach this confidence level due to insufficient data, respond with status "slightly_off_track" and explain the data limitations in your rationale.
+
+## Status Definitions
+
+**on_track**: The runner is executing their training plan within acceptable variance. This means:
+- Completing 80%+ of planned runs
+- Distances within 15% of targets
+- Run types generally match plan (long runs, easy runs, tempo runs happening as scheduled)
+
+**slightly_off_track**: Minor deviations that don't significantly impact training goals:
+- Completing 60-80% of planned runs
+- Some workouts missed or modified
+- Distances 15-30% off target
+- Minor scheduling adjustments
+
+**off_track**: Significant deviation from training plan:
+- Completing less than 60% of planned runs
+- Major workouts (long runs, key sessions) consistently missed
+- Distances more than 30% off target
+- Extended gaps in training
+
+## Experience Level Consideration
+- **Beginner**: More lenient thresholds, expect more variance
+- **Intermediate**: Standard thresholds as defined above
+- **Expert**: Tighter expectations, these runners should hit their marks more precisely
+
+## Output Format
+Respond ONLY with valid JSON in this exact format:
+{
+  "status": "on_track" | "slightly_off_track" | "off_track",
+  "rationale": "One to two sentences explaining the assessment.",
+  "confidence": <number between 90-100>
+}`;
+  }
+
+  /**
+   * Calculate the start date of a given week number based on plan start date
+   * Week 1 starts on planStartDate, Week 2 starts 7 days later, etc.
+   */
+  private getWeekStartDate(planStartDate: Date, weekNumber: number): Date {
+    const startDate = new Date(planStartDate);
+    startDate.setHours(0, 0, 0, 0);
+
+    const targetStart = new Date(startDate);
+    targetStart.setDate(startDate.getDate() + (weekNumber - 1) * 7);
+
+    return targetStart;
+  }
+
+  /**
+   * Build the user prompt for training status assessment
+   * Formats training plan, activities, and context for status evaluation
+   * Filters data to only include previous week (full) + current week (up to today)
+   */
+  buildStatusUserPrompt(
+    activities: EnhancedFormattedActivity[],
+    csvContent: string,
+    startDate: string,
+    experienceLevel: ExperienceLevel,
+    currentWeek: number,
+    planStartDate: Date
+  ): string {
+    const previousWeek = currentWeek > 1 ? currentWeek - 1 : 1;
+    const today = new Date();
+    today.setHours(23, 59, 59, 999);
+
+    // Calculate week boundaries
+    const previousWeekStart = this.getWeekStartDate(planStartDate, previousWeek);
+    const previousWeekEnd = new Date(previousWeekStart);
+    previousWeekEnd.setDate(previousWeekEnd.getDate() + 6);
+    previousWeekEnd.setHours(23, 59, 59, 999);
+
+    const currentWeekStart = this.getWeekStartDate(planStartDate, currentWeek);
+
+    // Group activities by week
+    const previousWeekActivities = activities.filter((activity) => {
+      const activityDate = new Date(activity.date);
+      return activityDate >= previousWeekStart && activityDate <= previousWeekEnd;
+    });
+
+    const currentWeekActivities = activities.filter((activity) => {
+      const activityDate = new Date(activity.date);
+      return activityDate >= currentWeekStart && activityDate <= today;
+    });
+
+    // Format activities table for a week
+    const formatActivitiesTable = (weekActivities: EnhancedFormattedActivity[]): string => {
+      if (weekActivities.length === 0) {
+        return "No activities recorded";
+      }
+      return weekActivities
+        .map(
+          (activity) =>
+            `| ${activity.date} | ${activity.actual_run_type || "Run"} | ${activity.actual_distance_km.toFixed(1)} | ${activity.avg_pace_min_per_km} | ${activity.avg_hr_bpm || "N/A"} |`
+        )
+        .join("\n");
+    };
+
+    // Get training plan for current and previous week
+    const { groupedWeeks } = groupTrainingPlanByWeek(csvContent, startDate);
+
+    const currentWeekPlan = groupedWeeks.find((week) => week.weekNumber === currentWeek);
+    const previousWeekPlan = groupedWeeks.find((week) => week.weekNumber === previousWeek);
+
+    // Format week's plan with optional filtering for current week
+    const formatWeekPlan = (
+      week: { weekNumber: number; rows: Record<string, string>[] } | undefined,
+      weekLabel: string,
+      isCurrentWeek: boolean
+    ): string => {
+      if (!week || week.rows.length === 0) {
+        return `${weekLabel}: No data available`;
+      }
+
+      let filteredRows = week.rows;
+
+      // For current week, only include days up to today
+      if (isCurrentWeek) {
+        filteredRows = week.rows.filter((row) => {
+          const rowDateStr = row["date"] || row["Date"];
+          if (!rowDateStr) return false;
+          const rowDate = new Date(rowDateStr);
+          return rowDate <= today;
+        });
+      }
+
+      if (filteredRows.length === 0) {
+        return `${weekLabel}: No planned runs up to today`;
+      }
+
+      const planRows = filteredRows
+        .map((row) => {
+          const date = row["date"] || row["Date"] || "N/A";
+          const type = row["type"] || row["Type"] || row["planned_run_type"] || "N/A";
+          const distance = row["planned_distance_km"] || row["distance"] || "N/A";
+          const pace = row["target_pace_min_per_km"] || row["pace"] || "N/A";
+          return `| ${date} | ${type} | ${distance} | ${pace} |`;
+        })
+        .join("\n");
+
+      return `${weekLabel}:\n| Date | Type | Distance (km) | Target Pace |\n|------|------|---------------|-------------|\n${planRows}`;
+    };
+
+    // Map experience level to prompt-friendly format
+    const experienceLevelMap: Record<ExperienceLevel, string> = {
+      beginner: "Beginner",
+      intermediate: "Intermediate",
+      advanced: "Expert",
+    };
+
+    // Format today's date for context
+    const todayFormatted = today.toISOString().split("T")[0];
+
+    return `## Training Plan Context
+- Plan Start Date: ${startDate}
+- Current Week: ${currentWeek}
+- Today's Date: ${todayFormatted}
+- Runner Experience: ${experienceLevelMap[experienceLevel]}
+
+## Training Plan (Previous Week - Full Week)
+${formatWeekPlan(previousWeekPlan, `Week ${previousWeek}`, false)}
+
+## Training Plan (Current Week - Up to Today)
+${formatWeekPlan(currentWeekPlan, `Week ${currentWeek}`, true)}
+
+## Actual Activities
+
+### Week ${previousWeek} (Previous Week - Full Week)
+| Date | Type | Distance (km) | Pace (min/km) | Avg HR |
+|------|------|---------------|---------------|--------|
+${formatActivitiesTable(previousWeekActivities)}
+
+### Week ${currentWeek} (Current Week - Up to Today)
+| Date | Type | Distance (km) | Pace (min/km) | Avg HR |
+|------|------|---------------|---------------|--------|
+${formatActivitiesTable(currentWeekActivities)}
+
+## Assessment Request
+Based on the above data, determine if this runner's training is on track, slightly off track, or off track. Consider:
+1. How many planned runs were completed vs skipped (compare plan rows to actual activities for each week)
+2. Whether distances match the plan
+3. If key workouts (long runs, tempo runs) were executed
+4. The runner's experience level when setting expectations
+5. For the current week, only assess runs that should have happened by today
+
+Provide your assessment in the required JSON format.`;
+  }
+
+  /**
+   * Generate training status assessment using AI
+   * Returns structured status with rationale and confidence
+   */
+  async generateTrainingStatus(
+    activities: EnhancedFormattedActivity[],
+    csvContent: string,
+    startDate: string,
+    experienceLevel: ExperienceLevel,
+    currentWeek: number,
+    planStartDate: Date
+  ): Promise<TrainingStatusResult> {
+    try {
+      log.info("Generating training status assessment", {
+        activitiesCount: activities.length,
+        experienceLevel,
+        currentWeek,
+      });
+
+      const systemPrompt = this.buildStatusSystemPrompt();
+      const userPrompt = this.buildStatusUserPrompt(
+        activities,
+        csvContent,
+        startDate,
+        experienceLevel,
+        currentWeek,
+        planStartDate
+      );
+
+      log.debug("Training status prompts prepared", {
+        systemPromptLength: systemPrompt.length,
+        userPromptLength: userPrompt.length,
+      });
+
+      const result = await generateText({
+        model: openai(config.openai.model),
+        messages: [
+          {
+            role: "system",
+            content: systemPrompt,
+          },
+          {
+            role: "user",
+            content: userPrompt,
+          },
+        ],
+        temperature: 0.1, // Low temperature for consistent, deterministic output
+      });
+
+      log.debug("AI response received for training status", {
+        responseLength: result.text.length,
+        usage: result.usage,
+      });
+
+      // Parse JSON response
+      const parsedResponse = this.parseStatusResponse(result.text);
+
+      log.info("Training status assessment generated successfully", {
+        status: parsedResponse.status,
+        confidence: parsedResponse.confidence,
+      });
+
+      return parsedResponse;
+    } catch (error) {
+      log.error("Failed to generate training status", error);
+      throw new InternalServerError(
+        "Failed to generate training status assessment",
+        error
+      );
+    }
+  }
+
+  /**
+   * Parse and validate the AI response for training status
+   */
+  private parseStatusResponse(responseText: string): TrainingStatusResult {
+    try {
+      // Try to extract JSON from the response (handle potential markdown code blocks)
+      let jsonString = responseText.trim();
+
+      // Remove markdown code block if present
+      if (jsonString.startsWith("```json")) {
+        jsonString = jsonString.slice(7);
+      } else if (jsonString.startsWith("```")) {
+        jsonString = jsonString.slice(3);
+      }
+      if (jsonString.endsWith("```")) {
+        jsonString = jsonString.slice(0, -3);
+      }
+      jsonString = jsonString.trim();
+
+      const parsed = JSON.parse(jsonString) as {
+        status?: unknown;
+        rationale?: unknown;
+        confidence?: unknown;
+      };
+
+      // Validate status
+      const validStatuses: TrainingStatusType[] = ["on_track", "slightly_off_track", "off_track"];
+      if (!parsed.status || !validStatuses.includes(parsed.status as TrainingStatusType)) {
+        log.warn("Invalid status in AI response, defaulting to slightly_off_track", {
+          receivedStatus: parsed.status,
+        });
+        parsed.status = "slightly_off_track";
+      }
+
+      // Validate rationale
+      if (!parsed.rationale || typeof parsed.rationale !== "string") {
+        parsed.rationale = "Unable to provide detailed assessment.";
+      }
+
+      // Validate confidence
+      const confidence = Number(parsed.confidence);
+      if (isNaN(confidence) || confidence < 0 || confidence > 100) {
+        parsed.confidence = 90;
+      }
+
+      return {
+        status: parsed.status as TrainingStatusType,
+        rationale: parsed.rationale as string,
+        confidence: parsed.confidence as number,
+      };
+    } catch (parseError) {
+      log.error("Failed to parse training status response", {
+        error: parseError,
+        responseText: responseText.substring(0, 200),
+      });
+
+      // Return a safe default
+      return {
+        status: "slightly_off_track",
+        rationale: "Unable to assess training status due to parsing error.",
+        confidence: 90,
+      };
     }
   }
 }

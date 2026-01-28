@@ -18,11 +18,13 @@ type JoyrideComponent = React.ComponentType<JoyrideProps>;
 export const OnboardingTour = ({
   hasActivePlan,
   hasRecommendation,
+  hasTrainingStatus,
 }: OnboardingTourProps) => {
   const [Joyride, setJoyride] = useState<JoyrideComponent | null>(null);
   const { isRunning, stepIndex, steps, handleCallback } = useOnboardingTour({
     hasActivePlan,
     hasRecommendation,
+    hasTrainingStatus,
   });
 
   // Dynamically import Joyride on client side only
