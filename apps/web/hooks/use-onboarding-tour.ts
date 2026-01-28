@@ -19,6 +19,7 @@ const TOUR_START_DELAY_MS = 1000;
 interface UseOnboardingTourOptions {
   hasActivePlan?: boolean;
   hasRecommendation?: boolean;
+  hasTrainingStatus?: boolean;
 }
 
 /**
@@ -28,6 +29,7 @@ interface UseOnboardingTourOptions {
 export const useOnboardingTour = ({
   hasActivePlan,
   hasRecommendation,
+  hasTrainingStatus,
 }: UseOnboardingTourOptions = {}): UseOnboardingTourReturn => {
   const [isRunning, setIsRunning] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
@@ -38,8 +40,9 @@ export const useOnboardingTour = ({
       getFilteredTourSteps({
         hasActivePlan,
         hasRecommendation,
+        hasTrainingStatus,
       }),
-    [hasActivePlan, hasRecommendation]
+    [hasActivePlan, hasRecommendation, hasTrainingStatus]
   );
 
   // Auto-start tour for first-time users

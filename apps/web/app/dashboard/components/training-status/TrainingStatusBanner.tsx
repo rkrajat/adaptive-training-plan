@@ -48,6 +48,7 @@ export const TrainingStatusBanner = ({
       className={`w-full rounded-lg border ${config.borderClass} ${config.bgClass} p-4 mb-6 shadow-sm transition-all duration-300 ease-in-out`}
       role="status"
       aria-label={`Training status: ${config.label}`}
+      data-tour="training-status-banner"
     >
       <div className="flex items-start gap-3">
         <StatusIcon

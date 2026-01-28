@@ -204,6 +204,7 @@ export default function DashboardPage() {
       <OnboardingTour
         hasActivePlan={!!activePlan}
         hasRecommendation={!!completion && recommendationStatus === "pending"}
+        hasTrainingStatus={!!trainingStatusData && isSuccessResponse(trainingStatusData)}
       />
 
       {/* Training Status Banner - shown at top when eligible */}
