@@ -1,5 +1,5 @@
 import type { ExperienceLevel, TrainingPaces } from "@adaptive-training-plan/types";
-import { getCurrentWeekNumber, groupTrainingPlanByWeek } from "@adaptive-training-plan/utils";
+import { groupTrainingPlanByWeek } from "@adaptive-training-plan/utils";
 import { openai } from "@ai-sdk/openai";
 import { generateText, streamText } from "ai";
 
@@ -954,25 +954,67 @@ Respond ONLY with valid JSON in this exact format:
   }
 
   /**
+   * Calculate the start date of a given week number based on plan start date
+   * Week 1 starts on planStartDate, Week 2 starts 7 days later, etc.
+   */
+  private getWeekStartDate(planStartDate: Date, weekNumber: number): Date {
+    const startDate = new Date(planStartDate);
+    startDate.setHours(0, 0, 0, 0);
+
+    const targetStart = new Date(startDate);
+    targetStart.setDate(startDate.getDate() + (weekNumber - 1) * 7);
+
+    return targetStart;
+  }
+
+  /**
    * Build the user prompt for training status assessment
    * Formats training plan, activities, and context for status evaluation
+   * Filters data to only include previous week (full) + current week (up to today)
    */
   buildStatusUserPrompt(
     activities: EnhancedFormattedActivity[],
     csvContent: string,
     startDate: string,
-    experienceLevel: ExperienceLevel
+    experienceLevel: ExperienceLevel,
+    currentWeek: number,
+    planStartDate: Date
   ): string {
-    const currentWeek = getCurrentWeekNumber(startDate);
     const previousWeek = currentWeek > 1 ? currentWeek - 1 : 1;
+    const today = new Date();
+    today.setHours(23, 59, 59, 999);
 
-    // Format activities as a table for last 14 days
-    const activitiesTable = activities
-      .map(
-        (activity) =>
-          `| ${activity.date} | ${activity.actual_run_type || "Run"} | ${activity.actual_distance_km.toFixed(1)} | ${activity.avg_pace_min_per_km} | ${activity.avg_hr_bpm || "N/A"} |`
-      )
-      .join("\n");
+    // Calculate week boundaries
+    const previousWeekStart = this.getWeekStartDate(planStartDate, previousWeek);
+    const previousWeekEnd = new Date(previousWeekStart);
+    previousWeekEnd.setDate(previousWeekEnd.getDate() + 6);
+    previousWeekEnd.setHours(23, 59, 59, 999);
+
+    const currentWeekStart = this.getWeekStartDate(planStartDate, currentWeek);
+
+    // Group activities by week
+    const previousWeekActivities = activities.filter((activity) => {
+      const activityDate = new Date(activity.date);
+      return activityDate >= previousWeekStart && activityDate <= previousWeekEnd;
+    });
+
+    const currentWeekActivities = activities.filter((activity) => {
+      const activityDate = new Date(activity.date);
+      return activityDate >= currentWeekStart && activityDate <= today;
+    });
+
+    // Format activities table for a week
+    const formatActivitiesTable = (weekActivities: EnhancedFormattedActivity[]): string => {
+      if (weekActivities.length === 0) {
+        return "No activities recorded";
+      }
+      return weekActivities
+        .map(
+          (activity) =>
+            `| ${activity.date} | ${activity.actual_run_type || "Run"} | ${activity.actual_distance_km.toFixed(1)} | ${activity.avg_pace_min_per_km} | ${activity.avg_hr_bpm || "N/A"} |`
+        )
+        .join("\n");
+    };
 
     // Get training plan for current and previous week
     const { groupedWeeks } = groupTrainingPlanByWeek(csvContent, startDate);
@@ -980,16 +1022,33 @@ Respond ONLY with valid JSON in this exact format:
     const currentWeekPlan = groupedWeeks.find((week) => week.weekNumber === currentWeek);
     const previousWeekPlan = groupedWeeks.find((week) => week.weekNumber === previousWeek);
 
-    // Format week's plan
+    // Format week's plan with optional filtering for current week
     const formatWeekPlan = (
       week: { weekNumber: number; rows: Record<string, string>[] } | undefined,
-      weekLabel: string
+      weekLabel: string,
+      isCurrentWeek: boolean
     ): string => {
       if (!week || week.rows.length === 0) {
         return `${weekLabel}: No data available`;
       }
 
-      const planRows = week.rows
+      let filteredRows = week.rows;
+
+      // For current week, only include days up to today
+      if (isCurrentWeek) {
+        filteredRows = week.rows.filter((row) => {
+          const rowDateStr = row["date"] || row["Date"];
+          if (!rowDateStr) return false;
+          const rowDate = new Date(rowDateStr);
+          return rowDate <= today;
+        });
+      }
+
+      if (filteredRows.length === 0) {
+        return `${weekLabel}: No planned runs up to today`;
+      }
+
+      const planRows = filteredRows
         .map((row) => {
           const date = row["date"] || row["Date"] || "N/A";
           const type = row["type"] || row["Type"] || row["planned_run_type"] || "N/A";
@@ -1009,28 +1068,40 @@ Respond ONLY with valid JSON in this exact format:
       advanced: "Expert",
     };
 
+    // Format today's date for context
+    const todayFormatted = today.toISOString().split("T")[0];
+
     return `## Training Plan Context
 - Plan Start Date: ${startDate}
 - Current Week: ${currentWeek}
+- Today's Date: ${todayFormatted}
 - Runner Experience: ${experienceLevelMap[experienceLevel]}
 
-## Training Plan (Current Week's Schedule)
-${formatWeekPlan(currentWeekPlan, `Week ${currentWeek}`)}
+## Training Plan (Previous Week - Full Week)
+${formatWeekPlan(previousWeekPlan, `Week ${previousWeek}`, false)}
 
-## Training Plan (Previous Week's Schedule)
-${formatWeekPlan(previousWeekPlan, `Week ${previousWeek}`)}
+## Training Plan (Current Week - Up to Today)
+${formatWeekPlan(currentWeekPlan, `Week ${currentWeek}`, true)}
 
-## Actual Activities (Last 14 Days)
+## Actual Activities
+
+### Week ${previousWeek} (Previous Week - Full Week)
 | Date | Type | Distance (km) | Pace (min/km) | Avg HR |
 |------|------|---------------|---------------|--------|
-${activitiesTable}
+${formatActivitiesTable(previousWeekActivities)}
+
+### Week ${currentWeek} (Current Week - Up to Today)
+| Date | Type | Distance (km) | Pace (min/km) | Avg HR |
+|------|------|---------------|---------------|--------|
+${formatActivitiesTable(currentWeekActivities)}
 
 ## Assessment Request
 Based on the above data, determine if this runner's training is on track, slightly off track, or off track. Consider:
-1. How many planned runs were completed vs skipped
+1. How many planned runs were completed vs skipped (compare plan rows to actual activities for each week)
 2. Whether distances match the plan
 3. If key workouts (long runs, tempo runs) were executed
 4. The runner's experience level when setting expectations
+5. For the current week, only assess runs that should have happened by today
 
 Provide your assessment in the required JSON format.`;
   }
@@ -1043,12 +1114,15 @@ Provide your assessment in the required JSON format.`;
     activities: EnhancedFormattedActivity[],
     csvContent: string,
     startDate: string,
-    experienceLevel: ExperienceLevel
+    experienceLevel: ExperienceLevel,
+    currentWeek: number,
+    planStartDate: Date
   ): Promise<TrainingStatusResult> {
     try {
       log.info("Generating training status assessment", {
         activitiesCount: activities.length,
         experienceLevel,
+        currentWeek,
       });
 
       const systemPrompt = this.buildStatusSystemPrompt();
@@ -1056,7 +1130,9 @@ Provide your assessment in the required JSON format.`;
         activities,
         csvContent,
         startDate,
-        experienceLevel
+        experienceLevel,
+        currentWeek,
+        planStartDate
       );
 
       log.debug("Training status prompts prepared", {

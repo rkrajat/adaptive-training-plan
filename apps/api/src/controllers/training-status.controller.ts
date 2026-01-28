@@ -39,15 +39,39 @@ interface TrainingStatusSuccessResponse {
 }
 
 /**
- * Filter activities to last 14 days
+ * Calculate the start date of a given week number based on the plan start date
+ * Week 1 starts on planStartDate, Week 2 starts 7 days later, etc.
  */
-const filterRecentActivities = (activities: StravaActivity[]): StravaActivity[] => {
-  const fourteenDaysAgo = new Date();
-  fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
+const getWeekStartDate = (planStartDate: Date, weekNumber: number): Date => {
+  const startDate = new Date(planStartDate);
+  startDate.setHours(0, 0, 0, 0); // Normalize to start of day
 
+  // Add (weekNumber - 1) * 7 days to get target week's start
+  const targetStart = new Date(startDate);
+  targetStart.setDate(startDate.getDate() + (weekNumber - 1) * 7);
+
+  return targetStart;
+};
+
+/**
+ * Filter activities by week boundaries based on plan start date
+ * Includes: previous week (full 7 days) + current week (day 1 through today)
+ */
+const filterActivitiesByWeekBoundaries = (
+  activities: StravaActivity[],
+  planStartDate: Date,
+  currentWeek: number
+): StravaActivity[] => {
+  const today = new Date();
+  today.setHours(23, 59, 59, 999); // End of today
+
+  // Calculate start of previous week
+  const previousWeekStart = getWeekStartDate(planStartDate, currentWeek - 1);
+
+  // Filter: previousWeekStart <= activityDate <= today
   return activities.filter((activity) => {
     const activityDate = new Date(activity.start_date);
-    return activityDate >= fourteenDaysAgo;
+    return activityDate >= previousWeekStart && activityDate <= today;
   });
 };
 
@@ -132,8 +156,12 @@ export const getTrainingStatus = async (
       rawActivities = await stravaService.fetchActivities(accessToken);
     }
 
-    // Filter to last 14 days
-    const recentActivities = filterRecentActivities(rawActivities);
+    // Filter activities by plan-based week boundaries (previous week + current week up to today)
+    const recentActivities = filterActivitiesByWeekBoundaries(
+      rawActivities,
+      activePlan.startDate,
+      currentWeek
+    );
 
     // Check if user has any recent activities
     if (recentActivities.length === 0) {
@@ -167,7 +195,9 @@ export const getTrainingStatus = async (
       enhancedActivities,
       activePlan.csvContent,
       startDate,
-      experienceLevel
+      experienceLevel,
+      currentWeek,
+      activePlan.startDate
     );
 
     const response: TrainingStatusSuccessResponse = {
