@@ -234,3 +234,28 @@ export const feedbackApi = {
       .json<{ hasSubmitted: boolean }>();
   },
 };
+
+/**
+ * Training status types
+ */
+type TrainingStatusType = "on_track" | "slightly_off_track" | "off_track";
+type IneligibilityReason = "no_active_plan" | "week_one" | "no_recent_activities";
+
+interface TrainingStatusSuccess {
+  status: TrainingStatusType;
+  rationale: string;
+  currentWeek: number;
+}
+
+interface TrainingStatusIneligible {
+  eligibleForStatus: false;
+  reason: IneligibilityReason;
+}
+
+export type TrainingStatusResponse = TrainingStatusSuccess | TrainingStatusIneligible;
+
+export const trainingStatusApi = {
+  getStatus: async (): Promise<TrainingStatusResponse> => {
+    return api.post("api/training-status").json<TrainingStatusResponse>();
+  },
+};

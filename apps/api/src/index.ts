@@ -11,6 +11,7 @@ import { authRouter } from "./routes/auth";
 import { feedbackRouter } from "./routes/feedback";
 import { recommendationsRouter } from "./routes/recommendations";
 import { trainingPlansRouter } from "./routes/training-plans";
+import { trainingStatusRouter } from "./routes/training-status";
 import { userRouter } from "./routes/user";
 import { log } from "./utils/logger";
 
@@ -35,6 +36,7 @@ app.use("/api/activities", activitiesRouter);
 app.use("/api/feedback", feedbackRouter);
 app.use("/api/recommendations", recommendationsRouter);
 app.use("/api/training-plans", trainingPlansRouter);
+app.use("/api/training-status", trainingStatusRouter);
 app.use("/api/users", userRouter);
 
 app.get("/health", (_req, res) => {

@@ -1,5 +1,5 @@
 import type { ExperienceLevel, TrainingPaces } from "@adaptive-training-plan/types";
-import { groupTrainingPlanByWeek } from "@adaptive-training-plan/utils";
+import { getCurrentWeekNumber, groupTrainingPlanByWeek } from "@adaptive-training-plan/utils";
 import { openai } from "@ai-sdk/openai";
 import { generateText, streamText } from "ai";
 
@@ -12,6 +12,20 @@ import type {
 import { InternalServerError } from "../utils/error";
 import { log } from "../utils/logger";
 import { formatPace } from "../utils/pace-formatter";
+
+/**
+ * Training status types for status indicator
+ */
+export type TrainingStatusType = "on_track" | "slightly_off_track" | "off_track";
+
+/**
+ * Training status response from AI
+ */
+export interface TrainingStatusResult {
+  status: TrainingStatusType;
+  rationale: string;
+  confidence: number;
+}
 
 /**
  * AI Service
@@ -888,6 +902,268 @@ If you encounter ambiguous text, make reasonable assumptions but maintain struct
         "Failed to generate training recommendations",
         error
       );
+    }
+  }
+
+  /**
+   * Build the system prompt for training status assessment
+   * Focused on determining if training is on track, slightly off track, or off track
+   */
+  buildStatusSystemPrompt(): string {
+    return `You are an expert running coach assistant. Your sole task is to assess whether a runner's training is on track based on their recent activity data compared to their training plan.
+
+## Your Role
+- Analyze training adherence objectively
+- Provide a single status assessment with brief rationale
+- Be conservative - only mark as "on_track" when truly confident
+
+## Confidence Requirement
+You must be at least 90% confident in your assessment. If you cannot reach this confidence level due to insufficient data, respond with status "slightly_off_track" and explain the data limitations in your rationale.
+
+## Status Definitions
+
+**on_track**: The runner is executing their training plan within acceptable variance. This means:
+- Completing 80%+ of planned runs
+- Distances within 15% of targets
+- Run types generally match plan (long runs, easy runs, tempo runs happening as scheduled)
+
+**slightly_off_track**: Minor deviations that don't significantly impact training goals:
+- Completing 60-80% of planned runs
+- Some workouts missed or modified
+- Distances 15-30% off target
+- Minor scheduling adjustments
+
+**off_track**: Significant deviation from training plan:
+- Completing less than 60% of planned runs
+- Major workouts (long runs, key sessions) consistently missed
+- Distances more than 30% off target
+- Extended gaps in training
+
+## Experience Level Consideration
+- **Beginner**: More lenient thresholds, expect more variance
+- **Intermediate**: Standard thresholds as defined above
+- **Expert**: Tighter expectations, these runners should hit their marks more precisely
+
+## Output Format
+Respond ONLY with valid JSON in this exact format:
+{
+  "status": "on_track" | "slightly_off_track" | "off_track",
+  "rationale": "One to two sentences explaining the assessment.",
+  "confidence": <number between 90-100>
+}`;
+  }
+
+  /**
+   * Build the user prompt for training status assessment
+   * Formats training plan, activities, and context for status evaluation
+   */
+  buildStatusUserPrompt(
+    activities: EnhancedFormattedActivity[],
+    csvContent: string,
+    startDate: string,
+    experienceLevel: ExperienceLevel
+  ): string {
+    const currentWeek = getCurrentWeekNumber(startDate);
+    const previousWeek = currentWeek > 1 ? currentWeek - 1 : 1;
+
+    // Format activities as a table for last 14 days
+    const activitiesTable = activities
+      .map(
+        (activity) =>
+          `| ${activity.date} | ${activity.actual_run_type || "Run"} | ${activity.actual_distance_km.toFixed(1)} | ${activity.avg_pace_min_per_km} | ${activity.avg_hr_bpm || "N/A"} |`
+      )
+      .join("\n");
+
+    // Get training plan for current and previous week
+    const { groupedWeeks } = groupTrainingPlanByWeek(csvContent, startDate);
+
+    const currentWeekPlan = groupedWeeks.find((week) => week.weekNumber === currentWeek);
+    const previousWeekPlan = groupedWeeks.find((week) => week.weekNumber === previousWeek);
+
+    // Format week's plan
+    const formatWeekPlan = (
+      week: { weekNumber: number; rows: Record<string, string>[] } | undefined,
+      weekLabel: string
+    ): string => {
+      if (!week || week.rows.length === 0) {
+        return `${weekLabel}: No data available`;
+      }
+
+      const planRows = week.rows
+        .map((row) => {
+          const date = row["date"] || row["Date"] || "N/A";
+          const type = row["type"] || row["Type"] || row["planned_run_type"] || "N/A";
+          const distance = row["planned_distance_km"] || row["distance"] || "N/A";
+          const pace = row["target_pace_min_per_km"] || row["pace"] || "N/A";
+          return `| ${date} | ${type} | ${distance} | ${pace} |`;
+        })
+        .join("\n");
+
+      return `${weekLabel}:\n| Date | Type | Distance (km) | Target Pace |\n|------|------|---------------|-------------|\n${planRows}`;
+    };
+
+    // Map experience level to prompt-friendly format
+    const experienceLevelMap: Record<ExperienceLevel, string> = {
+      beginner: "Beginner",
+      intermediate: "Intermediate",
+      advanced: "Expert",
+    };
+
+    return `## Training Plan Context
+- Plan Start Date: ${startDate}
+- Current Week: ${currentWeek}
+- Runner Experience: ${experienceLevelMap[experienceLevel]}
+
+## Training Plan (Current Week's Schedule)
+${formatWeekPlan(currentWeekPlan, `Week ${currentWeek}`)}
+
+## Training Plan (Previous Week's Schedule)
+${formatWeekPlan(previousWeekPlan, `Week ${previousWeek}`)}
+
+## Actual Activities (Last 14 Days)
+| Date | Type | Distance (km) | Pace (min/km) | Avg HR |
+|------|------|---------------|---------------|--------|
+${activitiesTable}
+
+## Assessment Request
+Based on the above data, determine if this runner's training is on track, slightly off track, or off track. Consider:
+1. How many planned runs were completed vs skipped
+2. Whether distances match the plan
+3. If key workouts (long runs, tempo runs) were executed
+4. The runner's experience level when setting expectations
+
+Provide your assessment in the required JSON format.`;
+  }
+
+  /**
+   * Generate training status assessment using AI
+   * Returns structured status with rationale and confidence
+   */
+  async generateTrainingStatus(
+    activities: EnhancedFormattedActivity[],
+    csvContent: string,
+    startDate: string,
+    experienceLevel: ExperienceLevel
+  ): Promise<TrainingStatusResult> {
+    try {
+      log.info("Generating training status assessment", {
+        activitiesCount: activities.length,
+        experienceLevel,
+      });
+
+      const systemPrompt = this.buildStatusSystemPrompt();
+      const userPrompt = this.buildStatusUserPrompt(
+        activities,
+        csvContent,
+        startDate,
+        experienceLevel
+      );
+
+      log.debug("Training status prompts prepared", {
+        systemPromptLength: systemPrompt.length,
+        userPromptLength: userPrompt.length,
+      });
+
+      const result = await generateText({
+        model: openai(config.openai.model),
+        messages: [
+          {
+            role: "system",
+            content: systemPrompt,
+          },
+          {
+            role: "user",
+            content: userPrompt,
+          },
+        ],
+        temperature: 0.1, // Low temperature for consistent, deterministic output
+      });
+
+      log.debug("AI response received for training status", {
+        responseLength: result.text.length,
+        usage: result.usage,
+      });
+
+      // Parse JSON response
+      const parsedResponse = this.parseStatusResponse(result.text);
+
+      log.info("Training status assessment generated successfully", {
+        status: parsedResponse.status,
+        confidence: parsedResponse.confidence,
+      });
+
+      return parsedResponse;
+    } catch (error) {
+      log.error("Failed to generate training status", error);
+      throw new InternalServerError(
+        "Failed to generate training status assessment",
+        error
+      );
+    }
+  }
+
+  /**
+   * Parse and validate the AI response for training status
+   */
+  private parseStatusResponse(responseText: string): TrainingStatusResult {
+    try {
+      // Try to extract JSON from the response (handle potential markdown code blocks)
+      let jsonString = responseText.trim();
+
+      // Remove markdown code block if present
+      if (jsonString.startsWith("```json")) {
+        jsonString = jsonString.slice(7);
+      } else if (jsonString.startsWith("```")) {
+        jsonString = jsonString.slice(3);
+      }
+      if (jsonString.endsWith("```")) {
+        jsonString = jsonString.slice(0, -3);
+      }
+      jsonString = jsonString.trim();
+
+      const parsed = JSON.parse(jsonString) as {
+        status?: unknown;
+        rationale?: unknown;
+        confidence?: unknown;
+      };
+
+      // Validate status
+      const validStatuses: TrainingStatusType[] = ["on_track", "slightly_off_track", "off_track"];
+      if (!parsed.status || !validStatuses.includes(parsed.status as TrainingStatusType)) {
+        log.warn("Invalid status in AI response, defaulting to slightly_off_track", {
+          receivedStatus: parsed.status,
+        });
+        parsed.status = "slightly_off_track";
+      }
+
+      // Validate rationale
+      if (!parsed.rationale || typeof parsed.rationale !== "string") {
+        parsed.rationale = "Unable to provide detailed assessment.";
+      }
+
+      // Validate confidence
+      const confidence = Number(parsed.confidence);
+      if (isNaN(confidence) || confidence < 0 || confidence > 100) {
+        parsed.confidence = 90;
+      }
+
+      return {
+        status: parsed.status as TrainingStatusType,
+        rationale: parsed.rationale as string,
+        confidence: parsed.confidence as number,
+      };
+    } catch (parseError) {
+      log.error("Failed to parse training status response", {
+        error: parseError,
+        responseText: responseText.substring(0, 200),
+      });
+
+      // Return a safe default
+      return {
+        status: "slightly_off_track",
+        rationale: "Unable to assess training status due to parsing error.",
+        confidence: 90,
+      };
     }
   }
 }
