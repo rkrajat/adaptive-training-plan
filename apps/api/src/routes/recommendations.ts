@@ -1,3 +1,4 @@
+import type { PaceGroup } from "@adaptive-training-plan/types";
 import { Router, type Request, type Response } from "express";
 
 import {
@@ -206,8 +207,24 @@ router.post(
         hasTrainingPaces: !!trainingPaces,
       });
 
+      // Get matched pace group if available
+      let matchedPaceGroup: PaceGroup | undefined;
+      if (trainingPlan.matchedPaceGroupId && trainingPlan.paceGroups) {
+        matchedPaceGroup = trainingPlan.paceGroups.find(
+          (group) => group.id === trainingPlan.matchedPaceGroupId
+        );
+        if (matchedPaceGroup) {
+          log.info("Using matched pace group for recommendations", {
+            userId,
+            matchedGroupId: matchedPaceGroup.id,
+            matchedGroupName: matchedPaceGroup.name,
+          });
+        }
+      }
+
       // Generate recommendations with enhanced training plan data
       // Training paces from VDOT are included to help the AI provide pace-specific recommendations
+      // Matched pace group paces take priority over VDOT paces
       const result = await aiService.generateRecommendationsWithEnhancedPlan(
         enhancedActivities,
         trainingPlan.csvContent,
@@ -215,7 +232,8 @@ router.post(
         trainingPlan.startDate,
         userFeedback,
         experienceLevel,
-        trainingPaces
+        trainingPaces,
+        matchedPaceGroup
       );
 
       // Set headers for streaming (must be set before any res.write())

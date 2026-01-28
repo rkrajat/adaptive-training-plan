@@ -1,4 +1,5 @@
 import type {
+  PaceGroup,
   RaceGoal,
   TrainingPaces,
 } from '@adaptive-training-plan/types';
@@ -137,6 +138,8 @@ export interface TrainingPlanResponse {
  */
 export interface TrainingPlanWithContentResponse extends TrainingPlanResponse {
   csvContent: string;
+  paceGroups?: PaceGroup[];
+  matchedPaceGroupId?: string;
 }
 
 /**
