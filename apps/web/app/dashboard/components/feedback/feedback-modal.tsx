@@ -5,13 +5,13 @@ import { Loader2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogFooter,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from '@/components/ui/responsive-dialog';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
@@ -30,6 +30,7 @@ interface FeedbackModalProps {
 /**
  * Feedback Modal Component
  * Collects user feedback on training recommendations
+ * Uses Drawer on mobile, Dialog on desktop
  */
 export const FeedbackModal = ({
   isOpen,
@@ -70,18 +71,18 @@ export const FeedbackModal = ({
   const maxCharacters = 1000;
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[500px]">
+    <ResponsiveDialog open={isOpen} onOpenChange={handleClose}>
+      <ResponsiveDialogContent className="sm:max-w-[500px]">
         <form onSubmit={handleSubmit}>
-          <DialogHeader>
-            <DialogTitle>How was this recommendation?</DialogTitle>
-            <DialogDescription>
+          <ResponsiveDialogHeader className="text-center">
+            <ResponsiveDialogTitle>How was this recommendation?</ResponsiveDialogTitle>
+            <ResponsiveDialogDescription>
               Help us improve by sharing your feedback on this training
               recommendation
-            </DialogDescription>
-          </DialogHeader>
+            </ResponsiveDialogDescription>
+          </ResponsiveDialogHeader>
 
-          <div className="grid gap-6 py-4">
+          <div className="grid gap-6 py-4 text-center">
             {/* Rating Section */}
             <div className="space-y-3">
               <Label htmlFor="rating" className="text-base font-semibold">
@@ -95,7 +96,7 @@ export const FeedbackModal = ({
                 />
               </div>
               {rating === 0 && (
-                <p className="text-sm text-muted-foreground text-center">
+                <p className="text-sm text-muted-foreground">
                   Please select a rating
                 </p>
               )}
@@ -110,7 +111,7 @@ export const FeedbackModal = ({
                 value={wouldFollow ? 'yes' : 'no'}
                 onValueChange={(value) => setWouldFollow(value === 'yes')}
                 disabled={isSubmitting}
-                className="flex gap-4"
+                className="flex justify-center gap-4"
               >
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="yes" id="follow-yes" />
@@ -156,19 +157,20 @@ export const FeedbackModal = ({
             </div>
           </div>
 
-          <DialogFooter>
+          <ResponsiveDialogFooter className="flex-col-reverse sm:flex-row gap-2 sm:gap-2">
             <Button
               type="button"
               variant="outline"
               onClick={handleClose}
               disabled={isSubmitting}
+              className="w-full sm:w-auto"
             >
               Cancel
             </Button>
             <Button
               type="submit"
               disabled={isSubmitDisabled}
-              className="bg-orange-500 hover:bg-orange-600"
+              className="bg-orange-500 hover:bg-orange-600 w-full sm:w-auto"
             >
               {isSubmitting ? (
                 <>
@@ -179,9 +181,9 @@ export const FeedbackModal = ({
                 'Submit Feedback'
               )}
             </Button>
-          </DialogFooter>
+          </ResponsiveDialogFooter>
         </form>
-      </DialogContent>
-    </Dialog>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 };

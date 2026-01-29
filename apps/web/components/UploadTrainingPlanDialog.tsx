@@ -10,13 +10,13 @@ import type {
 
 import { trainingPlansApi } from "@/lib/api";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogFooter,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from "@/components/ui/responsive-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -33,6 +33,10 @@ interface UploadTrainingPlanDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
+/**
+ * Upload Training Plan Dialog
+ * Uses Drawer on mobile, Dialog on desktop
+ */
 export const UploadTrainingPlanDialog = ({
   open,
   onOpenChange,
@@ -140,18 +144,18 @@ export const UploadTrainingPlanDialog = ({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[95vw] sm:max-w-[500px] max-h-[90vh] overflow-y-auto px-4 sm:px-6">
+    <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
+      <ResponsiveDialogContent className="sm:max-w-[500px]">
         <form onSubmit={handleSubmit}>
-          <DialogHeader className="px-0">
-            <DialogTitle className="text-lg sm:text-xl">
+          <ResponsiveDialogHeader>
+            <ResponsiveDialogTitle className="text-lg sm:text-xl">
               Upload Training Plan
-            </DialogTitle>
-            <DialogDescription className="text-xs sm:text-sm">
+            </ResponsiveDialogTitle>
+            <ResponsiveDialogDescription className="text-xs sm:text-sm">
               Upload your training plan in CSV or PDF format to get personalized
               recommendations
-            </DialogDescription>
-          </DialogHeader>
+            </ResponsiveDialogDescription>
+          </ResponsiveDialogHeader>
 
           <div className="space-y-3 sm:space-y-4 py-4">
             {/* File Upload */}
@@ -298,20 +302,20 @@ export const UploadTrainingPlanDialog = ({
             )}
           </div>
 
-          <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0 px-0">
+          <ResponsiveDialogFooter className="flex-col-reverse sm:flex-row gap-2 sm:gap-2">
             <Button
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
               disabled={uploadMutation.isPending}
-              className="w-full sm:w-auto order-2 sm:order-1"
+              className="w-full sm:w-auto"
               size="sm"
             >
               Cancel
             </Button>
             <Button
               type="submit"
-              className="bg-orange-500 hover:bg-orange-600 w-full sm:w-auto order-1 sm:order-2"
+              className="bg-orange-500 hover:bg-orange-600 w-full sm:w-auto"
               disabled={
                 uploadMutation.isPending ||
                 !file ||
@@ -336,9 +340,9 @@ export const UploadTrainingPlanDialog = ({
                 </>
               )}
             </Button>
-          </DialogFooter>
+          </ResponsiveDialogFooter>
         </form>
-      </DialogContent>
-    </Dialog>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 };
