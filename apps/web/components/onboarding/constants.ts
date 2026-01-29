@@ -16,8 +16,8 @@ export const TOUR_TARGETS = {
 /**
  * All available tour steps
  * Order follows the first-time user workflow:
- * 1. Welcome -> 2. Upload Plan -> 3. View Activities -> 4. Get Recommendations
- * -> 5. Accept/Reject -> 6. Weekly Stats -> 7. Training Status -> 8. User Menu
+ * 1. Welcome -> 2. Upload Plan -> 3. Get Recommendations -> 4. Accept/Reject
+ * -> 5. Weekly Stats -> 6. View Activities -> 7. Training Status -> 8. User Menu
  */
 export const ALL_TOUR_STEPS: TourStep[] = [
   // 1. Welcome - Introduction
@@ -36,15 +36,7 @@ export const ALL_TOUR_STEPS: TourStep[] = [
     placement: "top",
     disableBeacon: true,
   },
-  // 3. Recent Activities - Already available, shows Strava data
-  {
-    target: TOUR_TARGETS.RECENT_ACTIVITIES,
-    content:
-      "Your recent Strava activities appear here. We analyze these to understand your training load and progress.",
-    placement: "top",
-    disableBeacon: true,
-  },
-  // 4. Recommendations Card - Main feature after uploading plan
+  // 3. Recommendations Card - Main feature after uploading plan
   {
     target: TOUR_TARGETS.RECOMMENDATIONS,
     content:
@@ -52,7 +44,7 @@ export const ALL_TOUR_STEPS: TourStep[] = [
     placement: "bottom",
     disableBeacon: true,
   },
-  // 5. Accept/Reject (conditional) - After viewing recommendation
+  // 4. Accept/Reject (conditional) - After viewing recommendation
   {
     target: TOUR_TARGETS.ACCEPT_REJECT,
     content:
@@ -60,11 +52,19 @@ export const ALL_TOUR_STEPS: TourStep[] = [
     placement: "bottom",
     disableBeacon: true,
   },
-  // 6. Weekly Stats (conditional) - Available with active plan
+  // 5. Weekly Stats (conditional) - Available with active plan
   {
     target: TOUR_TARGETS.WEEKLY_STATS,
     content:
       "View your weekly running statistics from Strava here. This data helps generate personalized recommendations.",
+    placement: "bottom",
+    disableBeacon: true,
+  },
+  // 6. Recent Activities - View last 30 days button
+  {
+    target: TOUR_TARGETS.RECENT_ACTIVITIES,
+    content:
+      "Click here to view all your Strava activities from the last 30 days. We analyze these to understand your training load and progress.",
     placement: "bottom",
     disableBeacon: true,
   },
@@ -99,12 +99,11 @@ export const getFilteredTourSteps = ({
   hasTrainingStatus?: boolean;
 }): TourStep[] => {
   return ALL_TOUR_STEPS.filter((step) => {
-    // Always show welcome, training plan, recommendations, recent activities, and user menu
+    // Always show welcome, training plan, recommendations, and user menu
     if (
       step.target === "body" ||
       step.target === TOUR_TARGETS.TRAINING_PLAN ||
       step.target === TOUR_TARGETS.RECOMMENDATIONS ||
-      step.target === TOUR_TARGETS.RECENT_ACTIVITIES ||
       step.target === TOUR_TARGETS.USER_MENU
     ) {
       return true;
@@ -120,8 +119,13 @@ export const getFilteredTourSteps = ({
       return hasRecommendation;
     }
 
-    // Only show weekly stats if there's an active plan
+    // Only show weekly stats and recent activities if there's an active plan
+    // (Recent activities button is inside WeeklyRunsReport when plan exists)
     if (step.target === TOUR_TARGETS.WEEKLY_STATS) {
+      return hasActivePlan;
+    }
+
+    if (step.target === TOUR_TARGETS.RECENT_ACTIVITIES) {
       return hasActivePlan;
     }
 

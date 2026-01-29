@@ -1,0 +1,162 @@
+"use client";
+
+import * as React from "react";
+
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
+import { useMediaQuery } from "@/hooks/use-media-query";
+
+interface ResponsiveDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  children: React.ReactNode;
+}
+
+interface ResponsiveDialogContentProps {
+  className?: string;
+  children: React.ReactNode;
+}
+
+interface ResponsiveDialogHeaderProps {
+  children: React.ReactNode;
+  className?: string;
+}
+
+interface ResponsiveDialogTitleProps {
+  children: React.ReactNode;
+  className?: string;
+}
+
+interface ResponsiveDialogDescriptionProps {
+  children: React.ReactNode;
+  className?: string;
+}
+
+interface ResponsiveDialogFooterProps {
+  children: React.ReactNode;
+  className?: string;
+}
+
+const ResponsiveDialogContext = React.createContext<{ isMobile: boolean }>({
+  isMobile: false,
+});
+
+/**
+ * Responsive dialog that renders as a Drawer on mobile and Dialog on desktop
+ */
+export const ResponsiveDialog = ({
+  open,
+  onOpenChange,
+  children,
+}: ResponsiveDialogProps) => {
+  const isMobile = useMediaQuery("(max-width: 767px)");
+
+  if (isMobile) {
+    return (
+      <ResponsiveDialogContext.Provider value={{ isMobile }}>
+        <Drawer open={open} onOpenChange={onOpenChange}>
+          {children}
+        </Drawer>
+      </ResponsiveDialogContext.Provider>
+    );
+  }
+
+  return (
+    <ResponsiveDialogContext.Provider value={{ isMobile }}>
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        {children}
+      </Dialog>
+    </ResponsiveDialogContext.Provider>
+  );
+};
+
+export const ResponsiveDialogContent = ({
+  className,
+  children,
+}: ResponsiveDialogContentProps) => {
+  const { isMobile } = React.useContext(ResponsiveDialogContext);
+
+  if (isMobile) {
+    return (
+      <DrawerContent className={className}>
+        <div className="overflow-y-auto max-h-[85vh] px-4 pb-4">{children}</div>
+      </DrawerContent>
+    );
+  }
+
+  return <DialogContent className={className}>{children}</DialogContent>;
+};
+
+export const ResponsiveDialogHeader = ({
+  children,
+  className,
+}: ResponsiveDialogHeaderProps) => {
+  const { isMobile } = React.useContext(ResponsiveDialogContext);
+
+  if (isMobile) {
+    // Default to text-left unless className specifies otherwise (e.g., text-center)
+    const hasTextAlign = className?.includes("text-");
+    return (
+      <DrawerHeader className={hasTextAlign ? className : `text-left ${className ?? ""}`}>
+        {children}
+      </DrawerHeader>
+    );
+  }
+
+  return <DialogHeader className={className}>{children}</DialogHeader>;
+};
+
+export const ResponsiveDialogTitle = ({
+  children,
+  className,
+}: ResponsiveDialogTitleProps) => {
+  const { isMobile } = React.useContext(ResponsiveDialogContext);
+
+  if (isMobile) {
+    return <DrawerTitle className={className}>{children}</DrawerTitle>;
+  }
+
+  return <DialogTitle className={className}>{children}</DialogTitle>;
+};
+
+export const ResponsiveDialogDescription = ({
+  children,
+  className,
+}: ResponsiveDialogDescriptionProps) => {
+  const { isMobile } = React.useContext(ResponsiveDialogContext);
+
+  if (isMobile) {
+    return (
+      <DrawerDescription className={className}>{children}</DrawerDescription>
+    );
+  }
+
+  return <DialogDescription className={className}>{children}</DialogDescription>;
+};
+
+export const ResponsiveDialogFooter = ({
+  children,
+  className,
+}: ResponsiveDialogFooterProps) => {
+  const { isMobile } = React.useContext(ResponsiveDialogContext);
+
+  if (isMobile) {
+    return <DrawerFooter className={className}>{children}</DrawerFooter>;
+  }
+
+  return <DialogFooter className={className}>{children}</DialogFooter>;
+};
