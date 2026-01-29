@@ -27,7 +27,8 @@ import {
   ReplaceConfirmationDialog,
 } from "./components/recommendations";
 import type { RejectAction } from "./components/recommendations";
-import { RecentActivities } from "./components/activities";
+import { ActivitiesDialog } from "./components/activities";
+import { ViewActivitiesButton } from "./components/activities/view-activities-button";
 import { TrainingPlanSection } from "./components/training-plan";
 import {
   TrainingStatusBanner,
@@ -76,6 +77,7 @@ export default function DashboardPage() {
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
   const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
   const [isReplaceDialogOpen, setIsReplaceDialogOpen] = useState(false);
+  const [isActivitiesDialogOpen, setIsActivitiesDialogOpen] = useState(false);
 
   // Load active recommendation on mount
   useEffect(() => {
@@ -217,10 +219,16 @@ export default function DashboardPage() {
         />
       )}
 
-      {activePlan && (
+      {activePlan ? (
         <WeeklyRunsReport
           currentWeek={activePlan.currentWeek}
           startDate={activePlan.startDate}
+          onViewActivities={() => setIsActivitiesDialogOpen(true)}
+        />
+      ) : (
+        <ViewActivitiesButton
+          activityCount={activities.length}
+          onClick={() => setIsActivitiesDialogOpen(true)}
         />
       )}
 
@@ -236,8 +244,6 @@ export default function DashboardPage() {
         isAccepting={acceptMutation.isPending}
         isRejecting={rejectMutation.isPending}
       />
-
-      <RecentActivities activities={activities} />
 
       <TrainingPlanSection
         activePlan={activePlan}
@@ -261,6 +267,12 @@ export default function DashboardPage() {
         onClose={() => setIsReplaceDialogOpen(false)}
         onConfirm={handleConfirmReplace}
         isLoading={isGenerating}
+      />
+
+      <ActivitiesDialog
+        activities={activities}
+        open={isActivitiesDialogOpen}
+        onOpenChange={setIsActivitiesDialogOpen}
       />
     </DashboardLayout>
   );

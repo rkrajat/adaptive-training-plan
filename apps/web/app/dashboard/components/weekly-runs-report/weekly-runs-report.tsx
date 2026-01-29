@@ -3,13 +3,15 @@
 import {
   Activity,
   Clock,
+  Eye,
   Footprints,
   Route,
   Timer,
   TrendingUp,
 } from "lucide-react";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useWeeklySummary } from "@/hooks/use-weekly-summary";
@@ -17,6 +19,7 @@ import { useWeeklySummary } from "@/hooks/use-weekly-summary";
 interface WeeklyRunsReportProps {
   currentWeek: number;
   startDate: string;
+  onViewActivities?: () => void;
 }
 
 interface StatItemProps {
@@ -128,6 +131,7 @@ const EmptyState = ({ weekRange }: { weekRange: string }) => (
 export const WeeklyRunsReport = ({
   currentWeek,
   startDate,
+  onViewActivities,
 }: WeeklyRunsReportProps) => {
   const { data, isLoading, error } = useWeeklySummary({
     startDate,
@@ -168,6 +172,16 @@ export const WeeklyRunsReport = ({
           <span className="text-xs font-normal text-muted-foreground">
             ({weekRange})
           </span>
+          {onViewActivities && (
+            <button
+              onClick={onViewActivities}
+              className="hidden sm:inline-flex items-center text-xs font-normal px-2 py-1 rounded-md bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-950/50 dark:text-blue-400 dark:hover:bg-blue-900/50 transition-colors"
+              data-tour="recent-activities"
+            >
+              <Eye className="h-3 w-3 mr-1" />
+              View last 30 days
+            </button>
+          )}
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -199,6 +213,18 @@ export const WeeklyRunsReport = ({
           />
         </div>
       </CardContent>
+      {onViewActivities && (
+        <CardFooter className="pt-2 sm:hidden" data-tour="recent-activities">
+          <Button
+            variant="outline"
+            onClick={onViewActivities}
+            className="w-full border-blue-200 text-blue-600 hover:bg-blue-50 dark:border-blue-800 dark:text-blue-400 dark:hover:bg-blue-950/50"
+          >
+            <Eye className="h-4 w-4 mr-2" />
+            View last 30 days activities
+          </Button>
+        </CardFooter>
+      )}
     </Card>
   );
 };
