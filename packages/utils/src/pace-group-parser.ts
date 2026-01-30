@@ -55,8 +55,12 @@ const parseTimeToSeconds = (timeStr: string): number | null => {
 /**
  * Parse time range string to PaceGroupTimeRange
  * Handles formats like "2:00", "2:00-2:20", "< 2:00", "> 2:20", "Finish Strong"
+ * Also handles text after time like "2:00 (HMP ≈5:40–5:50 min/km)"
+ * 
+ * @param timeStr - Time string to parse
+ * @param isFirstGroup - Whether this is the first pace group (helps determine if "2:00" means "Sub 2:00")
  */
-const parseTimeRange = (timeStr: string): PaceGroupTimeRange | null => {
+const parseTimeRange = (timeStr: string, isFirstGroup: boolean = false): PaceGroupTimeRange | null => {
   const trimmed = timeStr.trim();
 
   // Handle "Finish Strong" or similar non-time strings
@@ -64,8 +68,12 @@ const parseTimeRange = (timeStr: string): PaceGroupTimeRange | null => {
     return null; // No time range
   }
 
-  // Handle range format "2:00-2:20"
-  const rangeMatch = trimmed.match(/^(\d+:\d+(?::\d+)?)\s*-\s*(\d+:\d+(?::\d+)?)$/);
+  // Extract time portion (before any parentheses or additional text)
+  // Handle formats like "2:00 (HMP ≈5:40–5:50 min/km)" or "2:00–2:20 (HMP ≈6:10–6:30 min/km)"
+  const timePortion = trimmed.split(/[\(\)]/)[0].trim();
+
+  // Handle range format "2:00-2:20" or "2:00–2:20" (with en dash U+2013 or hyphen)
+  const rangeMatch = timePortion.match(/^(\d+:\d+(?::\d+)?)\s*[–-]\s*(\d+:\d+(?::\d+)?)$/);
   if (rangeMatch) {
     const minSeconds = parseTimeToSeconds(rangeMatch[1]);
     const maxSeconds = parseTimeToSeconds(rangeMatch[2]);
@@ -75,7 +83,7 @@ const parseTimeRange = (timeStr: string): PaceGroupTimeRange | null => {
   }
 
   // Handle "< 2:00" format
-  const lessThanMatch = trimmed.match(/^<\s*(\d+:\d+(?::\d+)?)$/);
+  const lessThanMatch = timePortion.match(/^<\s*(\d+:\d+(?::\d+)?)$/);
   if (lessThanMatch) {
     const maxSeconds = parseTimeToSeconds(lessThanMatch[1]);
     if (maxSeconds !== null) {
@@ -84,7 +92,7 @@ const parseTimeRange = (timeStr: string): PaceGroupTimeRange | null => {
   }
 
   // Handle "> 2:00" format
-  const greaterThanMatch = trimmed.match(/^>\s*(\d+:\d+(?::\d+)?)$/);
+  const greaterThanMatch = timePortion.match(/^>\s*(\d+:\d+(?::\d+)?)$/);
   if (greaterThanMatch) {
     const minSeconds = parseTimeToSeconds(greaterThanMatch[1]);
     if (minSeconds !== null) {
@@ -92,10 +100,21 @@ const parseTimeRange = (timeStr: string): PaceGroupTimeRange | null => {
     }
   }
 
-  // Handle single time format "2:00" (exact match or minimum)
-  const singleTime = parseTimeToSeconds(trimmed);
-  if (singleTime !== null) {
-    return { minSeconds: singleTime, maxSeconds: singleTime };
+  // Handle single time format "2:00"
+  // If it's the first group or contains "sub", treat as "Sub X" (max-only range)
+  // Otherwise, treat as exact match
+  const singleTimeMatch = timePortion.match(/^(\d+:\d+(?::\d+)?)$/);
+  if (singleTimeMatch) {
+    const timeSeconds = parseTimeToSeconds(singleTimeMatch[1]);
+    if (timeSeconds !== null) {
+      const lowerTrimmed = trimmed.toLowerCase();
+      // Check if this appears to be a "sub X" format
+      if (isFirstGroup || lowerTrimmed.includes('sub') || lowerTrimmed.startsWith('<')) {
+        return { maxSeconds: timeSeconds };
+      }
+      // Otherwise, treat as exact match (min = max)
+      return { minSeconds: timeSeconds, maxSeconds: timeSeconds };
+    }
   }
 
   return null;
@@ -178,7 +197,8 @@ export const detectPaceGroupsFromCsv = (
         const timeCell = targetTimeRow
           ? Object.values(targetTimeRow)[columnIndex] || ''
           : '';
-        const timeRange = timeCell ? parseTimeRange(timeCell) : null;
+        // Pass index to help determine if first group should be "sub X"
+        const timeRange = timeCell ? parseTimeRange(timeCell, i === 0) : null;
 
         // Extract pace ranges from paces row
         const pacesCell = pacesRow
