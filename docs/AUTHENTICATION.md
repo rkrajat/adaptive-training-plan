@@ -29,22 +29,27 @@ This approach is used by major platforms like GitHub, Stripe, and Vercel because
 3. Strava redirects back to: GET /api/auth/strava/callback?code=...
    └─→ Backend exchanges code for Strava tokens
    └─→ Backend creates/updates user in MongoDB
-   └─→ Backend generates JWT containing:
-       - userId (MongoDB ObjectId)
-       - stravaId
-       - stravaAccessToken
-       - stravaRefreshToken
-       - stravaTokenExpiresAt
+   └─→ Backend generates JWT
+   └─→ Redirects to: /auth/callback?token=<jwt>
 
-4. Backend sets two cookies:
-   - auth_token (HttpOnly, contains JWT)
-   - session_active (readable, value "1")
-   └─→ Redirects to: /auth/callback (no token in URL)
-
-5. Frontend /auth/callback page:
-   └─→ Checks if session_active cookie exists
+4. Frontend /auth/callback page:
+   └─→ Extracts token from URL
+   └─→ Calls POST /api/auth/session with token
+   └─→ Backend validates token, sets HttpOnly auth_token cookie
+   └─→ Frontend sets session_active cookie locally
    └─→ Redirects to /dashboard
 ```
+
+### Why Token Exchange?
+
+Cross-origin redirects cannot set cookies reliably due to browser security restrictions. When the backend (Fly.io) redirects to the frontend (Vercel), cookies set in the redirect response are dropped by the browser.
+
+The token exchange pattern solves this:
+1. Token is passed in URL (temporary, one-time use)
+2. Frontend immediately exchanges it for an HttpOnly cookie via POST request
+3. POST requests can set cross-origin cookies with `credentials: "include"`
+
+This adds one API call during login only, not on subsequent requests.
 
 ### Logout
 
@@ -160,11 +165,38 @@ Initiates Strava OAuth flow. Redirects to Strava authorization page.
 
 ### GET /api/auth/strava/callback
 
-Handles OAuth callback from Strava. Sets cookies and redirects to frontend.
+Handles OAuth callback from Strava. Redirects to frontend with JWT token in URL.
 
 **Query Parameters:**
 - `code`: Authorization code from Strava
 - `error`: Error message if authorization failed
+
+**Redirect:** `{FRONTEND_URL}/auth/callback?token=<jwt>`
+
+### POST /api/auth/session
+
+Establishes a cookie-based session from a JWT token. Called by frontend after OAuth redirect.
+
+**Request Body:**
+```json
+{
+  "token": "<jwt>"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "message": "Session established"
+  }
+}
+```
+
+**Cookies Set:**
+- `auth_token` (HttpOnly) - Contains the JWT
+- `session_active` (readable) - Session hint for frontend
 
 ## Frontend Utilities
 
@@ -177,6 +209,19 @@ import { isAuthenticated } from "@/lib/auth";
 
 if (isAuthenticated()) {
   // User is logged in
+}
+```
+
+### `establishSession(token: string): Promise<boolean>`
+
+Exchanges a JWT token for cookie-based session. Called by the auth callback page after OAuth redirect.
+
+```typescript
+import { establishSession } from "@/lib/auth";
+
+const success = await establishSession(token);
+if (success) {
+  // Session established, cookies are set
 }
 ```
 
@@ -269,7 +314,9 @@ Safari's Intelligent Tracking Prevention (ITP) may block third-party cookies. If
 3. Test the flow:
    - Go to `/login`
    - Click "Connect with Strava"
-   - After OAuth, verify no `?token=` in URL
+   - After OAuth, you'll briefly see `?token=` in URL on `/auth/callback`
+   - Page should quickly redirect to `/dashboard`
    - Check cookies in DevTools > Application > Cookies
    - Verify `auth_token` has HttpOnly flag
-   - Try `document.cookie` in console - should NOT show `auth_token`
+   - Verify `session_active` cookie exists
+   - Try `document.cookie` in console - should show `session_active` but NOT `auth_token`
