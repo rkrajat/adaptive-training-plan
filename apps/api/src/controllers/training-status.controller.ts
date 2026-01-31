@@ -153,7 +153,7 @@ export const getTrainingStatus = async (
       const { getMockActivities } = await import("../utils/mock");
       rawActivities = getMockActivities() as StravaActivity[];
     } else {
-      rawActivities = await stravaService.fetchActivities(accessToken);
+      rawActivities = await stravaService.fetchActivities(accessToken, userId);
     }
 
     // Filter activities by plan-based week boundaries (previous week + current week up to today)

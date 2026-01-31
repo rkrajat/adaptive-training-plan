@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, type Request, type Response } from 'express';
 
 import {
   getUserProfile,
@@ -8,6 +8,8 @@ import {
 } from '../controllers/user.controller';
 import { authenticateJWT } from '../middleware/auth';
 import { validateBody } from '../middleware/validate';
+import { stravaService } from '../services/strava.service';
+import { sendSuccess, sendUnauthorized } from '../utils/response';
 import { updateRaceGoalSchema } from '../validators/race-goal.validator';
 import { updateExperienceLevelSchema } from '../validators/user.validator';
 
@@ -35,5 +37,16 @@ router.put(
   validateBody(updateRaceGoalSchema),
   updateRaceGoal
 );
+
+// POST /api/users/me/refresh-activities - Invalidate cached Strava activities
+router.post('/me/refresh-activities', async (req: Request, res: Response) => {
+  if (!req.user) {
+    sendUnauthorized(res, 'User not authenticated');
+    return;
+  }
+
+  const invalidated = stravaService.invalidateActivitiesCache(req.user.userId);
+  sendSuccess(res, { invalidated });
+});
 
 export const userRouter = router;

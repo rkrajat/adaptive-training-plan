@@ -78,7 +78,7 @@ router.post(
         const { getMockActivities } = await import("../utils/mock");
         activities = getMockActivities() as StravaActivity[];
       } else {
-        activities = await stravaService.fetchActivities(accessToken);
+        activities = await stravaService.fetchActivities(accessToken, req.user.userId);
       }
 
       // Generate streaming response with AI
@@ -186,7 +186,7 @@ router.post(
         const { getMockActivities } = await import("../utils/mock");
         rawActivities = getMockActivities() as StravaActivity[];
       } else {
-        rawActivities = await stravaService.fetchActivities(accessToken);
+        rawActivities = await stravaService.fetchActivities(accessToken, userId);
       }
 
       // Format activities with enhanced metadata for AI service

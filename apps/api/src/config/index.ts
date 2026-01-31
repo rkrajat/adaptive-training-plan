@@ -55,6 +55,12 @@ const configSchema = z.object({
   recommendation: z.object({
     expiryDayOfWeek: z.number().int().min(0).max(6).default(0), // 0=Sunday through 6=Saturday
   }),
+
+  // Cache Settings
+  cache: z.object({
+    activitiesTtlMs: z.number().int().positive().default(600000), // 10 min in ms
+    maxEntries: z.number().int().positive().default(1000),
+  }),
 });
 
 const parseConfig = () => {
@@ -98,6 +104,14 @@ const parseConfig = () => {
     recommendation: {
       expiryDayOfWeek: process.env.RECOMMENDATION_EXPIRY_DAY_OF_WEEK
         ? parseInt(process.env.RECOMMENDATION_EXPIRY_DAY_OF_WEEK, 10)
+        : undefined,
+    },
+    cache: {
+      activitiesTtlMs: process.env.CACHE_ACTIVITIES_TTL_MS
+        ? parseInt(process.env.CACHE_ACTIVITIES_TTL_MS, 10)
+        : undefined,
+      maxEntries: process.env.CACHE_MAX_ENTRIES
+        ? parseInt(process.env.CACHE_MAX_ENTRIES, 10)
         : undefined,
     },
   };
