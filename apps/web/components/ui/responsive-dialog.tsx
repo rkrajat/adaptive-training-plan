@@ -98,7 +98,11 @@ export const ResponsiveDialogContent = ({
     );
   }
 
-  return <DialogContent className={className}>{children}</DialogContent>;
+  return (
+    <DialogContent className={`max-h-[85vh] overflow-y-auto ${className ?? ""}`}>
+      {children}
+    </DialogContent>
+  );
 };
 
 export const ResponsiveDialogHeader = ({

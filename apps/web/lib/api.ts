@@ -13,38 +13,28 @@ import type {
   RaceGoalInput,
 } from "@adaptive-training-plan/types";
 
-import { getToken, removeToken } from "./auth";
-
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
-// Create ky instance with JWT interceptor and timeout configuration
+// Clear session cookie (for 401 handling)
+const clearSessionCookie = (): void => {
+  if (typeof document === "undefined") return;
+  document.cookie = "session_active=; path=/; max-age=0";
+};
+
+// Create ky instance with cookie credentials and timeout configuration
 export const api = ky.create({
   prefixUrl: API_URL,
+  credentials: "include", // Send cookies with all requests
   timeout: 120000, // 2 minutes - matches backend timeout for AI recommendations
   retry: {
     limit: 0, // Disable retries for long-running AI requests
   },
   hooks: {
-    beforeRequest: [
-      (request) => {
-        const token = getToken();
-
-        if (!token) {
-          if (typeof window !== "undefined") {
-            window.location.href = "/login";
-          }
-        }
-
-        if (token) {
-          request.headers.set("Authorization", `Bearer ${token}`);
-        }
-      },
-    ],
     afterResponse: [
       async (_request, _options, response) => {
         // Handle 401 Unauthorized - token expired or invalid
         if (response.status === 401) {
-          removeToken();
+          clearSessionCookie();
           if (typeof window !== "undefined") {
             window.location.href = "/login";
           }
@@ -140,9 +130,9 @@ export const recommendationsApi = {
     // Use native fetch for streaming support (ky doesn't support streaming well)
     const response = await fetch(`${API_URL}/api/recommendations/generate`, {
       method: "POST",
+      credentials: "include", // Send cookies with request
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${getToken()}`,
       },
       body: JSON.stringify({ regenerate }),
     });
@@ -155,9 +145,9 @@ export const recommendationsApi = {
       `${API_URL}/api/recommendations/generate-with-plan`,
       {
         method: "POST",
+        credentials: "include", // Send cookies with request
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${getToken()}`,
         },
         body: JSON.stringify({ planId, userFeedback }),
       }

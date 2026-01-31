@@ -27,13 +27,16 @@ router.get("/", authenticateJWT, async (req: Request, res: Response) => {
       return;
     }
 
-    const { stravaAccessToken } = req.user;
+    const { stravaAccessToken, userId } = req.user;
+    const forceRefresh = req.query.refresh === "true";
 
     // Fetch and format activities (with mock fallback if enabled)
     const formattedActivities =
       await stravaService.getActivitiesWithMockFallback(
         stravaAccessToken,
-        useMockData()
+        useMockData(),
+        userId,
+        forceRefresh
       );
 
     sendSuccess(res, { activities: formattedActivities });
@@ -62,10 +65,10 @@ router.get(
       }
 
       const { startDate, week } = req.query as unknown as WeeklySummaryQuery;
-      const { stravaAccessToken } = req.user;
+      const { stravaAccessToken, userId } = req.user;
 
       log.info("Fetching weekly summary", {
-        userId: req.user.userId,
+        userId,
         startDate,
         week,
       });
@@ -73,7 +76,8 @@ router.get(
       // Fetch activities from Strava (with mock fallback if enabled)
       const activities = await stravaService.getActivitiesWithMockFallback(
         stravaAccessToken,
-        useMockData()
+        useMockData(),
+        userId
       );
 
       // Calculate weekly summary

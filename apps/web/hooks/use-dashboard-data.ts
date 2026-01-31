@@ -3,17 +3,14 @@ import { useQuery } from "@tanstack/react-query";
 import type {
   Activity,
   User,
-  TrainingPlan,
   TrainingPlanWithContent,
 } from "@adaptive-training-plan/types";
 
-import { isAuthenticated } from "@/lib/auth";
 import { activitiesApi, authApi, trainingPlansApi } from "@/lib/api";
 
 interface UseDashboardDataReturn {
   user: User | undefined;
   activities: Activity[];
-  trainingPlans: TrainingPlan[];
   activePlan: TrainingPlanWithContent | undefined;
   isLoading: boolean;
   error: Error | null;
@@ -32,7 +29,6 @@ export const useDashboardData = (): UseDashboardDataReturn => {
   } = useQuery<User>({
     queryKey: ["user"],
     queryFn: authApi.me,
-    enabled: isAuthenticated(),
   });
 
   // Fetch activities
@@ -43,18 +39,6 @@ export const useDashboardData = (): UseDashboardDataReturn => {
   } = useQuery({
     queryKey: ["activities"],
     queryFn: activitiesApi.list,
-    enabled: isAuthenticated(),
-  });
-
-  // Fetch training plans
-  const {
-    data: trainingPlansData,
-    isLoading: isLoadingPlans,
-    error: plansError,
-  } = useQuery({
-    queryKey: ["trainingPlans"],
-    queryFn: trainingPlansApi.list,
-    enabled: isAuthenticated(),
   });
 
   // Fetch active training plan with content
@@ -65,24 +49,17 @@ export const useDashboardData = (): UseDashboardDataReturn => {
   } = useQuery({
     queryKey: ["trainingPlans", "active"],
     queryFn: trainingPlansApi.listActive,
-    enabled: isAuthenticated(),
   });
 
   const activities = activitiesData?.activities || [];
-  const trainingPlans = trainingPlansData?.plans || [];
   const activePlan = activePlanData?.plans[0];
 
-  const isLoading =
-    isLoadingUser || isLoadingActivities || isLoadingPlans || isLoadingActivePlan;
-  const error = (userError ||
-    activitiesError ||
-    plansError ||
-    activePlanError) as Error | null;
+  const isLoading = isLoadingUser || isLoadingActivities || isLoadingActivePlan;
+  const error = (userError || activitiesError || activePlanError) as Error | null;
 
   return {
     user,
     activities,
-    trainingPlans,
     activePlan,
     isLoading,
     error,

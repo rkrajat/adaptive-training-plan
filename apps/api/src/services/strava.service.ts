@@ -7,6 +7,11 @@ import type {
   FormattedActivity,
   StravaTokenResponse,
 } from "../types/strava.types";
+import {
+  activitiesCache,
+  getActivitiesCacheKey,
+  invalidateUserActivitiesCache,
+} from "../utils/cache";
 import { StravaApiError, UnauthorizedError } from "../utils/error";
 import { log } from "../utils/logger";
 import { getMockActivities } from "../utils/mock";
@@ -83,17 +88,37 @@ export class StravaService {
 
   /**
    * Fetch activities from Strava API for the last N days
+   * Supports in-memory caching when userId is provided
    */
   async fetchActivities(
     accessToken: string,
-    lookbackDays: number = config.activities.lookbackDays
+    userId?: string,
+    lookbackDays: number = config.activities.lookbackDays,
+    forceRefresh = false
   ): Promise<StravaActivity[]> {
+    // Check cache if userId is provided and not forcing refresh
+    if (userId && !forceRefresh) {
+      const cacheKey = getActivitiesCacheKey(userId);
+      const cached = activitiesCache.get(cacheKey);
+
+      if (cached && cached.lookbackDays === lookbackDays) {
+        log.info("Cache HIT for Strava activities", {
+          userId,
+          cachedAt: new Date(cached.cachedAt).toISOString(),
+          activitiesCount: cached.activities.length,
+        });
+        return cached.activities;
+      }
+    }
+
     try {
       const afterTimestamp = Math.floor(Date.now() / 1000) - lookbackDays * 24 * 60 * 60;
 
-      log.info("Fetching activities from Strava", {
+      log.info("Fetching activities from Strava API", {
         lookbackDays,
         afterTimestamp,
+        userId,
+        forceRefresh,
       });
 
       const activities = await strava.athlete.listActivities({
@@ -105,6 +130,17 @@ export class StravaService {
       log.info("Successfully fetched activities from Strava", {
         count: activities.length,
       });
+
+      // Store in cache if userId is provided
+      if (userId) {
+        const cacheKey = getActivitiesCacheKey(userId);
+        activitiesCache.set(cacheKey, {
+          activities: activities as StravaActivity[],
+          cachedAt: Date.now(),
+          lookbackDays,
+        });
+        log.info("Cached Strava activities", { userId, count: activities.length });
+      }
 
       return activities as StravaActivity[];
     } catch (error) {
@@ -147,10 +183,13 @@ export class StravaService {
   /**
    * Get activities with automatic mock fallback
    * Returns mock data if USE_MOCK_DATA env var is set
+   * Supports in-memory caching when userId is provided
    */
   async getActivitiesWithMockFallback(
     accessToken: string,
-    useMock = false
+    useMock = false,
+    userId?: string,
+    forceRefresh = false
   ): Promise<FormattedActivity[]> {
     if (useMock) {
       log.info("Using mock Strava activities data");
@@ -158,8 +197,20 @@ export class StravaService {
       return this.formatActivities(mockActivities as StravaActivity[]);
     }
 
-    const activities = await this.fetchActivities(accessToken);
+    const activities = await this.fetchActivities(
+      accessToken,
+      userId,
+      config.activities.lookbackDays,
+      forceRefresh
+    );
     return this.formatActivities(activities);
+  }
+
+  /**
+   * Invalidate cached activities for a user
+   */
+  invalidateActivitiesCache(userId: string): boolean {
+    return invalidateUserActivitiesCache(userId);
   }
 
   /**

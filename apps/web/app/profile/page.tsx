@@ -9,11 +9,8 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Alert } from '@/components/ui/alert';
 import { useUserProfile, useUpdateExperienceLevel } from '@/hooks/use-user-profile';
-import { useAuthGuard } from '@/hooks/use-auth-guard';
 
 export default function ProfilePage() {
-  useAuthGuard();
-
   const { data: user, isLoading: isLoadingProfile } = useUserProfile();
   const updateExperienceLevel = useUpdateExperienceLevel();
 

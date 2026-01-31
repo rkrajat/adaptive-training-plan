@@ -1,22 +1,20 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { ExperienceLevel, User } from '@adaptive-training-plan/types';
-import { userApi } from '@/lib/api';
+import { authApi, userApi } from '@/lib/api';
 
 /**
- * Query key for user profile
+ * Query key for user profile - shared with useDashboardData for cache consistency
  */
-export const USER_PROFILE_QUERY_KEY = ['user', 'profile'] as const;
+export const USER_PROFILE_QUERY_KEY = ['user'] as const;
 
 /**
  * Hook to fetch user profile
+ * Uses the same query key as useDashboardData to share cache
  */
 export const useUserProfile = () => {
   return useQuery({
     queryKey: USER_PROFILE_QUERY_KEY,
-    queryFn: async () => {
-      const data = await userApi.getProfile();
-      return data.user;
-    },
+    queryFn: authApi.me,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 };
