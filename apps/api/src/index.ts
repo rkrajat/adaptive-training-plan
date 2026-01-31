@@ -1,3 +1,4 @@
+import cookieParser from "cookie-parser";
 import cors from "cors";
 import express from "express";
 import mongoose from "mongoose";
@@ -25,6 +26,7 @@ app.use(
   })
 );
 app.use(express.json());
+app.use(cookieParser());
 
 // Apply rate limiting to all routes
 app.use(apiRateLimiter);

@@ -1,30 +1,39 @@
-const TOKEN_KEY = 'auth_token';
+import { api } from "./api";
 
-export const getToken = (): string | null => {
-  if (typeof window === 'undefined') return null;
-  return localStorage.getItem(TOKEN_KEY);
+const SESSION_COOKIE_NAME = "session_active";
+
+// Read session_active cookie (instant, no API call)
+const getSessionCookie = (): boolean => {
+  if (typeof document === "undefined") return false;
+  return document.cookie.split("; ").some((cookie) => cookie.startsWith(`${SESSION_COOKIE_NAME}=`));
 };
 
-export const setToken = (token: string): void => {
-  if (typeof window === 'undefined') return;
-  localStorage.setItem(TOKEN_KEY, token);
-};
-
-export const removeToken = (): void => {
-  if (typeof window === 'undefined') return;
-  localStorage.removeItem(TOKEN_KEY);
+// Clear session cookie on client side (for immediate UI update)
+const clearSessionCookie = (): void => {
+  if (typeof document === "undefined") return;
+  document.cookie = `${SESSION_COOKIE_NAME}=; path=/; max-age=0`;
 };
 
 export const isAuthenticated = (): boolean => {
-  return !!getToken();
+  return getSessionCookie();
 };
 
-export const logout = (): void => {
-  // Remove JWT token from localStorage
-  removeToken();
-
-  // Redirect to landing page
-  if (typeof window !== 'undefined') {
-    window.location.href = '/';
+export const logout = async (): Promise<void> => {
+  try {
+    await api.post("api/auth/logout");
+  } catch {
+    // Clear client-side even if API fails
   }
+  clearSessionCookie();
+  if (typeof window !== "undefined") {
+    window.location.href = "/login";
+  }
+};
+
+// DEPRECATED - kept for migration period
+export const getToken = (): string | null => null;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export const setToken = (_token: string): void => {};
+export const removeToken = (): void => {
+  clearSessionCookie();
 };

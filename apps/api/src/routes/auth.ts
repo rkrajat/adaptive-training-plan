@@ -4,6 +4,7 @@ import { config } from "../config";
 import { authenticateJWT } from "../middleware/auth";
 import { authService } from "../services/auth.service";
 import { stravaService } from "../services/strava.service";
+import { setAuthCookies, clearAuthCookies } from "../utils/cookie";
 import { log } from "../utils/logger";
 import { sendSuccess, sendUnauthorized, sendInternalError } from "../utils/response";
 
@@ -47,8 +48,11 @@ router.get("/strava/callback", async (req: Request, res: Response) => {
       stravaTokenExpiresAt: Math.floor(user.stravaTokenExpiresAt.getTime() / 1000),
     });
 
-    // Redirect to frontend with JWT token
-    res.redirect(`${config.frontendUrl}/auth/callback?token=${jwtToken}`);
+    // Set auth cookies (HttpOnly JWT + readable session hint)
+    setAuthCookies(res, jwtToken);
+
+    // Redirect to frontend callback (no token in URL)
+    res.redirect(`${config.frontendUrl}/auth/callback`);
   } catch (error) {
     log.error("OAuth callback error", error);
     res.redirect(`${config.frontendUrl}/login?error=auth_failed`);
@@ -69,6 +73,12 @@ router.get("/me", authenticateJWT, async (req: Request, res: Response) => {
     log.error("Error fetching user profile", error);
     sendInternalError(res, "Failed to fetch user profile");
   }
+});
+
+// POST /api/auth/logout - Clears auth cookies
+router.post("/logout", (_req: Request, res: Response) => {
+  clearAuthCookies(res);
+  sendSuccess(res, { message: "Logged out successfully" });
 });
 
 export { router as authRouter };

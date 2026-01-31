@@ -2,6 +2,7 @@ import type { NextFunction, Request, Response } from "express";
 
 import { authService } from "../services/auth.service";
 import type { JwtPayload } from "../types/api.types";
+import { AUTH_COOKIE_NAME } from "../utils/cookie";
 import { UnauthorizedError } from "../utils/error";
 import { log } from "../utils/logger";
 import { sendUnauthorized, sendInternalError } from "../utils/response";
@@ -20,19 +21,21 @@ export const authenticateJWT = (
   res: Response,
   next: NextFunction
 ): void => {
-  const authHeader = req.headers.authorization;
+  // Try cookie first (preferred method)
+  let token = req.cookies?.[AUTH_COOKIE_NAME];
 
-  if (!authHeader) {
-    sendUnauthorized(res, "Authorization header missing");
-    return;
+  // Fall back to Authorization header for backward compatibility
+  if (!token) {
+    const authHeader = req.headers.authorization;
+    if (authHeader) {
+      token = authHeader.startsWith("Bearer ")
+        ? authHeader.slice(7)
+        : authHeader;
+    }
   }
 
-  const token = authHeader.startsWith("Bearer ")
-    ? authHeader.slice(7)
-    : authHeader;
-
   if (!token) {
-    sendUnauthorized(res, "Token missing");
+    sendUnauthorized(res, "Authentication required");
     return;
   }
 

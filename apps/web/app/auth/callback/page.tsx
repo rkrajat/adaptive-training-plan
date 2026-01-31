@@ -4,7 +4,7 @@ import { Suspense, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 
-import { setToken } from '@/lib/auth';
+import { isAuthenticated } from '@/lib/auth';
 
 const LoadingSpinner = () => (
   <div className="flex min-h-screen items-center justify-center bg-gray-50">
@@ -20,14 +20,19 @@ const CallbackContent = () => {
   const router = useRouter();
 
   useEffect(() => {
-    const token = searchParams.get('token');
+    const error = searchParams.get('error');
 
-    if (token) {
-      setToken(token);
+    if (error) {
+      router.push(`/login?error=${error}`);
+      return;
+    }
+
+    // Check if session cookie exists (set by backend during redirect)
+    if (isAuthenticated()) {
       router.push('/dashboard');
     } else {
-      // No token found, redirect to login with error
-      router.push('/login?error=no_token');
+      // Cookie not set - auth failed
+      router.push('/login?error=auth_failed');
     }
   }, [searchParams, router]);
 
