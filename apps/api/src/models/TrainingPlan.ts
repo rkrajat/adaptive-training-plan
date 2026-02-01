@@ -1,3 +1,4 @@
+import type { PaceGroup } from '@adaptive-training-plan/types';
 import mongoose, { type Document, Schema } from 'mongoose';
 
 export interface ITrainingPlanMetadata {
@@ -16,6 +17,8 @@ export interface ITrainingPlan extends Document {
   source: 'user_upload' | 'ai_generated';
   isActive: boolean;
   startDate: Date;
+  paceGroups?: PaceGroup[];
+  matchedPaceGroupId?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -41,6 +44,40 @@ const trainingPlanMetadataSchema = new Schema<ITrainingPlanMetadata>(
     targetTime: {
       type: String,
     },
+  },
+  { _id: false }
+);
+
+// Schema for PaceGroup subdocument
+const paceGroupTimeRangeSchema = new Schema(
+  {
+    minSeconds: { type: Number },
+    maxSeconds: { type: Number },
+  },
+  { _id: false }
+);
+
+const paceGroupPacesSchema = new Schema(
+  {
+    easy: { type: String },
+    tempo: { type: String },
+    interval: { type: String },
+    longRun: { type: String },
+    marathon: { type: String },
+    threshold: { type: String },
+    repetition: { type: String },
+    warmUp: { type: String },
+    coolDown: { type: String },
+  },
+  { _id: false, strict: false } // Allow additional pace types
+);
+
+const paceGroupSchema = new Schema(
+  {
+    id: { type: String, required: true },
+    name: { type: String, required: true },
+    timeRange: { type: paceGroupTimeRangeSchema },
+    paces: { type: paceGroupPacesSchema, required: true },
   },
   { _id: false }
 );
@@ -77,6 +114,14 @@ const trainingPlanSchema = new Schema<ITrainingPlan>(
       type: Date,
       required: true,
       default: () => new Date(),
+    },
+    paceGroups: {
+      type: [paceGroupSchema],
+      required: false,
+    },
+    matchedPaceGroupId: {
+      type: String,
+      required: false,
     },
   },
   {

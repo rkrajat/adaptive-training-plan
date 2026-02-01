@@ -1,6 +1,13 @@
-import type { RaceDistance, RaceGoal } from "@adaptive-training-plan/types";
+import type {
+  PaceGroup,
+  RaceDistance,
+  RaceGoal,
+} from "@adaptive-training-plan/types";
 import {
+  detectPaceGroupsFromCsv,
   getCurrentWeekNumber,
+  getDefaultPaceGroup,
+  matchPaceGroupToTargetTime,
   recalculateCsvDates,
 } from "@adaptive-training-plan/utils";
 import mongoose from "mongoose";
@@ -85,8 +92,27 @@ export class TrainingPlanService {
       // Validate CSV structure (for both converted PDFs and direct CSV uploads)
       validateCsvStructure(csvContent);
 
+      // Detect pace groups from CSV content (works for both PDF and CSV uploads)
+      const paceGroupResult = detectPaceGroupsFromCsv(csvContent);
+      const paceGroups: PaceGroup[] = paceGroupResult.paceGroups;
+
+      if (paceGroupResult.error) {
+        log.warn("Failed to detect pace groups from CSV", {
+          error: paceGroupResult.error,
+          userId,
+        });
+      } else if (paceGroups.length > 0) {
+        log.info("Pace groups detected from training plan", {
+          userId,
+          paceGroupCount: paceGroups.length,
+          paceGroupNames: paceGroups.map((g) => g.name),
+        });
+      }
+
       // Calculate VDOT and training paces from race goal
       let raceGoal: RaceGoal | undefined;
+      let matchedPaceGroupId: string | undefined;
+
       if (metadata.raceGoal) {
         raceGoal = vdotService.createRaceGoal(
           metadata.raceGoal.distance as RaceDistance,
@@ -99,6 +125,29 @@ export class TrainingPlanService {
           vdot: raceGoal.vdot,
         });
 
+        // Match user's target time to pace group
+        if (paceGroups.length > 0) {
+          const matchedGroup = matchPaceGroupToTargetTime(
+            raceGoal,
+            paceGroups
+          );
+          if (matchedGroup) {
+            matchedPaceGroupId = matchedGroup.id;
+            log.info("Matched pace group to user's target time", {
+              userId,
+              matchedGroupId: matchedGroup.id,
+              matchedGroupName: matchedGroup.name,
+              targetTimeSeconds: raceGoal.targetTimeSeconds,
+            });
+          } else {
+            log.warn("No pace group matched to user's target time", {
+              userId,
+              targetTimeSeconds: raceGoal.targetTimeSeconds,
+              availableGroups: paceGroups.map((g) => g.name),
+            });
+          }
+        }
+
         // Update user with race goal and training paces
         await User.findByIdAndUpdate(
           userId,
@@ -107,6 +156,17 @@ export class TrainingPlanService {
         );
 
         log.info("User race goal updated", { userId, vdot: raceGoal.vdot });
+      } else if (paceGroups.length > 0) {
+        // User has no race goal, use default pace group
+        const defaultGroup = getDefaultPaceGroup(paceGroups);
+        if (defaultGroup) {
+          matchedPaceGroupId = defaultGroup.id;
+          log.info("Using default pace group (no race goal provided)", {
+            userId,
+            defaultGroupId: defaultGroup.id,
+            defaultGroupName: defaultGroup.name,
+          });
+        }
       }
 
       // Create training plan
@@ -124,6 +184,8 @@ export class TrainingPlanService {
         source: "user_upload" as const,
         isActive: true,
         startDate: new Date(metadata.startDate),
+        paceGroups: paceGroups.length > 0 ? paceGroups : undefined,
+        matchedPaceGroupId,
       };
 
       const [trainingPlan] = await TrainingPlan.create([trainingPlanData], {
@@ -323,6 +385,8 @@ export class TrainingPlanService {
     return {
       ...this.formatTrainingPlan(plan),
       csvContent: plan.csvContent,
+      paceGroups: plan.paceGroups,
+      matchedPaceGroupId: plan.matchedPaceGroupId,
     };
   }
 

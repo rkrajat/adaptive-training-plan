@@ -1,4 +1,8 @@
-import type { ExperienceLevel, TrainingPaces } from "@adaptive-training-plan/types";
+import type {
+  ExperienceLevel,
+  PaceGroup,
+  TrainingPaces,
+} from "@adaptive-training-plan/types";
 import { groupTrainingPlanByWeek } from "@adaptive-training-plan/utils";
 import { openai } from "@ai-sdk/openai";
 import { generateText, streamText } from "ai";
@@ -277,11 +281,13 @@ If you are unable to find sufficient data to make changes, output the same forma
    * @deprecated
    * Format training plan CSV for AI prompt context
    * Uses shared utility for accurate CSV parsing and week grouping
+   * Now supports pace group filtering to use matched pace group's paces
    */
   formatTrainingPlanForPrompt(
     csvContent: string,
     currentWeek: number,
-    startDate: string
+    startDate: string,
+    matchedPaceGroup?: PaceGroup
   ): string {
     // Use shared utility to properly parse and group training plan by week
     const { headers, groupedWeeks, error } = groupTrainingPlanByWeek(
@@ -310,6 +316,24 @@ If you are unable to find sufficient data to make changes, output the same forma
     // Format header
     let formattedPlan = `Training Plan Structure:\n`;
     formattedPlan += `Headers: ${headers.join(", ")}\n\n`;
+
+    // Add pace group information if matched
+    if (matchedPaceGroup) {
+      formattedPlan += `Pace Group: ${matchedPaceGroup.name}\n`;
+      if (Object.keys(matchedPaceGroup.paces).length > 0) {
+        formattedPlan += `Pace Group Paces:\n`;
+        for (const [paceType, paceRange] of Object.entries(
+          matchedPaceGroup.paces
+        )) {
+          if (paceRange) {
+            formattedPlan += `  ${paceType}: ${paceRange}\n`;
+          }
+        }
+        formattedPlan += `\n`;
+      }
+      formattedPlan += `Note: Use the pace group paces above when the training plan does not specify target paces for a workout.\n\n`;
+    }
+
     formattedPlan += `Current Week (Week ${currentWeek}) and Context:\n\n`;
 
     // Format each week's data
@@ -322,7 +346,35 @@ If you are unable to find sufficient data to make changes, output the same forma
         formattedPlan += `${weekMarker}  `;
         // Create a compact representation of the row
         const rowData = headers
-          .map((header: string) => `${header}: ${row[header] || "N/A"}`)
+          .map((header: string) => {
+            let value = row[header] || "N/A";
+
+            // If matched pace group exists and target_pace_min_per_km is empty/N/A,
+            // try to infer pace from pace group based on run type
+            if (
+              matchedPaceGroup &&
+              header.toLowerCase().includes("pace") &&
+              (value === "N/A" || !value || value.trim() === "")
+            ) {
+              const runType = row["type"] || row["planned_run_type"] || "";
+              const runTypeLower = runType.toLowerCase();
+
+              // Map run type to pace group pace type
+              if (runTypeLower.includes("easy") || runTypeLower.includes("recovery")) {
+                value = matchedPaceGroup.paces.easy || value;
+              } else if (runTypeLower.includes("tempo") || runTypeLower.includes("threshold")) {
+                value = matchedPaceGroup.paces.tempo || matchedPaceGroup.paces.threshold || value;
+              } else if (runTypeLower.includes("interval")) {
+                value = matchedPaceGroup.paces.interval || value;
+              } else if (runTypeLower.includes("long")) {
+                value = matchedPaceGroup.paces.longRun || matchedPaceGroup.paces.easy || value;
+              } else if (runTypeLower.includes("marathon")) {
+                value = matchedPaceGroup.paces.marathon || value;
+              }
+            }
+
+            return `${header}: ${value}`;
+          })
           .join(", ");
         formattedPlan += `${rowData}\n`;
       }
@@ -335,6 +387,7 @@ If you are unable to find sufficient data to make changes, output the same forma
       relevantWeeks: relevantWeeks.length,
       currentWeek,
       formattedLength: formattedPlan.length,
+      hasMatchedPaceGroup: !!matchedPaceGroup,
     });
 
     return formattedPlan;
@@ -677,6 +730,7 @@ Keep the tone professional but encouraging. Be specific and actionable.`;
   /**
    * Generate training recommendations with enhanced activity data and training plan from database
    * Includes training paces from VDOT calculation when available
+   * Now supports pace group filtering to use matched pace group's paces
    */
   generateRecommendationsWithEnhancedPlan(
     activities: EnhancedFormattedActivity[],
@@ -685,7 +739,8 @@ Keep the tone professional but encouraging. Be specific and actionable.`;
     startDate: string,
     userFeedback?: string,
     experienceLevel?: ExperienceLevel,
-    trainingPaces?: TrainingPaces
+    trainingPaces?: TrainingPaces,
+    matchedPaceGroup?: PaceGroup
   ) {
     try {
       log.info("Generating AI recommendations with enhanced activity data", {
@@ -693,13 +748,15 @@ Keep the tone professional but encouraging. Be specific and actionable.`;
         currentWeek,
         hasFeedback: !!userFeedback,
         hasTrainingPaces: !!trainingPaces,
+        hasMatchedPaceGroup: !!matchedPaceGroup,
       });
 
       const systemPrompt = this.buildSystemPrompt();
       const trainingPlanData = this.formatTrainingPlanForPrompt(
         csvContent,
         currentWeek,
-        startDate
+        startDate,
+        matchedPaceGroup
       );
       const userPrompt = this.buildUserPromptWithEnhancedActivities(
         activities,
@@ -767,6 +824,13 @@ You will receive a PDF file or the extracted text from the PDF file by the user.
 The user has specified that this training plan starts on: ${startDate}
 Use this as the starting date for the training plan. If the PDF contains explicit dates, use those. Otherwise, start from ${startDate} and increment sequentially for each day.
 THIS IS VERY IMPORTANT. DO NOT CHANGE THE START DATE. AND ALWAYS USE CORRECT DATE AND DAYS.
+
+🏃 PACE GROUPS DETECTION
+Some training plans contain multiple pace groups targeting different finish times (e.g., "Sub 2:00", "2:00-2:20", "Finish Strong"). 
+- If you see rows with headers like "Target Time" or "Paces" that define different pace groups, preserve this structure in your output
+- Include pace group information in the CSV if it's clearly defined (e.g., as metadata rows or column headers)
+- If pace groups are defined in separate tables, include them as separate sections in the CSV
+- The pace group information will be used later to match the user's target time to the appropriate group
 
 🎯 OUTPUT
 Your task is to produce a clean CSV (Comma Separated) table with the following columns:
