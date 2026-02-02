@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { CloudUpload, Loader2, XCircle } from "lucide-react";
 import type {
@@ -103,7 +103,16 @@ export const UploadTrainingPlanDialog = ({
     } else {
       setExperienceLevel(undefined);
     }
+    uploadMutation.reset();
   };
+
+  // Reset form when dialog is closed
+  useEffect(() => {
+    if (!open) {
+      resetForm();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
@@ -144,7 +153,7 @@ export const UploadTrainingPlanDialog = ({
   };
 
   return (
-    <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
+    <ResponsiveDialog open={open} onOpenChange={onOpenChange} preventClose={uploadMutation.isPending}>
       <ResponsiveDialogContent className="sm:max-w-[500px]">
         <form onSubmit={handleSubmit}>
           <ResponsiveDialogHeader>
