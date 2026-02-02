@@ -108,7 +108,13 @@ const WeeklyRunsReportSkeleton = () => (
 /**
  * Empty state when no runs exist for the week
  */
-const EmptyState = ({ weekRange }: { weekRange: string }) => (
+const EmptyState = ({
+  weekRange,
+  onViewActivities,
+}: {
+  weekRange: string;
+  onViewActivities?: () => void;
+}) => (
   <Card className="mb-6 border-dashed">
     <CardContent className="py-6">
       <div className="flex flex-col items-center justify-center text-center">
@@ -119,6 +125,17 @@ const EmptyState = ({ weekRange }: { weekRange: string }) => (
         <p className="text-xs text-muted-foreground mt-1">
           Your weekly stats will appear here once you sync activities from Strava
         </p>
+        {onViewActivities && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onViewActivities}
+            className="mt-4 border-blue-200 text-blue-600 hover:bg-blue-50 dark:border-blue-800 dark:text-blue-400 dark:hover:bg-blue-950/50"
+          >
+            <Eye className="h-4 w-4 mr-2" />
+            View last 30 days activities
+          </Button>
+        )}
       </div>
     </CardContent>
   </Card>
@@ -160,7 +177,7 @@ export const WeeklyRunsReport = ({
 
   // Show empty state if no runs
   if (data.numberOfRuns === 0) {
-    return <EmptyState weekRange={weekRange} />;
+    return <EmptyState weekRange={weekRange} onViewActivities={onViewActivities} />;
   }
 
   return (
