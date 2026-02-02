@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Loader2, XCircle } from "lucide-react";
 import { toast } from "sonner";
 
+import { useAuthGuard } from "@/hooks/use-auth-guard";
 import { useDashboardData } from "@/hooks/use-dashboard-data";
 import { useRecommendations } from "@/hooks/use-recommendations";
 import {
@@ -38,6 +39,9 @@ import { WeeklyRunsReport } from "./components/weekly-runs-report";
 
 export default function DashboardPage() {
   const router = useRouter();
+
+  // Protect route - redirect to login if not authenticated
+  useAuthGuard();
 
   // Fetch all dashboard data
   const { user, activities, activePlan, isLoading, error } = useDashboardData();

@@ -4,7 +4,7 @@ import { Suspense, useEffect, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 
-import { establishSession } from '@/lib/auth';
+import { setToken } from '@/lib/auth';
 
 const LoadingSpinner = () => (
   <div className="flex min-h-screen items-center justify-center bg-gray-50">
@@ -23,34 +23,26 @@ const CallbackContent = () => {
   useEffect(() => {
     // Prevent double processing in React strict mode
     if (hasProcessed.current) return;
+    hasProcessed.current = true;
 
-    const processAuth = async () => {
-      hasProcessed.current = true;
+    const error = searchParams.get('error');
+    const token = searchParams.get('token');
 
-      const error = searchParams.get('error');
-      const token = searchParams.get('token');
+    if (error) {
+      router.push(`/login?error=${error}`);
+      return;
+    }
 
-      if (error) {
-        router.push(`/login?error=${error}`);
-        return;
-      }
+    if (!token) {
+      router.push('/login?error=no_token');
+      return;
+    }
 
-      if (!token) {
-        router.push('/login?error=no_token');
-        return;
-      }
+    // Store token in localStorage
+    setToken(token);
 
-      // Exchange token for HttpOnly cookie session
-      const success = await establishSession(token);
-
-      if (success) {
-        router.push('/dashboard');
-      } else {
-        router.push('/login?error=session_failed');
-      }
-    };
-
-    processAuth();
+    // Redirect to dashboard
+    router.push('/dashboard');
   }, [searchParams, router]);
 
   return <LoadingSpinner />;
