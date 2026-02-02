@@ -24,6 +24,7 @@ interface ResponsiveDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   children: React.ReactNode;
+  preventClose?: boolean;
 }
 
 interface ResponsiveDialogContentProps {
@@ -51,8 +52,12 @@ interface ResponsiveDialogFooterProps {
   className?: string;
 }
 
-const ResponsiveDialogContext = React.createContext<{ isMobile: boolean }>({
+const ResponsiveDialogContext = React.createContext<{
+  isMobile: boolean;
+  preventClose?: boolean;
+}>({
   isMobile: false,
+  preventClose: false,
 });
 
 /**
@@ -62,13 +67,22 @@ export const ResponsiveDialog = ({
   open,
   onOpenChange,
   children,
+  preventClose,
 }: ResponsiveDialogProps) => {
   const isMobile = useMediaQuery("(max-width: 767px)");
 
+  const handleOpenChange = (newOpen: boolean) => {
+    // Prevent closing if preventClose is true
+    if (!newOpen && preventClose) {
+      return;
+    }
+    onOpenChange(newOpen);
+  };
+
   if (isMobile) {
     return (
-      <ResponsiveDialogContext.Provider value={{ isMobile }}>
-        <Drawer open={open} onOpenChange={onOpenChange}>
+      <ResponsiveDialogContext.Provider value={{ isMobile, preventClose }}>
+        <Drawer open={open} onOpenChange={handleOpenChange}>
           {children}
         </Drawer>
       </ResponsiveDialogContext.Provider>
@@ -76,8 +90,8 @@ export const ResponsiveDialog = ({
   }
 
   return (
-    <ResponsiveDialogContext.Provider value={{ isMobile }}>
-      <Dialog open={open} onOpenChange={onOpenChange}>
+    <ResponsiveDialogContext.Provider value={{ isMobile, preventClose }}>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
         {children}
       </Dialog>
     </ResponsiveDialogContext.Provider>
@@ -88,18 +102,37 @@ export const ResponsiveDialogContent = ({
   className,
   children,
 }: ResponsiveDialogContentProps) => {
-  const { isMobile } = React.useContext(ResponsiveDialogContext);
+  const { isMobile, preventClose } = React.useContext(ResponsiveDialogContext);
 
   if (isMobile) {
     return (
-      <DrawerContent className={className}>
+      <DrawerContent
+        className={className}
+        onInteractOutside={(event) => {
+          if (preventClose) {
+            event.preventDefault();
+          }
+        }}
+      >
         <div className="overflow-y-auto max-h-[85vh] px-4 pb-4">{children}</div>
       </DrawerContent>
     );
   }
 
   return (
-    <DialogContent className={`max-h-[85vh] overflow-y-auto ${className ?? ""}`}>
+    <DialogContent
+      className={`max-h-[85vh] overflow-y-auto ${className ?? ""}`}
+      onInteractOutside={(event) => {
+        if (preventClose) {
+          event.preventDefault();
+        }
+      }}
+      onEscapeKeyDown={(event) => {
+        if (preventClose) {
+          event.preventDefault();
+        }
+      }}
+    >
       {children}
     </DialogContent>
   );

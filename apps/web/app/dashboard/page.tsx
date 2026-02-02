@@ -243,6 +243,15 @@ export default function DashboardPage() {
         onReject={handleRejectClick}
         isAccepting={acceptMutation.isPending}
         isRejecting={rejectMutation.isPending}
+        originalPlan={
+          activePlan
+            ? {
+                csvContent: activePlan.csvContent,
+                currentWeek: activePlan.currentWeek,
+                startDate: activePlan.startDate,
+              }
+            : undefined
+        }
       />
 
       <TrainingPlanSection
