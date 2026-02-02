@@ -4,7 +4,6 @@ import { config } from "../config";
 import { authenticateJWT } from "../middleware/auth";
 import { authService } from "../services/auth.service";
 import { stravaService } from "../services/strava.service";
-import { setAuthCookies, clearAuthCookies } from "../utils/cookie";
 import { log } from "../utils/logger";
 import { sendSuccess, sendUnauthorized, sendInternalError } from "../utils/response";
 
@@ -49,7 +48,7 @@ router.get("/strava/callback", async (req: Request, res: Response) => {
     });
 
     // Redirect to frontend with token in URL
-    // Frontend will call /api/auth/session to set HttpOnly cookie
+    // Frontend will store token in localStorage
     res.redirect(`${config.frontendUrl}/auth/callback?token=${jwtToken}`);
   } catch (error) {
     log.error("OAuth callback error", error);
@@ -71,36 +70,6 @@ router.get("/me", authenticateJWT, async (req: Request, res: Response) => {
     log.error("Error fetching user profile", error);
     sendInternalError(res, "Failed to fetch user profile");
   }
-});
-
-// POST /api/auth/session - Sets HttpOnly auth cookie from token
-// Called by frontend after OAuth redirect to establish cookie-based session
-router.post("/session", (req: Request, res: Response) => {
-  const { token } = req.body;
-
-  if (!token || typeof token !== "string") {
-    sendUnauthorized(res, "Token is required");
-    return;
-  }
-
-  try {
-    // Verify the token is valid before setting cookie
-    authService.verifyJwtToken(token);
-
-    // Set the HttpOnly auth cookie
-    setAuthCookies(res, token);
-
-    sendSuccess(res, { message: "Session established" });
-  } catch (error) {
-    log.error("Failed to establish session", error);
-    sendUnauthorized(res, "Invalid token");
-  }
-});
-
-// POST /api/auth/logout - Clears auth cookies
-router.post("/logout", (_req: Request, res: Response) => {
-  clearAuthCookies(res);
-  sendSuccess(res, { message: "Logged out successfully" });
 });
 
 export { router as authRouter };

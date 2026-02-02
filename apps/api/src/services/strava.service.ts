@@ -101,11 +101,20 @@ export class StravaService {
       const cacheKey = getActivitiesCacheKey(userId);
       const cached = activitiesCache.get(cacheKey);
 
+      console.log('=======', {
+        cached,
+        lookbackDays,
+      });
+
       if (cached && cached.lookbackDays === lookbackDays) {
         log.info("Cache HIT for Strava activities", {
           userId,
           cachedAt: new Date(cached.cachedAt).toISOString(),
           activitiesCount: cached.activities.length,
+        });
+
+        console.log('=======', {
+          cachedActivitiesName: cached?.activities.map((activity) => activity.name),
         });
         return cached.activities;
       }

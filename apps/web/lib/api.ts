@@ -13,28 +13,37 @@ import type {
   RaceGoalInput,
 } from "@adaptive-training-plan/types";
 
+import { getToken, removeToken } from "./auth";
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
-// Clear session cookie (for 401 handling)
-const clearSessionCookie = (): void => {
-  if (typeof document === "undefined") return;
-  document.cookie = "session_active=; path=/; max-age=0";
+// Get Authorization header with Bearer token
+const getAuthHeader = (): string | undefined => {
+  const token = getToken();
+  return token ? `Bearer ${token}` : undefined;
 };
 
-// Create ky instance with cookie credentials and timeout configuration
+// Create ky instance with Authorization header
 export const api = ky.create({
   prefixUrl: API_URL,
-  credentials: "include", // Send cookies with all requests
   timeout: 120000, // 2 minutes - matches backend timeout for AI recommendations
   retry: {
     limit: 0, // Disable retries for long-running AI requests
   },
   hooks: {
+    beforeRequest: [
+      (request) => {
+        const authHeader = getAuthHeader();
+        if (authHeader) {
+          request.headers.set("Authorization", authHeader);
+        }
+      },
+    ],
     afterResponse: [
       async (_request, _options, response) => {
         // Handle 401 Unauthorized - token expired or invalid
         if (response.status === 401) {
-          clearSessionCookie();
+          removeToken();
           if (typeof window !== "undefined") {
             window.location.href = "/login";
           }
@@ -128,12 +137,17 @@ export const trainingPlansApi = {
 export const recommendationsApi = {
   generate: async (regenerate = false): Promise<Response> => {
     // Use native fetch for streaming support (ky doesn't support streaming well)
+    const token = getToken();
+    const headers: HeadersInit = {
+      "Content-Type": "application/json",
+    };
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+
     const response = await fetch(`${API_URL}/api/recommendations/generate`, {
       method: "POST",
-      credentials: "include", // Send cookies with request
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers,
       body: JSON.stringify({ regenerate }),
     });
 
@@ -141,14 +155,19 @@ export const recommendationsApi = {
   },
 
   generateWithPlan: async (planId: string, userFeedback?: string) => {
+    const token = getToken();
+    const headers: HeadersInit = {
+      "Content-Type": "application/json",
+    };
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+
     const response = await fetch(
       `${API_URL}/api/recommendations/generate-with-plan`,
       {
         method: "POST",
-        credentials: "include", // Send cookies with request
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers,
         body: JSON.stringify({ planId, userFeedback }),
       }
     );

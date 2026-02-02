@@ -1,53 +1,41 @@
-import { api } from "./api";
+const TOKEN_KEY = "auth_token";
 
-const SESSION_COOKIE_NAME = "session_active";
-const SESSION_COOKIE_MAX_AGE = 24 * 60 * 60; // 24 hours in seconds
-
-// Read session_active cookie (instant, no API call)
-const getSessionCookie = (): boolean => {
-  if (typeof document === "undefined") return false;
-  return document.cookie.split("; ").some((cookie) => cookie.startsWith(`${SESSION_COOKIE_NAME}=`));
-};
-
-// Set session cookie on client side
-const setSessionCookie = (): void => {
-  if (typeof document === "undefined") return;
-  document.cookie = `${SESSION_COOKIE_NAME}=1; path=/; max-age=${SESSION_COOKIE_MAX_AGE}; SameSite=Lax`;
-};
-
-// Clear session cookie on client side (for immediate UI update)
-const clearSessionCookie = (): void => {
-  if (typeof document === "undefined") return;
-  document.cookie = `${SESSION_COOKIE_NAME}=; path=/; max-age=0`;
-};
-
-export const isAuthenticated = (): boolean => {
-  return getSessionCookie();
+/**
+ * Get the JWT token from localStorage
+ */
+export const getToken = (): string | null => {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem(TOKEN_KEY);
 };
 
 /**
- * Establish session by sending token to backend to set HttpOnly cookie,
- * then set session_active cookie on frontend for instant auth checks.
+ * Store the JWT token in localStorage
  */
-export const establishSession = async (token: string): Promise<boolean> => {
-  try {
-    // Call backend to set HttpOnly auth_token cookie
-    await api.post("api/auth/session", { json: { token } });
-    // Set session_active cookie on frontend for instant auth state checks
-    setSessionCookie();
-    return true;
-  } catch {
-    return false;
-  }
+export const setToken = (token: string): void => {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(TOKEN_KEY, token);
 };
 
+/**
+ * Remove the JWT token from localStorage
+ */
+export const removeToken = (): void => {
+  if (typeof window === "undefined") return;
+  localStorage.removeItem(TOKEN_KEY);
+};
+
+/**
+ * Check if user is authenticated (has a token in localStorage)
+ */
+export const isAuthenticated = (): boolean => {
+  return getToken() !== null;
+};
+
+/**
+ * Log out the user by removing the token and redirecting to login
+ */
 export const logout = async (): Promise<void> => {
-  try {
-    await api.post("api/auth/logout");
-  } catch {
-    // Clear client-side even if API fails
-  }
-  clearSessionCookie();
+  removeToken();
   if (typeof window !== "undefined") {
     window.location.href = "/login";
   }
