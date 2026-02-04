@@ -1,57 +1,32 @@
 date,day,type,planned_distance_km,target_pace_min_per_km,target_HR_zone,notes
-2024-12-30,Mon,Cross-Training,0,,,45-60 min
-2024-12-31,Tue,Tempo,,4:12,Z4,"Warm up 10 min, 20-40 min at tempo pace, Cool down 5-10 min"
-2025-01-01,Wed,Easy,7.5,,Z2,"45 min"
-2025-01-02,Thu,Easy,10,,Z2,"60 min"
+2024-12-31,Tue,Tempo,,4:12-4:12/km,,"Warm up 10 min, 20-40 min at tempo pace, Cool down 5-10 min"
 2025-01-03,Fri,Rest,0,,,
-2025-01-04,Sat,Intervals,8,4:15,Z4,"Warm up 10 min, 4 x 2k at target pace with 90 sec recovery, Cool down 5 min"
-2025-01-05,Sun,Long,13.5,,Z2,"65 min"
-2025-01-06,Mon,Cross-Training,0,,,45-60 min
-2025-01-07,Tue,Intervals,,4:05,Z4,"Warm up 10 min, 4 x 1 mile (1.6k) at 10k pace with 2 min recovery, Cool down 5-10 min"
-2025-01-08,Wed,Easy,7.5,,Z2,"45 min"
-2025-01-09,Thu,Easy,10,,Z2,"60 min"
+2025-01-04,Sat,Interval,,4:15-4:15/km,,"Warm up 10 min, 4 x 2k at target pace with 90 sec recovery, Cool down 5 min"
+2025-01-05,Sun,Long,,4:15-4:15/km,,"65 min"
+2025-01-07,Tue,Interval,,4:05-4:05/km,,"Warm up 10 min, 4 x 1 mile (1.6k) at 10k pace with 2 min recovery, Cool down 5-10 min"
 2025-01-10,Fri,Rest,0,,,
-2025-01-11,Sat,Intervals,10,4:15,Z4,"Warm up 10 min, 5 x 2k at target pace with 90 sec recovery, Cool down 5 min"
-2025-01-12,Sun,Long,14,,Z2,"70 min"
-2025-01-13,Mon,Cross-Training,0,,,45-60 min
-2025-01-14,Tue,Intervals,,3:55,Z5,"Warm up 10 min, 10-12 x 600m at 5k pace with 90 sec recovery, Cool down 5-10 min"
-2025-01-15,Wed,Easy,7.5,,Z2,"45 min"
-2025-01-16,Thu,Easy,10,,Z2,"60 min"
+2025-01-11,Sat,Interval,,4:15-4:15/km,,"Warm up 10 min, 5 x 2k at target pace with 90 sec recovery, Cool down 5 min"
+2025-01-12,Sun,Long,,4:15-4:15/km,,"70 min"
+2025-01-14,Tue,Interval,,3:55-3:55/km,,"Warm up 10 min, 10-12 x 600m at 5k pace with 90 sec recovery, Cool down 5-10 min"
 2025-01-17,Fri,Rest,0,,,
-2025-01-18,Sat,Hills,,,"","6-10 x 100m, jog back down recovery"
-2025-01-19,Sun,Long,15,,Z2,"75 min"
-2025-01-20,Mon,Cross-Training,0,,,45-60 min
-2025-01-21,Tue,Tempo,,4:12,Z4,"Warm up 10 min, 20-40 min at tempo pace, Cool down 5-10 min"
-2025-01-22,Wed,Easy,7.5,,Z2,"45 min"
-2025-01-23,Thu,Easy,10,,Z2,"60 min"
+2025-01-19,Sun,Long,,4:15-4:15/km,,"75 min"
+2025-01-21,Tue,Tempo,,4:12-4:12/km,,"Warm up 10 min, 20-40 min at tempo pace, Cool down 5-10 min"
 2025-01-24,Fri,Rest,0,,,
-2025-01-25,Sat,Easy,10,,Z2,"60 min"
-2025-01-26,Sun,Long,13.5,,Z2,"65 min"
-2025-01-27,Mon,Cross-Training,0,,,45-60 min
-2025-01-28,Tue,Hills,,,"","6-10 x 100m, jog back down recovery"
-2025-01-29,Wed,Easy,7.5,,Z2,"45 min"
-2025-01-30,Thu,Easy,10,,Z2,"60 min"
+2025-01-26,Sun,Long,,4:15-4:15/km,,"65 min"
 2025-01-31,Fri,Rest,0,,,
-2025-02-01,Sat,Intervals,,4:05,Z4,"Warm up 10 min, 4 x 1 mile (1.6k) at 10k pace with 2 min recovery, Cool down 5-10 min"
-2025-02-02,Sun,Long,13.5,,Z2,"65 min"
-2025-02-03,Mon,Cross-Training,0,,,45-60 min
-2025-02-04,Tue,Intervals,,3:55,Z5,"Warm up 10 min, 8 x 800m at 5k pace with 90 sec recovery, Cool down 5-10 min"
-2025-02-05,Wed,Easy,7.5,,Z2,"45 min"
-2025-02-06,Thu,Easy,10,,Z2,"60 min"
+2025-02-01,Sat,Interval,,4:05-4:05/km,,"Warm up 10 min, 4 x 1 mile (1.6k) at 10k pace with 2 min recovery, Cool down 5-10 min"
+2025-02-02,Sun,Long,,4:15-4:15/km,,"65 min"
+2025-02-04,Tue,Interval,,3:55-3:55/km,,"Warm up 10 min, 8 x 800m at 5k pace with 90 sec recovery, Cool down 5-10 min"
 2025-02-07,Fri,Rest,0,,,
-2025-02-08,Sat,Intervals,12,4:15,Z4,"Warm up 10 min, 6 x 2k at target pace with 90 sec recovery, Cool down 5 min"
-2025-02-09,Sun,Long,15,,Z2,"75 min"
+2025-02-08,Sat,Interval,,4:15-4:15/km,,"Warm up 10 min, 6 x 2k at target pace with 90 sec recovery, Cool down 5 min"
+2025-02-09,Sun,Long,,4:15-4:15/km,,"75 min"
 2025-02-10,Mon,Rest,0,,,
-2025-02-11,Tue,Intervals,,4:05,Z4,"Warm up 10 min, 4 x 2k at 10k pace with 2 min recovery, Cool down 5-10 min"
-2025-02-12,Wed,Easy,6.5,,Z2,"40 min"
-2025-02-13,Thu,Easy,8.5,,Z2,"50 min"
+2025-02-11,Tue,Interval,,4:05-4:05/km,,"Warm up 10 min, 4 x 2k at 10k pace with 2 min recovery, Cool down 5-10 min"
 2025-02-14,Fri,Rest,0,,,
-2025-02-15,Sat,Tempo,,4:12,Z4,"Warm up 10 min, 20-40 min at tempo pace, Cool down 5-10 min"
-2025-02-16,Sun,Long,13.5,,Z2,"65 min"
+2025-02-15,Sat,Tempo,,4:12-4:12/km,,"Warm up 10 min, 20-40 min at tempo pace, Cool down 5-10 min"
+2025-02-16,Sun,Long,,4:15-4:15/km,,"65 min"
 2025-02-17,Mon,Rest,0,,,
-2025-02-18,Tue,Tempo,,4:12,Z4,"Warm up 10 min, 20-40 min at tempo pace, Cool down 5-10 min"
-2025-02-19,Wed,Easy,6.5,,Z2,"40 min"
+2025-02-18,Tue,Tempo,,4:12-4:12/km,,"Warm up 10 min, 20-40 min at tempo pace, Cool down 5-10 min"
 2025-02-20,Thu,Rest,0,,,
-2025-02-21,Fri,Easy,5,,Z2,"30 min or rest"
-2025-02-22,Sat,Race,21,,,"21k"
+2025-02-22,Sat,Race,21,,,
 2025-02-23,Sun,Rest,0,,,

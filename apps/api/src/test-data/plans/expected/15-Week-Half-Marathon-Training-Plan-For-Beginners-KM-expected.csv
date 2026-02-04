@@ -1,106 +1,77 @@
 date,day,type,planned_distance_km,target_pace_min_per_km,target_HR_zone,notes
 2024-12-30,Mon,Cross-Training,0,,,30 min cross training
-2024-12-31,Tue,Intervals,5,,,"Warm up: 5 min brisk walk, 5 x 1 min hard run, 90 sec jog, Cool down: 5 min brisk walk"
-2025-01-01,Wed,Easy,3,,,"Distance run"
+2025-01-01,Wed,Easy,3,,,Distance run
 2025-01-02,Thu,Rest,0,,,
-2025-01-03,Fri,Threshold,5,,,"Warm up: 1 km, 2 x 5 min at tempo pace with 90 sec recovery, Cool down: 1 km"
-2025-01-04,Sat,Cross-Training,0,,,"Rest or 20 min cross training"
-2025-01-05,Sun,Long,3,,,"Long run"
+2025-01-04,Sat,Rest,0,,,
+2025-01-05,Sun,Long,3,,,Long run
 2025-01-06,Mon,Cross-Training,0,,,30-45 min cross training
-2025-01-07,Tue,Intervals,8,,,"Warm up: 2 km jog, 10 x 1 min hard run, 60 sec jog, Cool down: 5 min jog"
-2025-01-08,Wed,Easy,5,,,"Distance run"
+2025-01-08,Wed,Easy,5,,,Distance run
 2025-01-09,Thu,Rest,0,,,
-2025-01-10,Fri,Threshold,7,,,"Warm up: 2 km, 5 x 3 min at tempo pace with 90 sec recovery, Cool down: 2 km"
-2025-01-11,Sat,Cross-Training,0,,,"Rest or 20 min cross training"
-2025-01-12,Sun,Long,5,,,"Long run"
+2025-01-11,Sat,Rest,0,,,
+2025-01-12,Sun,Long,5,,,Long run
 2025-01-13,Mon,Cross-Training,0,,,30-45 min cross training
-2025-01-14,Tue,Intervals,8,,,"Warm up: 2-3 km, 10x 400m at 5k pace with 200m jog, Cool down: 2-3 km"
-2025-01-15,Wed,Easy,5,,,"Distance run"
+2025-01-15,Wed,Easy,5,,,Distance run
 2025-01-16,Thu,Rest,0,,,
-2025-01-17,Fri,Threshold,7,,,"Warm up: 2 km, 5 x 4 min at tempo pace with 90 sec recovery, Cool down: 2 km"
-2025-01-18,Sat,Easy,7.5,,,"Rest or 7-8 km easy"
-2025-01-19,Sun,Long,6.5,,,"Long run"
+2025-01-18,Sat,Rest,0,,,
+2025-01-19,Sun,Long,6.5,,,Long run
 2025-01-20,Mon,Cross-Training,0,,,30-45 min cross training
-2025-01-21,Tue,Intervals,8,,,"Warm up: 2-3 km, 6 x 800m at 5k pace with 200m jog, Cool down: 2-3 km"
-2025-01-22,Wed,Easy,7,,,"Distance run"
+2025-01-22,Wed,Easy,7,,,Distance run
 2025-01-23,Thu,Rest,0,,,
-2025-01-24,Fri,Threshold,7,,,"Warm up: 2 km, 4 x 5 min at tempo pace with 90 sec recovery, Cool down: 2 km"
-2025-01-25,Sat,Easy,7.5,,,"Rest or 7-8 km easy + 4 x 75m strides"
-2025-01-26,Sun,Long,8,,,"Long run"
+2025-01-25,Sat,Rest,0,,,
+2025-01-26,Sun,Long,8,,,Long run
 2025-01-27,Mon,Cross-Training,0,,,40-45 min cross training
-2025-01-28,Tue,Intervals,8,,,"Warm up: 2-3 km, 6 x 1000m at 5k pace with 200m jog, Cool down: 2-3 km"
-2025-01-29,Wed,Easy,7,,,"Distance run"
+2025-01-29,Wed,Easy,7,,,Distance run
 2025-01-30,Thu,Rest,0,,,
-2025-01-31,Fri,Threshold,7,,,"Warm up: 2 km, 3 x 7 min at tempo pace with 90 sec recovery, Cool down: 2 km"
-2025-02-01,Sat,Easy,7.5,,,"Rest or 7-8 km easy + 4 x 75m strides"
-2025-02-02,Sun,Long,10,,,"Long run"
+2025-02-01,Sat,Rest,0,,,
+2025-02-02,Sun,Long,10,,,Long run
 2025-02-03,Mon,Cross-Training,0,,,40-45 min cross training
-2025-02-04,Tue,Intervals,8,,,"Warm up: 2-3 km, 1 x 1600m at 5k pace with 200m jog; 4 x 800m at 5k pace with 200m jog, Cool down: 2-3 km"
-2025-02-05,Wed,Easy,7,,,"Distance run"
+2025-02-05,Wed,Easy,7,,,Distance run
 2025-02-06,Thu,Rest,0,,,
-2025-02-07,Fri,Threshold,7,,,"Warm up: 2 km, 2 x 10 min at tempo pace with 90 sec recovery, Cool down: 2 km"
-2025-02-08,Sat,Easy,7.5,,,"Rest or 7-8 km easy + 4 x 75m strides"
-2025-02-09,Sun,Long,11,,,"Long run"
+2025-02-08,Sat,Rest,0,,,
+2025-02-09,Sun,Long,11,,,Long run
 2025-02-10,Mon,Cross-Training,0,,,45 min cross training
-2025-02-11,Tue,Intervals,8,,,"Warm up: 2-3 km, 4x 800m at 5k pace with 200m jog; 4 x 400m at mile pace with 200m jog, Cool down: 2-3 km"
-2025-02-12,Wed,Easy,7,,,"Distance run"
+2025-02-12,Wed,Easy,7,,,Distance run
 2025-02-13,Thu,Rest,0,,,
-2025-02-14,Fri,Tempo,10,,,"Warm up: 2 km, 20 min tempo pace, Cool down: 2 km"
-2025-02-15,Sat,Easy,7.5,,,"Rest or 7-8 km easy + 4 x 75m strides"
-2025-02-16,Sun,Long,10,,,"Long run with the last 2 at goal half marathon pace"
+2025-02-15,Sat,Rest,0,,,
+2025-02-16,Sun,Long,10,,,Long run
 2025-02-17,Mon,Cross-Training,0,,,45 min cross training
-2025-02-18,Tue,Intervals,8,,,"Warm up: 2-3 km, 6 x 1000m at 5k pace with 200m jog, Cool down: 2-3 km"
-2025-02-19,Wed,Easy,8,,,"Distance run"
+2025-02-19,Wed,Easy,8,,,Distance run
 2025-02-20,Thu,Rest,0,,,
-2025-02-21,Fri,Tempo,10,,,"Warm up: 2 km, 25 min tempo pace, Cool down: 2 km"
-2025-02-22,Sat,Easy,7.5,,,"Rest or 7-8 km easy + 4 x 75m strides"
-2025-02-23,Sun,Long,12.5,,,"Long run"
+2025-02-22,Sat,Rest,0,,,
+2025-02-23,Sun,Long,12.5,,,Long run
 2025-02-24,Mon,Cross-Training,0,,,45 min cross training
-2025-02-25,Tue,Intervals,8,,,"Warm up: 2-3 km, 3-4 x 1600m at 5k pace with 400m jog, Cool down: 2-3 km"
-2025-02-26,Wed,Easy,8,,,"Distance run"
+2025-02-26,Wed,Easy,8,,,Distance run
 2025-02-27,Thu,Rest,0,,,
-2025-02-28,Fri,Tempo,10,,,"Warm up: 2 km, 30 min tempo pace, Cool down: 2 km"
-2025-03-01,Sat,Easy,7.5,,,"Rest or 7-8 km easy + 4 x 75m strides"
-2025-03-02,Sun,Long,15,,,"Long run"
+2025-03-01,Sat,Rest,0,,,
+2025-03-02,Sun,Long,15,,,Long run
 2025-03-03,Mon,Cross-Training,0,,,45-60 min cross training
-2025-03-04,Tue,Intervals,8,,,"Warm up: 2-3 km, 5 x 1200m at 5k pace with 200m jog, Cool down: 2-3 km"
-2025-03-05,Wed,Easy,10,,,"Distance run"
+2025-03-05,Wed,Easy,10,,,Distance run
 2025-03-06,Thu,Rest,0,,,
-2025-03-07,Fri,Tempo,10,,,"Warm up: 2 km, 35 min tempo pace, Cool down: 2 km"
-2025-03-08,Sat,Easy,7.5,,,"Rest or 7-8 km easy + 4 x 75m strides"
-2025-03-09,Sun,Long,16,,,"Long run"
+2025-03-08,Sat,Rest,0,,,
+2025-03-09,Sun,Long,16,,,Long run
 2025-03-10,Mon,Cross-Training,0,,,45-60 min cross training
-2025-03-11,Tue,Intervals,8,,,"Warm up: 2-3 km, 6-8 x 600m at mile pace with 200m jog, Cool down: 2-3 km"
-2025-03-12,Wed,Easy,11,,,"Distance run"
+2025-03-12,Wed,Easy,11,,,Distance run
 2025-03-13,Thu,Rest,0,,,
-2025-03-14,Fri,Tempo,10,,,"Warm up: 2 km, 30 min tempo pace, Cool down: 2 km"
-2025-03-15,Sat,Easy,7.5,,,"Rest or 7-8 km easy + 4 x 75m strides"
-2025-03-16,Sun,Race,10,,,"Time trial or race"
+2025-03-15,Sat,Rest,0,,,
+2025-03-16,Sun,Race,10,,,Time trial or race
 2025-03-17,Mon,Cross-Training,0,,,45-60 min cross training
-2025-03-18,Tue,Intervals,8,,,"Warm up: 2-3 km, 10 x 400m at mile pace with 200m jog, Cool down: 2-3 km"
-2025-03-19,Wed,Easy,11,,,"Distance run"
+2025-03-19,Wed,Easy,11,,,Distance run
 2025-03-20,Thu,Rest,0,,,
-2025-03-21,Fri,Tempo,10,,,"Warm up: 2 km, 40 min tempo pace, Cool down: 2 km"
-2025-03-22,Sat,Easy,7.5,,,"Rest or 7-8 km easy + 4 x 75m strides"
-2025-03-23,Sun,Long,16,,,"Long run"
+2025-03-22,Sat,Rest,0,,,
+2025-03-23,Sun,Long,16,,,Long run
 2025-03-24,Mon,Cross-Training,0,,,45-60 min cross training
-2025-03-25,Tue,Intervals,8,,,"Warm up: 2-3 km, 6 x 1000m at 5k pace with 200m jog, Cool down: 2-3 km"
-2025-03-26,Wed,Easy,12,,,"Distance run"
+2025-03-26,Wed,Easy,12,,,Distance run
 2025-03-27,Thu,Rest,0,,,
-2025-03-28,Fri,Tempo,10,,,"Warm up: 2 km, 40 min tempo pace, Cool down: 2 km"
-2025-03-29,Sat,Easy,7.5,,,"Rest or 7-8 km easy + 4 x 75m strides"
-2025-03-30,Sun,Long,19,,,"Long run"
+2025-03-29,Sat,Rest,0,,,
+2025-03-30,Sun,Long,19,,,Long run
 2025-03-31,Mon,Cross-Training,0,,,45-60 min cross training
-2025-04-01,Tue,Intervals,8,,,"Warm up: 2-3 km, 8 x 800m at 5k pace with 200m jog, Cool down: 2-3 km"
-2025-04-02,Wed,Easy,11,,,"Distance run"
+2025-04-02,Wed,Easy,11,,,Distance run
 2025-04-03,Thu,Rest,0,,,
-2025-04-04,Fri,Threshold,7,,,"Warm up: 2 km, 2 x 10 min at tempo pace with 90 sec recovery, Cool down: 2 km"
-2025-04-05,Sat,Easy,7.5,,,"Rest or 7-8 km easy + 4 x 75m strides"
-2025-04-06,Sun,Long,11,,,"Long run"
+2025-04-05,Sat,Rest,0,,,
+2025-04-06,Sun,Long,11,,,Long run
 2025-04-07,Mon,Cross-Training,0,,,30-40 min cross training
-2025-04-08,Tue,Intervals,8,,,"Warm up: 2 km jog, 4 x 800m at goal half marathon pace with 200m jog, Cool down: 2 km"
-2025-04-09,Wed,Easy,7.5,,,"Easy run"
+2025-04-09,Wed,Easy,7.5,,,Easy run
 2025-04-10,Thu,Rest,0,,,
-2025-04-11,Fri,Easy,7.5,,,"20 min + 4 x 75m strides"
-2025-04-12,Sat,Race,21.1,,,"Half Marathon!"
-2025-04-13,Sun,Rest,0,,,Rest day
+2025-04-11,Fri,Easy,0,,,20 min + 4 x 75m strides
+2025-04-12,Sat,Race,21.1,,,Half Marathon!
+2025-04-13,Sun,Rest,0,,,

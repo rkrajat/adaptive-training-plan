@@ -1,15 +1,9 @@
 date,day,type,planned_distance_km,target_pace_min_per_km,target_HR_zone,notes
-2024-12-30,Mon,Rest,0,,,Rest 😴
-2024-12-31,Tue,Easy,1.8,"6:00-6:00",Z2,"Run 90 secs, Walk 90 secs × 6"
-2025-01-01,Wed,Rest,0,,,Rest 😴
-2025-01-02,Thu,Rest,0,,,Rest 😴
-2025-01-03,Fri,Easy,2.0,"6:00-6:00",Z2,"Run 2 mins, Walk 90 secs × 5"
-2025-01-04,Sat,Rest,0,,,Rest 😴
-2025-01-05,Sun,Cross-Training,0,,,"Strength, In Person"
-2025-01-06,Mon,Rest,0,,,Rest 😴
-2025-01-07,Tue,Easy,2.2,"6:00-6:00",Z2,"Run 2 mins, Walk 90 secs × 6"
-2025-01-08,Wed,Rest,0,,,Rest 😴
-2025-01-09,Thu,Cross-Training,0,,,"Strength"
-2025-01-10,Fri,Rest,0,,,Rest 😴
-2025-01-11,Sat,Rest,0,,,Rest 😴
-2025-01-12,Sun,Easy,2.8,"6:00-6:00",Z2,"Run 2 mins, Walk 90 secs × 8"
+2024-12-30,Mon,Rest,0,,,
+2025-01-01,Wed,Rest,0,,,
+2025-01-02,Thu,Rest,0,,,
+2025-01-04,Sat,Rest,0,,,
+2025-01-06,Mon,Rest,0,,,
+2025-01-08,Wed,Rest,0,,,
+2025-01-10,Fri,Rest,0,,,
+2025-01-11,Sat,Rest,0,,,

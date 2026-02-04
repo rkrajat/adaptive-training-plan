@@ -1,141 +1,80 @@
 date,day,type,planned_distance_km,target_pace_min_per_km,target_HR_zone,notes
-2024-12-30,Mon,Rest,0,,,Rest Day
-2024-12-31,Tue,Easy,5,5:27,,Training Run
-2025-01-01,Wed,Intervals,1.6,"8-9 / 10 RPE",,2 x 800m
-2025-01-02,Thu,Cross-Training,0,,,Strength Training
-2025-01-03,Fri,Easy,5,5:27,,Training Run
-2025-01-04,Sat,Rest,0,,,Rest Day
-2025-01-05,Sun,Long,11,5:27,,Long Run
-2025-01-06,Mon,Rest,0,,,Rest Day
-2025-01-07,Tue,Easy,5,5:27,,Training Run
-2025-01-08,Wed,Intervals,1.6,"8-9 / 10 RPE",,2 x 800m
-2025-01-09,Thu,Cross-Training,0,,,Strength Training
-2025-01-10,Fri,Easy,5,5:27,,Training Run
-2025-01-11,Sat,Rest,0,,,Rest Day
-2025-01-12,Sun,Long,13,5:27,,Long Run
-2025-01-13,Mon,Rest,0,,,Rest Day
-2025-01-14,Tue,Easy,5,5:27,,Training Run
-2025-01-15,Wed,Intervals,1.6,"8-9 / 10 RPE",,2 x 800m
-2025-01-16,Thu,Cross-Training,0,,,Strength Training
-2025-01-17,Fri,Easy,5,5:27,,Training Run
-2025-01-18,Sat,Rest,0,,,Rest Day
-2025-01-19,Sun,Long,14.5,5:27,,Long Run
-2025-01-20,Mon,Rest,0,,,Rest Day
-2025-01-21,Tue,Easy,6.5,5:27,,Training Run
-2025-01-22,Wed,Intervals,2.4,"8-9 / 10 RPE",,3 x 800m
-2025-01-23,Thu,Cross-Training,0,,,Strength Training
-2025-01-24,Fri,Easy,6.5,5:27,,Training Run
-2025-01-25,Sat,Rest,0,,,Rest Day
-2025-01-26,Sun,Long,9.5,5:27,,Long Run
-2025-01-27,Mon,Rest,0,,,Rest Day
-2025-01-28,Tue,Easy,6.5,5:27,,Training Run
-2025-01-29,Wed,Intervals,2.4,"8-9 / 10 RPE",,3 x 800m
-2025-01-30,Thu,Cross-Training,0,,,Strength Training
-2025-01-31,Fri,Easy,6.5,5:27,,Training Run
-2025-02-01,Sat,Rest,0,,,Rest Day
-2025-02-02,Sun,Long,17.5,5:27,,Long Run
-2025-02-03,Mon,Rest,0,,,Rest Day
-2025-02-04,Tue,Easy,6.5,5:27,,Training Run
-2025-02-05,Wed,Intervals,2.4,"8-9 / 10 RPE",,3 x 800m
-2025-02-06,Thu,Cross-Training,0,,,Strength Training
-2025-02-07,Fri,Easy,6.5,5:27,,Training Run
-2025-02-08,Sat,Rest,0,,,Rest Day
-2025-02-09,Sun,Long,19,5:27,,Long Run
-2025-02-10,Mon,Rest,0,,,Rest Day
-2025-02-11,Tue,Easy,6.5,5:27,,Training Run
-2025-02-12,Wed,Intervals,2.4,"8-9 / 10 RPE",,3 x 800m
-2025-02-13,Thu,Cross-Training,0,,,Strength Training
-2025-02-14,Fri,Easy,6.5,5:27,,Training Run
-2025-02-15,Sat,Rest,0,,,Rest Day
-2025-02-16,Sun,Long,14.5,5:27,,Long Run
-2025-02-17,Mon,Rest,0,,,Rest Day
-2025-02-18,Tue,Easy,8,5:27,,Training Run
-2025-02-19,Wed,Intervals,2.4,"8-9 / 10 RPE",,3 x 800m
-2025-02-20,Thu,Cross-Training,0,,,Strength Training
-2025-02-21,Fri,Easy,8,5:27,,Training Run
-2025-02-22,Sat,Rest,0,,,Rest Day
-2025-02-23,Sun,Long,24,5:27,,Long Run
-2025-02-24,Mon,Rest,0,,,Rest Day
-2025-02-25,Tue,Easy,8,5:27,,Training Run
-2025-02-26,Wed,Intervals,2.4,"8-9 / 10 RPE",,3 x 800m
-2025-02-27,Thu,Cross-Training,0,,,Strength Training
-2025-02-28,Fri,Easy,8,5:27,,Training Run
-2025-03-01,Sat,Rest,0,,,Rest Day
-2025-03-02,Sun,Long,26,5:27,,Long Run
-2025-03-03,Mon,Rest,0,,,Rest Day
-2025-03-04,Tue,Easy,9.5,5:27,,Training Run
-2025-03-05,Wed,Intervals,3.2,"8-9 / 10 RPE",,4 x 800m
-2025-03-06,Thu,Cross-Training,0,,,Strength Training
-2025-03-07,Fri,Easy,9.5,5:27,,Training Run
-2025-03-08,Sat,Rest,0,,,Rest Day
-2025-03-09,Sun,Race,21.1,5:27,,Half Mara
-2025-03-10,Mon,Rest,0,,,Rest Day
-2025-03-11,Tue,Easy,9.5,5:27,,Training Run
-2025-03-12,Wed,Intervals,3.2,"8-9 / 10 RPE",,4 x 800m
-2025-03-13,Thu,Cross-Training,0,,,Strength Training
-2025-03-14,Fri,Easy,9.5,5:27,,Training Run
-2025-03-15,Sat,Rest,0,,,Rest Day
-2025-03-16,Sun,Long,27,5:27,,Long Run
-2025-03-17,Mon,Rest,0,,,Rest Day
-2025-03-18,Tue,Easy,9.5,5:27,,Training Run
-2025-03-19,Wed,Intervals,3.2,"8-9 / 10 RPE",,4 x 800m
-2025-03-20,Thu,Cross-Training,0,,,Strength Training
-2025-03-21,Fri,Easy,9.5,5:27,,Training Run
-2025-03-22,Sat,Rest,0,,,Rest Day
-2025-03-23,Sun,Long,29,5:27,,Long Run
-2025-03-24,Mon,Rest,0,,,Rest Day
-2025-03-25,Tue,Easy,9.5,5:27,,Training Run
-2025-03-26,Wed,Intervals,3.2,"8-9 / 10 RPE",,4 x 800m
-2025-03-27,Thu,Cross-Training,0,,,Strength Training
-2025-03-28,Fri,Easy,9.5,5:27,,Training Run
-2025-03-29,Sat,Rest,0,,,Rest Day
-2025-03-30,Sun,Long,22.5,5:27,,Long Run
-2025-03-31,Mon,Rest,0,,,Rest Day
-2025-04-01,Tue,Easy,9.5,5:27,,Training Run
-2025-04-02,Wed,Intervals,3.2,"8-9 / 10 RPE",,4 x 800m
-2025-04-03,Thu,Cross-Training,0,,,Strength Training
-2025-04-04,Fri,Easy,9.5,5:27,,Training Run
-2025-04-05,Sat,Rest,0,,,Rest Day
-2025-04-06,Sun,Long,32,5:27,,Long Run
-2025-04-07,Mon,Rest,0,,,Rest Day
-2025-04-08,Tue,Easy,11,5:27,,Training Run
-2025-04-09,Wed,Intervals,3.2,"8-9 / 10 RPE",,4 x 800m
-2025-04-10,Thu,Cross-Training,0,,,Strength Training
-2025-04-11,Fri,Easy,11,5:27,,Training Run
-2025-04-12,Sat,Rest,0,,,Rest Day
-2025-04-13,Sun,Race,21.1,5:27,,Half Marathon
-2025-04-14,Mon,Rest,0,,,Rest Day
-2025-04-15,Tue,Easy,11,5:27,,Training Run
-2025-04-16,Wed,Intervals,3.2,"8-9 / 10 RPE",,4 x 800m
-2025-04-17,Thu,Cross-Training,0,,,Strength Training
-2025-04-18,Fri,Easy,11,5:27,,Training Run
-2025-04-19,Sat,Rest,0,,,Rest Day
-2025-04-20,Sun,Long,34,5:27,,Long Run
-2025-04-21,Mon,Rest,0,,,Rest Day
-2025-04-22,Tue,Easy,8,5:27,,Training Run
-2025-04-23,Wed,Intervals,3.2,"8-9 / 10 RPE",,4 x 800m
-2025-04-24,Thu,Cross-Training,0,,,Strength Training
-2025-04-25,Fri,Easy,8,5:27,,Training Run
-2025-04-26,Sat,Rest,0,,,Rest Day
-2025-04-27,Sun,Long,24,5:27,,Long Run
-2025-04-28,Mon,Rest,0,,,Rest Day
-2025-04-29,Tue,Easy,6.5,5:27,,Training Run
-2025-04-30,Wed,Intervals,2.4,"8-9 / 10 RPE",,3 x 800m
-2025-05-01,Thu,Cross-Training,0,,,Strength Training
-2025-05-02,Fri,Easy,6.5,5:27,,Training Run
-2025-05-03,Sat,Rest,0,,,Rest Day
-2025-05-04,Sun,Long,19,5:27,,Long Run
-2025-05-05,Mon,Rest,0,,,Rest Day
-2025-05-06,Tue,Easy,5,5:27,,Training Run
-2025-05-07,Wed,Intervals,1.6,"8-9 / 10 RPE",,2 x 800m
-2025-05-08,Thu,Cross-Training,0,,,Strength Training
-2025-05-09,Fri,Easy,5,5:27,,Training Run
-2025-05-10,Sat,Rest,0,,,Rest Day
-2025-05-11,Sun,Long,13,5:27,,Long Run
-2025-05-12,Mon,Rest,0,,,Rest Day
-2025-05-13,Tue,Easy,5,5:27,,Training Run
-2025-05-14,Wed,Rest,0,,,Rest Day
-2025-05-15,Thu,Easy,5,5:27,,Short Run
-2025-05-16,Fri,Rest,0,,,Rest Day
-2025-05-17,Sat,Easy,3,5:27,,Training Run
-2025-05-18,Sun,Race,42.2,5:27,,MARATHON
+2024-12-30,Mon,Rest,0,,,
+2025-01-01,Wed,Interval,1.6,8-9 / 10 RPE,,"2 x 800m"
+2025-01-02,Thu,Cross-Training,0,,,"Strength Training"
+2025-01-04,Sat,Rest,0,,,
+2025-01-06,Mon,Rest,0,,,
+2025-01-08,Wed,Interval,1.6,8-9 / 10 RPE,,"2 x 800m"
+2025-01-09,Thu,Cross-Training,0,,,"Strength Training"
+2025-01-11,Sat,Rest,0,,,
+2025-01-13,Mon,Rest,0,,,
+2025-01-15,Wed,Interval,1.6,8-9 / 10 RPE,,"2 x 800m"
+2025-01-16,Thu,Cross-Training,0,,,"Strength Training"
+2025-01-18,Sat,Rest,0,,,
+2025-01-20,Mon,Rest,0,,,
+2025-01-22,Wed,Interval,2.4,8-9 / 10 RPE,,"3 x 800m"
+2025-01-23,Thu,Cross-Training,0,,,"Strength Training"
+2025-01-25,Sat,Rest,0,,,
+2025-01-27,Mon,Rest,0,,,
+2025-01-29,Wed,Interval,2.4,8-9 / 10 RPE,,"3 x 800m"
+2025-01-30,Thu,Cross-Training,0,,,"Strength Training"
+2025-02-01,Sat,Rest,0,,,
+2025-02-03,Mon,Rest,0,,,
+2025-02-05,Wed,Interval,2.4,8-9 / 10 RPE,,"3 x 800m"
+2025-02-06,Thu,Cross-Training,0,,,"Strength Training"
+2025-02-08,Sat,Rest,0,,,
+2025-02-10,Mon,Rest,0,,,
+2025-02-12,Wed,Interval,2.4,8-9 / 10 RPE,,"3 x 800m"
+2025-02-13,Thu,Cross-Training,0,,,"Strength Training"
+2025-02-15,Sat,Rest,0,,,
+2025-02-17,Mon,Rest,0,,,
+2025-02-19,Wed,Interval,2.4,8-9 / 10 RPE,,"3 x 800m"
+2025-02-20,Thu,Cross-Training,0,,,"Strength Training"
+2025-02-22,Sat,Rest,0,,,
+2025-02-24,Mon,Rest,0,,,
+2025-02-26,Wed,Interval,2.4,8-9 / 10 RPE,,"3 x 800m"
+2025-02-27,Thu,Cross-Training,0,,,"Strength Training"
+2025-03-01,Sat,Rest,0,,,
+2025-03-03,Mon,Rest,0,,,
+2025-03-05,Wed,Interval,3.2,8-9 / 10 RPE,,"4 x 800m"
+2025-03-06,Thu,Cross-Training,0,,,"Strength Training"
+2025-03-08,Sat,Rest,0,,,
+2025-03-10,Mon,Rest,0,,,
+2025-03-12,Wed,Interval,3.2,8-9 / 10 RPE,,"4 x 800m"
+2025-03-13,Thu,Cross-Training,0,,,"Strength Training"
+2025-03-15,Sat,Rest,0,,,
+2025-03-17,Mon,Rest,0,,,
+2025-03-19,Wed,Interval,3.2,8-9 / 10 RPE,,"4 x 800m"
+2025-03-20,Thu,Cross-Training,0,,,"Strength Training"
+2025-03-22,Sat,Rest,0,,,
+2025-03-24,Mon,Rest,0,,,
+2025-03-26,Wed,Interval,3.2,8-9 / 10 RPE,,"4 x 800m"
+2025-03-27,Thu,Cross-Training,0,,,"Strength Training"
+2025-03-29,Sat,Rest,0,,,
+2025-03-31,Mon,Rest,0,,,
+2025-04-02,Wed,Interval,3.2,8-9 / 10 RPE,,"4 x 800m"
+2025-04-03,Thu,Cross-Training,0,,,"Strength Training"
+2025-04-05,Sat,Rest,0,,,
+2025-04-07,Mon,Rest,0,,,
+2025-04-09,Wed,Interval,3.2,8-9 / 10 RPE,,"4 x 800m"
+2025-04-10,Thu,Cross-Training,0,,,"Strength Training"
+2025-04-12,Sat,Rest,0,,,
+2025-04-14,Mon,Rest,0,,,
+2025-04-16,Wed,Interval,3.2,8-9 / 10 RPE,,"4 x 800m"
+2025-04-17,Thu,Cross-Training,0,,,"Strength Training"
+2025-04-19,Sat,Rest,0,,,
+2025-04-21,Mon,Rest,0,,,
+2025-04-23,Wed,Interval,3.2,8-9 / 10 RPE,,"4 x 800m"
+2025-04-24,Thu,Cross-Training,0,,,"Strength Training"
+2025-04-26,Sat,Rest,0,,,
+2025-04-28,Mon,Rest,0,,,
+2025-04-30,Wed,Interval,2.4,8-9 / 10 RPE,,"3 x 800m"
+2025-05-01,Thu,Cross-Training,0,,,"Strength Training"
+2025-05-03,Sat,Rest,0,,,
+2025-05-05,Mon,Rest,0,,,
+2025-05-07,Wed,Interval,1.6,8-9 / 10 RPE,,"2 x 800m"
+2025-05-08,Thu,Cross-Training,0,,,"Strength Training"
+2025-05-10,Sat,Rest,0,,,
+2025-05-12,Mon,Rest,0,,,
+2025-05-14,Wed,Rest,0,,,
+2025-05-16,Fri,Rest,0,,,

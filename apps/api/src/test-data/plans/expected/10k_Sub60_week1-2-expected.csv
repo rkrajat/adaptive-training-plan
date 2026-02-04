@@ -1,15 +1,15 @@
 date,day,type,planned_distance_km,target_pace_min_per_km,target_HR_zone,notes
-2024-12-30,Mon,Easy,6.0,Conversational,,"Jog 5 mins, Walk 1min, Run 3K, Walk 2 mins, Run 2K, Walk 2 mins"
-2024-12-31,Tue,Rest,0,,,Rest 😴
-2025-01-01,Wed,Easy,5.0,Conversational,,"Jog 5 mins, Walk 1min, (Run 2K, Walk 2 mins) x 2"
-2025-01-02,Thu,Rest,0,,,Rest 😴
-2025-01-03,Fri,Easy,7.0,Conversational,,"Jog 5 mins, Walk 1min, (Run 3K, Walk 2 mins) x 2"
-2025-01-04,Sat,Rest,0,,,Rest 😴
-2025-01-05,Sun,Cross-Training,0,,,Strength 󰝮 In Person
-2025-01-06,Mon,Rest,0,,,Rest 😴
+2024-12-30,Mon,Rest,0,,,
+2024-12-31,Tue,Easy,5.0,Conversational,,"Jog 5 mins, Walk 1min, (Run 2K, Walk 2 mins) x 2"
+2025-01-01,Wed,Rest,0,,,
+2025-01-02,Thu,Easy,7.0,Conversational,,"Jog 5 mins, Walk 1min, (Run 3K, Walk 2 mins) x 2"
+2025-01-03,Fri,Rest,0,,,
+2025-01-04,Sat,Rest,0,,,
+2025-01-05,Sun,Cross-Training,0,,,"Strength, In Person"
+2025-01-06,Mon,Rest,0,,,
 2025-01-07,Tue,Easy,6.0,Conversational,,"Jog 5 mins, Walk 1min, Run 3K, Walk 2 mins, Run 2K, Walk 2 mins"
-2025-01-08,Wed,Rest,0,,,Rest 😴
-2025-01-09,Thu,Cross-Training,0,,,Strength 󰝮
-2025-01-10,Fri,Rest,0,,,Rest 😴
-2025-01-11,Sat,Rest,0,,,Rest 😴
-2025-01-12,Sun,Interval,7.0,6:30,Z4,"Jog 5 mins, Walk 1min, Run 4K, 3 mins Walk, Run 2K @6:30 mins/KM, 2 mins Walk"
+2025-01-08,Wed,Rest,0,,,
+2025-01-09,Thu,Cross-Training,0,,,"Strength"
+2025-01-10,Fri,Rest,0,,,
+2025-01-11,Sat,Rest,0,,,
+2025-01-12,Sun,Easy,7.0,Conversational,,"Jog 5 mins, Walk 1min, Run 4K, 3 mins Walk, Run 2K @6:30 mins/KM, 2 mins Walk"

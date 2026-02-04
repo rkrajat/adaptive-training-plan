@@ -1,16 +1,17 @@
 date,day,type,planned_distance_km,target_pace_min_per_km,target_HR_zone,notes
-2025-01-25,Sat,Easy,7,7:25-8:00,,Run 7K Easy Pace
-2025-01-26,Sun,Rest,0,,,Rest 😴
-2025-01-27,Mon,Rest,0,,,Rest 😴
-2025-01-28,Tue,Easy,5,7:25-8:00,,Run 5K Easy Pace
-2025-01-29,Wed,Rest,0,,,Rest 😴
-2025-01-30,Thu,Easy,5,7:25-8:00,,Run 5K Easy Pace
-2025-01-31,Fri,Cross-Training,0,,,Strength Training 🏋️‍♂️
-2025-02-01,Sat,Rest,0,,,Rest 😴
-2025-02-02,Sun,Easy,8,7:25-8:00,,Run 8K Easy Pace
-2025-02-03,Mon,Rest,0,,,Rest 😴
-2025-02-05,Wed,Rest,0,,,Rest 😴
-2025-02-06,Thu,Easy,6,7:25-8:00,,Run 6K Easy Pace
-2025-02-07,Fri,Cross-Training,0,,,Strength Training 🏋️‍♂️
-2025-02-08,Sat,Rest,0,,,Rest 😴
-2025-02-09,Sun,Easy,9,7:25-8:00,,Run 9K Easy Pace
+2025-01-25,Sat,Easy,7,6:40-7:10,,"Run 7K, Easy Pace"
+2025-01-26,Sun,Rest,0,,,
+2025-01-27,Mon,Rest,0,,,
+2025-01-28,Tue,Easy,5,6:40-7:10,,"Run 5K, Easy Pace"
+2025-01-29,Wed,Rest,0,,,
+2025-01-30,Thu,Easy,5,6:40-7:10,,"Run 5K, Easy Pace"
+2025-01-31,Fri,Cross-Training,0,,,"Strength Training"
+2025-02-01,Sat,Rest,0,,,
+2025-02-02,Sun,Easy,8,6:40-7:10,,"Run 8K, Easy Pace"
+2025-02-03,Mon,Rest,0,,,
+2025-02-04,Tue,Tempo,5,5:50-6:00,,"2K Warm Up, Run 2K Tempo, 1K Cool Down"
+2025-02-05,Wed,Rest,0,,,
+2025-02-06,Thu,Easy,6,6:40-7:10,,"Run 6K, Easy Pace"
+2025-02-07,Fri,Cross-Training,0,,,"Strength Training"
+2025-02-08,Sat,Rest,0,,,
+2025-02-09,Sun,Easy,9,6:40-7:10,,"Run 9K, Easy Pace"
