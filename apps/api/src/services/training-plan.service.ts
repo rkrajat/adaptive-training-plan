@@ -1,7 +1,14 @@
-import type { RaceDistance, RaceGoal } from "@adaptive-training-plan/types";
+import type {
+  RaceDistance,
+  RaceGoal,
+  PaceGroup,
+} from "@adaptive-training-plan/types";
 import {
   getCurrentWeekNumber,
   recalculateCsvDates,
+  matchPaceGroupToTargetTime,
+  getDefaultPaceGroup,
+  getMostRelaxedPaceGroup,
 } from "@adaptive-training-plan/utils";
 import mongoose from "mongoose";
 
@@ -29,6 +36,7 @@ import {
 } from "../utils/error";
 import { log } from "../utils/logger";
 
+import { aiService } from "./ai.service";
 import { pdfToCsvService } from "./pdf-to-csv.service";
 import { vdotService } from "./vdot.service";
 
@@ -37,6 +45,226 @@ import { vdotService } from "./vdot.service";
  * Handles training plan CRUD operations and version management
  */
 export class TrainingPlanService {
+  /**
+   * Process training plan file and generate CSV content
+   * This is the core logic extracted for testability
+   * @param file - Uploaded file (PDF or CSV)
+   * @param metadata - Training plan metadata including race goal
+   * @param fileType - "pdf" or "csv"
+   * @returns Generated CSV content string
+   */
+  private async processTrainingPlanFile(
+    file: Express.Multer.File,
+    metadata: TrainingPlanUploadRequest,
+    fileType: "csv" | "pdf"
+  ): Promise<string> {
+    let csvContent: string;
+    let paceGroups: PaceGroup[] = [];
+    let matchedPaceGroup: PaceGroup | null = null;
+
+    if (fileType === "pdf") {
+      log.info("Converting PDF to CSV", { filename: file.originalname });
+
+      // Step 1: Extract PDF text
+      const extractedText = await pdfToCsvService.extractTextFromPdf(
+        file.buffer
+      );
+
+      // Step 2: Detect pace groups and match if raceGoal exists
+      if (metadata.raceGoal) {
+        log.info("Detecting pace groups from PDF text", {
+          textLength: extractedText.length,
+          targetTimeSeconds: metadata.raceGoal.targetTimeSeconds,
+        });
+
+        paceGroups = await aiService.detectPaceGroupsFromText(extractedText);
+
+        log.info("Pace groups detected from PDF", {
+          count: paceGroups.length,
+          groups: paceGroups.map((g) => ({
+            id: g.id,
+            label: g.label || g.timeRange.label,
+            timeRange: `${g.timeRange.minSeconds}-${g.timeRange.maxSeconds ?? "null"}`,
+            paces: Object.keys(g.paces),
+          })),
+        });
+
+        if (paceGroups.length > 0) {
+          // Try to match based on target time
+          matchedPaceGroup = matchPaceGroupToTargetTime(
+            paceGroups,
+            metadata.raceGoal.targetTimeSeconds
+          );
+
+          // If no match found, check if this is an open-ended goal (very large target time)
+          // For open-ended goals like "Completion", use the most relaxed pace group
+          if (!matchedPaceGroup) {
+            // Check if target time is very large (suggests completion goal)
+            // Half marathon completion: > 3 hours (10800 seconds)
+            // Marathon completion: > 6 hours (21600 seconds)
+            // Use a threshold of 4 hours (14400 seconds) to detect completion goals
+            const isCompletionGoal = metadata.raceGoal.targetTimeSeconds >= 14400;
+            
+            if (isCompletionGoal) {
+              matchedPaceGroup = getMostRelaxedPaceGroup(paceGroups);
+              log.info("Using most relaxed pace group for completion goal", {
+                targetTimeSeconds: metadata.raceGoal.targetTimeSeconds,
+                matchedGroupId: matchedPaceGroup?.id,
+                matchedGroupLabel: matchedPaceGroup?.label || matchedPaceGroup?.timeRange.label,
+              });
+            } else {
+              // Fallback to default (first group)
+              matchedPaceGroup = getDefaultPaceGroup(paceGroups);
+            }
+          }
+
+          if (matchedPaceGroup) {
+            log.info("Matched pace group for target time", {
+              targetTimeSeconds: metadata.raceGoal.targetTimeSeconds,
+              matchedGroupId: matchedPaceGroup.id,
+              matchedGroupLabel:
+                matchedPaceGroup.label || matchedPaceGroup.timeRange.label,
+              timeRange: matchedPaceGroup.timeRange.label,
+              paces: matchedPaceGroup.paces,
+            });
+          } else {
+            log.warn("No pace group matched, using default");
+          }
+        } else {
+          log.info("No pace groups detected in PDF");
+        }
+      }
+
+      // Step 3: Convert PDF to CSV with matched pace group
+      const conversionResult = await pdfToCsvService.convertPdfToCsv(
+        file.buffer,
+        metadata.startDate,
+        metadata.raceGoal?.targetTimeSeconds,
+        matchedPaceGroup || undefined
+      );
+
+      if (!conversionResult.success || !conversionResult.csvContent) {
+        const errorMessage =
+          conversionResult.error?.message ||
+          "Failed to convert PDF to training plan format";
+        throw new AppError(errorMessage, 400);
+      }
+
+      csvContent = conversionResult.csvContent;
+
+      log.info("PDF converted to CSV successfully", {
+        csvLength: csvContent.length,
+        lineCount: csvContent.split("\n").length,
+        hasMatchedPaceGroup: !!matchedPaceGroup,
+      });
+
+      // Log CSV preview and paces used
+      const csvPreview = csvContent.substring(0, 500);
+      const csvLines = csvContent.split("\n").slice(0, 5);
+      log.debug("Generated CSV preview", {
+        preview: csvPreview,
+        firstLines: csvLines,
+        pacesUsed: matchedPaceGroup
+          ? {
+              easy: matchedPaceGroup.paces.easy,
+              tempo: matchedPaceGroup.paces.tempo,
+              interval: matchedPaceGroup.paces.interval,
+              long: matchedPaceGroup.paces.long,
+              recovery: matchedPaceGroup.paces.recovery,
+            }
+          : undefined,
+      });
+    } else {
+      // Handle CSV files
+      csvContent = parseCsvBuffer(file.buffer);
+
+      log.debug("Original CSV content", {
+        csvLength: csvContent.length,
+        lineCount: csvContent.split("\n").length,
+        preview: csvContent.substring(0, 500),
+      });
+
+      // Step 2: Detect pace groups and match if raceGoal exists
+      if (metadata.raceGoal) {
+        log.info("Detecting pace groups from CSV content", {
+          csvLength: csvContent.length,
+          targetTimeSeconds: metadata.raceGoal.targetTimeSeconds,
+        });
+
+        paceGroups = await aiService.detectPaceGroupsFromText(csvContent);
+
+        log.info("Pace groups detected from CSV", {
+          count: paceGroups.length,
+          groups: paceGroups.map((g) => ({
+            id: g.id,
+            label: g.label || g.timeRange.label,
+            timeRange: `${g.timeRange.minSeconds}-${g.timeRange.maxSeconds ?? "null"}`,
+            paces: Object.keys(g.paces),
+          })),
+        });
+
+        if (paceGroups.length > 0) {
+          // Try to match based on target time
+          matchedPaceGroup = matchPaceGroupToTargetTime(
+            paceGroups,
+            metadata.raceGoal.targetTimeSeconds
+          );
+
+          // If no match found, check if this is an open-ended goal (very large target time)
+          // For open-ended goals like "Completion", use the most relaxed pace group
+          if (!matchedPaceGroup) {
+            // Check if target time is very large (suggests completion goal)
+            // Half marathon completion: > 3 hours (10800 seconds)
+            // Marathon completion: > 6 hours (21600 seconds)
+            // Use a threshold of 4 hours (14400 seconds) to detect completion goals
+            const isCompletionGoal = metadata.raceGoal.targetTimeSeconds >= 14400;
+            
+            if (isCompletionGoal) {
+              matchedPaceGroup = getMostRelaxedPaceGroup(paceGroups);
+              log.info("Using most relaxed pace group for completion goal", {
+                targetTimeSeconds: metadata.raceGoal.targetTimeSeconds,
+                matchedGroupId: matchedPaceGroup?.id,
+                matchedGroupLabel: matchedPaceGroup?.label || matchedPaceGroup?.timeRange.label,
+              });
+            } else {
+              // Fallback to default (first group)
+              matchedPaceGroup = getDefaultPaceGroup(paceGroups);
+            }
+          }
+
+          if (matchedPaceGroup) {
+            log.info("Matched pace group for target time", {
+              targetTimeSeconds: metadata.raceGoal.targetTimeSeconds,
+              matchedGroupId: matchedPaceGroup.id,
+              matchedGroupLabel:
+                matchedPaceGroup.label || matchedPaceGroup.timeRange.label,
+              timeRange: matchedPaceGroup.timeRange.label,
+              paces: matchedPaceGroup.paces,
+            });
+          } else {
+            log.warn("No pace group matched, using default");
+          }
+        } else {
+          log.info("No pace groups detected in CSV");
+        }
+
+        // Note: For CSV files, we don't filter/format the CSV content yet in Part 1
+        // This will be done in Part 2 if needed
+        log.debug("Final CSV content (no filtering applied in Part 1)", {
+          csvLength: csvContent.length,
+          lineCount: csvContent.split("\n").length,
+          preview: csvContent.substring(0, 500),
+          sampleRows: csvContent.split("\n").slice(0, 5),
+        });
+      }
+    }
+
+    // Validate CSV structure (for both converted PDFs and direct CSV uploads)
+    validateCsvStructure(csvContent);
+
+    return csvContent;
+  }
+
   /**
    * Create a new training plan with initial version
    * Uses MongoDB transactions to ensure atomicity
@@ -55,35 +283,12 @@ export class TrainingPlanService {
 
       validateCsvFile(file);
 
-      let csvContent: string;
-
-      if (fileType === "pdf") {
-        log.info("Converting PDF to CSV", { filename: file.originalname });
-
-        const conversionResult = await pdfToCsvService.convertPdfToCsv(
-          file.buffer,
-          metadata.startDate
-        );
-
-        if (!conversionResult.success || !conversionResult.csvContent) {
-          const errorMessage =
-            conversionResult.error?.message ||
-            "Failed to convert PDF to training plan format";
-          throw new AppError(errorMessage, 400);
-        }
-
-        csvContent = conversionResult.csvContent;
-
-        log.info("PDF converted to CSV successfully", {
-          csvLength: csvContent.length,
-        });
-      } else {
-        // Handle CSV files - existing path
-        csvContent = parseCsvBuffer(file.buffer);
-      }
-
-      // Validate CSV structure (for both converted PDFs and direct CSV uploads)
-      validateCsvStructure(csvContent);
+      // Process file and generate CSV content
+      const csvContent = await this.processTrainingPlanFile(
+        file,
+        metadata,
+        fileType
+      );
 
       // Calculate VDOT and training paces from race goal
       let raceGoal: RaceGoal | undefined;

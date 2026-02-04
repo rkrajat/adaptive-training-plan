@@ -1,4 +1,8 @@
-import type { ExperienceLevel, TrainingPaces } from "@adaptive-training-plan/types";
+import type {
+  ExperienceLevel,
+  TrainingPaces,
+  PaceGroup,
+} from "@adaptive-training-plan/types";
 import { groupTrainingPlanByWeek } from "@adaptive-training-plan/utils";
 import { openai } from "@ai-sdk/openai";
 import { generateText, streamText } from "ai";
@@ -741,20 +745,204 @@ Keep the tone professional but encouraging. Be specific and actionable.`;
   }
 
   /**
+   * Detect pace groups from text (PDF-extracted or CSV content) using LLM
+   * @param text - Raw text content from PDF or CSV
+   * @returns Array of detected pace groups with time ranges and paces
+   */
+  async detectPaceGroupsFromText(text: string): Promise<PaceGroup[]> {
+    try {
+      log.info("Detecting pace groups from text using LLM", {
+        textLength: text.length,
+      });
+
+      const paceDetectionPrompt = `
+## YOUR ROLE
+You are a Training Plan Analyzer. Your job is to detect pace groups from training plan text. Training plans may contain multiple pace groups targeting different finish times (e.g., "Sub 2:00", "2:00-2:20", "2:20-2:30").
+
+## TASK
+Analyze the provided training plan text and identify all pace groups. Each pace group typically has:
+1. A time range or target (e.g., "Sub 01:30", "1:30-1:45", "1:45-2:00")
+2. Associated training paces for different workout types (easy, tempo, interval, long, recovery, etc.)
+
+## PACE GROUP IDENTIFICATION
+Look for:
+- Headers or labels indicating pace groups (e.g., "Target Time", "Pace Group", "Sub 2:00", "2:00-2:20")
+- Tables or sections organized by finish time ranges
+- Pace recommendations grouped by target finish time
+- Any structure that suggests different pace recommendations for different finish times
+
+## OUTPUT FORMAT
+Return a JSON array of pace groups. Each pace group must have:
+- id: A unique identifier (e.g., "group-1", "group-2", "group-3")
+- timeRange: An object with:
+  - minSeconds: Minimum time in seconds (inclusive). For "Sub 01:30", use 0. For "1:30-1:45", use 7200 (2:00:00).
+  - maxSeconds: Maximum time in seconds (inclusive). For "Sub 01:30", use 7200. For "1:30-1:45", use 8400 (2:20:00). For open-ended ranges, use null.
+  - label: Human-readable label (e.g., "Sub 01:30", "1:30-1:45", "1:45-2:00")
+- paces: An object with pace ranges for different workout types:
+  - easy: Easy pace range (e.g., "6:00-6:15/km")
+  - tempo: Tempo pace range (e.g., "5:30-5:45/km")
+  - interval: Interval pace range (e.g., "4:45-5:00/km")
+  - long: Long run pace range (e.g., "6:15-6:30/km")
+  - recovery: Recovery pace range (e.g., "6:30-6:45/km")
+  - Include any other pace types mentioned in the plan (could be text like "conversational", "easy aerobic", "steady state")
+- label: Optional human-readable label (same as timeRange.label)
+
+## TIME CONVERSION
+Convert time formats to seconds:
+- "01:30" = 7200 seconds
+
+## EXAMPLES
+
+Example 1: "Sub 01:30" group
+{
+  "id": "group-1",
+  "timeRange": {
+    "minSeconds": 0,
+    "maxSeconds": 7200,
+    "label": "Sub 01:30"
+  },
+  "paces": {
+    "easy": "04:45-05:00/km",
+    "tempo": "04:30-04:45/km",
+    "interval": "04:15-04:30/km",
+    "long": "05:00-05:15/km"
+  },
+  "label": "Sub 01:30"
+}
+
+Example 2: "Completion Goal"
+{
+  "id": "group-2",
+  "timeRange": {
+    "minSeconds": 0,
+    "maxSeconds": null,
+    "label": "Completion Goal"
+  },
+  "paces": {
+    "easy": "Conversational,
+    "tempo": "Easy Aerobic",
+    "interval": "Steady State",
+    "long": "Easy Aerobic"
+  },
+  "label": "Completion Goal"
+}
+
+## IMPORTANT
+- If no pace groups are found, return an empty array []
+- Extract paces exactly as they appear in the text (preserve format like "6:00-6:15/km")
+- If a pace group mentions a single time (e.g., "2:00"), determine if it's a maximum (Sub 2:00) or part of a range
+- Be thorough - check headers, footers, tables, and any structured sections
+- Return ONLY valid JSON, no markdown, no explanations
+`;
+
+      const userPrompt = `Analyze the following training plan text and detect all pace groups:\n\n${text}`;
+
+      const result = await generateText({
+        model: openai(config.openai.model),
+        messages: [
+          {
+            role: "system",
+            content: paceDetectionPrompt,
+          },
+          {
+            role: "user",
+            content: userPrompt,
+          },
+        ],
+        temperature: 0.1,
+      });
+
+      // Parse JSON response
+      let paceGroups: PaceGroup[] = [];
+      try {
+        const responseText = result.text.trim();
+        // Remove markdown code blocks if present
+        const jsonText = responseText.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+        paceGroups = JSON.parse(jsonText);
+        
+        // Validate it's an array
+        if (!Array.isArray(paceGroups)) {
+          log.warn("LLM returned non-array for pace groups, defaulting to empty array");
+          paceGroups = [];
+        }
+      } catch (parseError) {
+        log.error("Failed to parse pace groups JSON from LLM response", {
+          error: parseError,
+          responseText: result.text.substring(0, 500),
+        });
+        paceGroups = [];
+      }
+
+      log.info("Pace groups detected", {
+        count: paceGroups.length,
+        groups: paceGroups.map((g) => ({
+          id: g.id,
+          label: g.label || g.timeRange.label,
+          timeRange: g.timeRange.label,
+        })),
+      });
+
+      return paceGroups;
+    } catch (error) {
+      log.error("Failed to detect pace groups from text", error);
+      throw new InternalServerError(
+        "Failed to detect pace groups from training plan",
+        error
+      );
+    }
+  }
+
+  /**
    * Convert PDF text to CSV format using LLM
    * @param pdfText - Extracted text from PDF training plan
    * @param startDate - Training plan start date in YYYY-MM-DD format
+   * @param targetTimeSeconds - Optional target race time in seconds for pace group selection
+   * @param matchedPaceGroup - Optional matched pace group with paces to use
    * @returns CSV formatted string
    */
   async convertPdfTextToCsv(
     pdfText: string,
-    startDate: string
+    startDate: string,
+    targetTimeSeconds?: number,
+    matchedPaceGroup?: PaceGroup
   ): Promise<string> {
     try {
       log.info("Converting PDF text to CSV using LLM", {
         textLength: pdfText.length,
         startDate,
+        hasTargetTime: !!targetTimeSeconds,
+        hasMatchedPaceGroup: !!matchedPaceGroup,
       });
+
+      // Build pace group context for the prompt
+      let paceGroupContext = "";
+      if (matchedPaceGroup) {
+        paceGroupContext = `
+🎯 PACE GROUP INFORMATION
+You MUST use the following pace group paces for ALL workouts in the CSV:
+
+Pace Group: ${matchedPaceGroup.label || matchedPaceGroup.timeRange.label}
+${matchedPaceGroup.paces.easy ? `- Easy pace: ${matchedPaceGroup.paces.easy}` : ""}
+${matchedPaceGroup.paces.tempo ? `- Tempo pace: ${matchedPaceGroup.paces.tempo}` : ""}
+${matchedPaceGroup.paces.interval ? `- Interval pace: ${matchedPaceGroup.paces.interval}` : ""}
+${matchedPaceGroup.paces.long ? `- Long run pace: ${matchedPaceGroup.paces.long}` : ""}
+${matchedPaceGroup.paces.recovery ? `- Recovery pace: ${matchedPaceGroup.paces.recovery}` : ""}
+
+CRITICAL: Use these exact paces for the corresponding workout types. Do NOT use paces from other pace groups in the plan.
+`;
+      } else if (targetTimeSeconds) {
+        // Check if this is a completion goal (very large target time)
+        const isCompletionGoal = targetTimeSeconds >= 14400; // 4 hours threshold
+        
+        paceGroupContext = `
+🎯 TARGET TIME
+The user's target race time is ${Math.floor(targetTimeSeconds / 3600)}:${Math.floor((targetTimeSeconds % 3600) / 60).toString().padStart(2, "0")}:${(targetTimeSeconds % 60).toString().padStart(2, "0")}.
+
+${isCompletionGoal 
+  ? "This appears to be a completion goal. If the plan contains multiple pace groups, select the most relaxed/easiest pace group (typically the one with the slowest paces or labeled as 'Completion', 'Finish Strong', etc.) and use those paces for all workouts."
+  : "If the plan contains multiple pace groups, select the pace group that matches this target time and use those paces for all workouts."}
+`;
+      }
 
       const systemPrompt = `
 ## YOUR ROLE
@@ -762,33 +950,57 @@ You are a Running Training Plan Normalizer. Your job is to extract and standardi
 
 🧩 INPUT
 You will receive a PDF file or the extracted text from the PDF file by the user. The file may contain text, tables, or images showing a running training plan. If the file contains the training plan in miles and kilometers, consider the kilometers version.
-
+${paceGroupContext}
 📅 TRAINING PLAN START DATE
 The user has specified that this training plan starts on: ${startDate}
-Use this as the starting date for the training plan. If the PDF contains explicit dates, use those. Otherwise, start from ${startDate} and increment sequentially for each day.
-THIS IS VERY IMPORTANT. DO NOT CHANGE THE START DATE. AND ALWAYS USE CORRECT DATE AND DAYS.
+Use this as the starting date for the training plan. If the PDF contains explicit dates, use those. Otherwise, follow these rules:
+
+WEEK STRUCTURE ALIGNMENT (CRITICAL):
+- If the PDF shows a week structure (e.g., columns labeled Monday, Tuesday, Wednesday, etc., or a table with days of week), you MUST align the PDF's week structure with the calendar week containing the startDate.
+- IMPORTANT: If the user enters a startDate that is mid-week (e.g., Thursday), it means the training plan has ALREADY STARTED that week. The user is indicating they are currently in that week.
+- If the PDF's week starts with Monday (most common), ALWAYS map the PDF's Monday to the Monday of the week that contains ${startDate}.
+- For example:
+  - If startDate is ${startDate} (which is a ${new Date(startDate).toLocaleDateString('en-US', { weekday: 'long'})})
+  - Find the Monday of the week containing ${startDate}: if ${startDate} is Monday, use it; if ${startDate} is Tuesday-Sunday, use the previous Monday
+  - Map the PDF's Monday column to that Monday, PDF's Tuesday to that Tuesday, PDF's Wednesday to that Wednesday, etc.
+  - This ensures the PDF's week structure (Monday-Sunday) aligns with the calendar week containing the user's startDate
+- The day of week in the CSV must match the actual calendar date (e.g., if date is 2025-01-01 and it's a Wednesday, day must be "Wed")
+
+EXAMPLE:
+- User startDate: 2025-01-02 (Thursday)
+- PDF shows: Monday (Rest), Tuesday (5K), Wednesday (Intervals), Thursday (Strength), Friday (5K), Saturday (Rest), Sunday (Long Run)
+- Correct mapping:
+  - PDF Monday → 2024-12-30 (Monday of that week)
+  - PDF Tuesday → 2024-12-31 (Tuesday)
+  - PDF Wednesday → 2025-01-01 (Wednesday)
+  - PDF Thursday → 2025-01-02 (Thursday - matches user's startDate)
+  - PDF Friday → 2025-01-03 (Friday)
+  - PDF Saturday → 2025-01-04 (Saturday)
+  - PDF Sunday → 2025-01-05 (Sunday)
+
+  ALWAYS ALIGN THE PDF'S WEEK STRUCTURE WITH THE CALENDAR WEEK CONTAINING THE START DATE.
 
 🎯 OUTPUT
 Your task is to produce a clean CSV (Comma Separated) table with the following columns:
 | date | day | type | planned_distance_km | target_pace_min_per_km | target_HR_zone | notes |
 
 Field Rules:
-date → extract if explicitly mentioned in the PDF (e.g., "March 4", "10/03"); otherwise, infer sequential days starting from ${startDate}. The first training day should use ${startDate} as the date.
+date → extract if explicitly mentioned in the PDF (e.g., "March 4", "10/03"); otherwise, use the week alignment rules above to map the PDF's week structure to calendar dates starting from the Monday of the week containing ${startDate}.
 
-day → Mon, Tue, Wed, Thu, Fri, Sat, Sun. Make sure the day of the "date" matches this field. For example, if the date - 24th August 2025 is a Sunday, then the day should be Sun.
+day → Mon, Tue, Wed, Thu, Fri, Sat, Sun. Make sure the day of the "date" matches this field. For example, if the date is 2025-01-01 and it's a Wednesday, then the day should be Wed.
 
 type → one of {Easy, Long, Tempo, Interval, Recovery, Rest, Race, Cross-Training, Progression}.
 
 planned_distance_km → convert all distances to kilometers, rounded to one decimal place. (e.g., "6 miles" → 9.7).
 
-target_pace_min_per_km → have the target pace in a range format (e.g., "6:00-6:15/km). If the input has only a single value, have the range as the same value (e.g., "6:00-6:00/km). If the plan doesn't clearly mention the pace, but rather has details like "conversational", "fast pace" etc, then try to recommend a page range in the above format, based on the context you understood from the training plan.
+target_pace_min_per_km → have the target pace in a range format (e.g., "6:00-6:15/km). If the input has only a single value, have the range as the same value (e.g., "6:00-6:00/km). If the plan has details like "conversational", "fast pace" etc, then try to recommend a page range in the same format, if plan does not mention any pace, leave it empty.
 
-target_HR_zone → Z1–Z5 if explicitly mentioned. If written as bpm or %HRmax, map approximately:
-Z1: <65% HRmax or <120 bpm
-Z2: 65–75% HRmax or 120–140 bpm
-Z3: 75–85% HRmax or 140–160 bpm
-Z4: 85–90% HRmax or 160–175 bpm
-Z5: >90% HRmax or >175 bpm
+target_HR_zone → Z1–Z5 ONLY if explicitly mentioned in the PDF. 
+- If the PDF explicitly mentions "Z1", "Z2", "Z3", "Z4", "Z5", "Zone 1", "Zone 2", etc., include it
+- If the PDF mentions heart rate zones, HR zones, or zones in any form, include them
+- If the PDF mentions bpm or %HRmax, you may map to zones using: Z1: <65% HRmax or <120 bpm, Z2: 65–75% HRmax or 120–140 bpm, Z3: 75–85% HRmax or 140–160 bpm, Z4: 85–90% HRmax or 160–175 bpm, Z5: >90% HRmax or >175 bpm
+- If the PDF does NOT mention HR zones, heart rate zones, zones, bpm, or %HRmax, leave this field EMPTY
+- Do NOT infer that "Easy" runs are Z2 or "Tempo" runs are Z4 - only use zones if explicitly stated in the PDF
 
 notes → include any other textual context (e.g., "hill repeats", "easy aerobic", "steady state", "rest day", "cross-train").
 
@@ -807,20 +1019,29 @@ Infer missing information logically:
 - If "Rest" or "Off" day → set distance = 0, pace = null, HR = null.
 - If information for a consecutive days is not given, then consider the day as Rest/Off day.
 - Normalize units → all distances in kilometers, paces in min/km.
+- IMPORTANT: Do NOT infer HR zones. Only include HR zones if explicitly mentioned in the PDF. Leave target_HR_zone empty if not mentioned.
 
 Output a single, well-formatted CSV table — no markdown, no commentary, only the table.
 
 🧾 OUTPUT FORMAT (STRICT)
 date,day,type,planned_distance_km,target_pace_min_per_km,target_HR_zone,notes
-2025-10-14,Tue,Easy,6,5:35,Z2,"Easy, aerobic run"
+2025-10-14,Tue,Easy,6,5:35,,"Easy, aerobic run" (zone is missing because it is not mentioned in the original PDF)
 2025-10-15,Wed,Intervals,7,4:25,Z4,"6x800m, intervals"
 2025-10-16,Thu,Rest,0,,,
+2025-10-17,Fri,Easy,8,5:40,Z2,"Easy run, Zone 2" (only include Z2 because PDF explicitly mentions "Zone 2")
 
 ⚠️ OUTPUT RULES
 Do not add markdown syntax (\`\`\`csv or tables with borders).
 Do not include explanations, summaries, or confidence scores.
 If multiple weeks exist, continue the same format (one row per run).
 If the plan includes non-running sessions (e.g., gym, yoga), mark type = "Cross-Training".
+
+CRITICAL CSV FORMATTING RULES:
+1. If any field (especially the notes field) contains a comma, you MUST wrap the entire field in double quotes. For example: "2K Warm Up, Run 2K Tempo" must be written as "2K Warm Up, Run 2K Tempo" (with quotes). Unquoted commas will break CSV parsing.
+2. DO NOT include any metadata rows in the CSV output. This includes:
+   - Any rows that don't represent actual training days/workouts
+3. Every row must have exactly same number of columns as the header row. If a field is empty, use an empty string (but still include the comma).
+4. The CSV must start with the header row and contain ONLY training data rows - no metadata, no pace group information, no summary rows.
 
 ✅ EXAMPLE PROMPT FROM USER
 "Here's my training plan PDF. Please extract it into your standard CSV format."

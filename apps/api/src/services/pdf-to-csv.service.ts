@@ -1,3 +1,4 @@
+import type { PaceGroup } from "@adaptive-training-plan/types";
 import { PDFParse } from "pdf-parse";
 
 import { AppError, BadRequestError, InternalServerError } from "../utils/error";
@@ -114,16 +115,30 @@ export class PdfToCsvService {
    * Convert extracted PDF text to CSV format using LLM
    * @param text - Extracted text from PDF
    * @param startDate - Training plan start date in YYYY-MM-DD format
+   * @param targetTimeSeconds - Optional target race time in seconds for pace group selection
+   * @param matchedPaceGroup - Optional matched pace group with paces to use
    * @returns CSV formatted string
    */
-  async convertTextToCsvWithLlm(text: string, startDate: string): Promise<string> {
+  async convertTextToCsvWithLlm(
+    text: string,
+    startDate: string,
+    targetTimeSeconds?: number,
+    matchedPaceGroup?: PaceGroup
+  ): Promise<string> {
     try {
       log.info("Converting PDF text to CSV using LLM", {
         textLength: text.length,
         startDate,
+        hasTargetTime: !!targetTimeSeconds,
+        hasMatchedPaceGroup: !!matchedPaceGroup,
       });
 
-      const csvResult = await aiService.convertPdfTextToCsv(text, startDate);
+      const csvResult = await aiService.convertPdfTextToCsv(
+        text,
+        startDate,
+        targetTimeSeconds,
+        matchedPaceGroup
+      );
 
       // Extract CSV content from LLM response
       // Handle potential markdown code blocks
@@ -146,6 +161,45 @@ export class PdfToCsvService {
           "Failed to convert PDF to CSV format. The LLM returned empty content."
         );
       }
+
+      // Filter out metadata rows that might have slipped through
+      // These are rows that don't match the header's column count
+      const lines = csvContent.split("\n");
+      const headerLine = lines[0];
+      const expectedColumnCount = (headerLine.match(/,/g) || []).length + 1;
+
+      const filteredLines = [headerLine]; // Always keep header
+      
+      for (let i = 1; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue; // Skip empty lines
+
+        // Count commas (accounting for quoted fields)
+        let commaCount = 0;
+        let inQuotes = false;
+        for (const char of line) {
+          if (char === '"') {
+            inQuotes = !inQuotes;
+          } else if (char === "," && !inQuotes) {
+            commaCount++;
+          }
+        }
+        const actualColumnCount = commaCount + 1;
+
+        // Only include rows with the correct column count
+        // This filters out metadata rows like "Target Time", "Paces", etc.
+        if (actualColumnCount === expectedColumnCount) {
+          filteredLines.push(line);
+        } else {
+          log.debug("Filtered out metadata row with incorrect column count", {
+            line: line.substring(0, 100),
+            expectedColumns: expectedColumnCount,
+            actualColumns: actualColumnCount,
+          });
+        }
+      }
+
+      csvContent = filteredLines.join("\n");
 
       log.info("PDF to CSV conversion successful", {
         csvLength: csvContent.length,
@@ -171,9 +225,16 @@ export class PdfToCsvService {
    * Main orchestration method to convert PDF to CSV
    * @param pdfBuffer - PDF file buffer
    * @param startDate - Training plan start date in YYYY-MM-DD format
+   * @param targetTimeSeconds - Optional target race time in seconds for pace group selection
+   * @param matchedPaceGroup - Optional matched pace group with paces to use
    * @returns Conversion result with CSV content or error
    */
-  async convertPdfToCsv(pdfBuffer: Buffer, startDate: string): Promise<PdfConversionResult> {
+  async convertPdfToCsv(
+    pdfBuffer: Buffer,
+    startDate: string,
+    targetTimeSeconds?: number,
+    matchedPaceGroup?: PaceGroup
+  ): Promise<PdfConversionResult> {
     try {
       log.info("Starting PDF to CSV conversion", { startDate });
 
@@ -184,7 +245,12 @@ export class PdfToCsvService {
       this.validatePdfContent(extractedText);
 
       // Step 3: Convert to CSV using LLM
-      const csvContent = await this.convertTextToCsvWithLlm(extractedText, startDate);
+      const csvContent = await this.convertTextToCsvWithLlm(
+        extractedText,
+        startDate,
+        targetTimeSeconds,
+        matchedPaceGroup
+      );
 
       // Step 4: Final validation - ensure CSV has content
       if (!csvContent || csvContent.trim().length === 0) {

@@ -14,3 +14,10 @@ export {
   type GroupedWeekData,
   type GroupedTrainingPlanResult,
 } from "./training-plan-formatter";
+
+// Pace Group Matcher utilities
+export {
+  matchPaceGroupToTargetTime,
+  getDefaultPaceGroup,
+  getMostRelaxedPaceGroup,
+} from "./pace-group-matcher";

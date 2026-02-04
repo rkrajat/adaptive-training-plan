@@ -5,6 +5,9 @@ export type {
   TrainingPlanWithContent,
   TrainingPlanVersion,
   TrainingPlanWithVersions,
+  PaceGroup,
+  PaceGroupTimeRange,
+  PaceGroupPaces,
 } from './training-plan';
 export type { ExperienceLevel } from './user.types';
 export { experienceLevelSchema, updateExperienceLevelSchema } from './user.schemas';
