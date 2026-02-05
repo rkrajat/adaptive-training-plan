@@ -3,6 +3,7 @@ import multer from "multer";
 
 import { authenticateJWT } from "../middleware/auth";
 import { validateParams } from "../middleware/validate";
+import type { ExtractedDataForCorrection } from "../services/pdf-to-csv.service";
 import { trainingPlanService } from "../services/training-plan.service";
 import type { TrainingPlanUploadRequest } from "../types/api.types";
 import { AppError } from "../utils/error";
@@ -18,7 +19,18 @@ import {
   trainingPlanIdParamSchema,
   listTrainingPlansQuerySchema,
   updateStartDateSchema,
+  correctedTrainingPlanSchema,
 } from "../validators/training-plan.validator";
+
+/**
+ * Response type for partial PDF conversion requiring manual correction
+ */
+interface ManualCorrectionResponse {
+  status: "requires_manual_correction";
+  message: string;
+  extractedData: ExtractedDataForCorrection;
+  attemptsMade: number;
+}
 
 const router = Router();
 
@@ -109,11 +121,92 @@ router.post(
       log.error("Error uploading training plan", error);
 
       if (error instanceof AppError) {
+        // Check if this is a manual correction required error (status 422)
+        const appError = error as AppError & {
+          extractedData?: ExtractedDataForCorrection;
+          attemptsMade?: number;
+        };
+
+        if (appError.statusCode === 422 && appError.extractedData) {
+          const response: ManualCorrectionResponse = {
+            status: "requires_manual_correction",
+            message: "We extracted your training plan but found some issues that need manual correction.",
+            extractedData: appError.extractedData,
+            attemptsMade: appError.attemptsMade || 0,
+          };
+
+          log.info("Returning manual correction response", {
+            userId: req.user?.userId,
+            validRows: appError.extractedData.validRowCount,
+            invalidRows: appError.extractedData.invalidRowCount,
+          });
+
+          res.status(422).json(response);
+          return;
+        }
+
         res.status(error.statusCode).json({ error: error.message });
         return;
       }
 
       sendInternalError(res, "Failed to upload training plan");
+    }
+  }
+);
+
+// POST /api/training-plans/corrected - Submit manually corrected training plan
+router.post(
+  "/corrected",
+  authenticateJWT,
+  async (req: Request, res: Response) => {
+    try {
+      if (!req.user) {
+        sendBadRequest(res, "User not authenticated");
+        return;
+      }
+
+      // Validate request body
+      const validationResult = correctedTrainingPlanSchema.safeParse(req.body);
+
+      if (!validationResult.success) {
+        sendBadRequest(res, validationResult.error.issues[0].message);
+        return;
+      }
+
+      const { rows, ...metadata } = validationResult.data;
+
+      log.info("Processing corrected training plan submission", {
+        userId: req.user.userId,
+        rowCount: rows.length,
+      });
+
+      // Create training plan from corrected rows
+      const trainingPlan =
+        await trainingPlanService.createTrainingPlanFromCorrectedRows(
+          req.user.userId,
+          rows,
+          metadata
+        );
+
+      log.info("Corrected training plan created successfully", {
+        userId: req.user.userId,
+        planId: trainingPlan.id,
+      });
+
+      sendCreated(
+        res,
+        trainingPlan,
+        "Training plan created from corrected data successfully"
+      );
+    } catch (error) {
+      log.error("Error creating training plan from corrected data", error);
+
+      if (error instanceof AppError) {
+        res.status(error.statusCode).json({ error: error.message });
+        return;
+      }
+
+      sendInternalError(res, "Failed to create training plan");
     }
   }
 );

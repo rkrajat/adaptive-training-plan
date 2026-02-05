@@ -1,6 +1,8 @@
 import { raceGoalInputSchema } from '@adaptive-training-plan/types';
 import { z } from 'zod';
 
+import { TrainingPlanRowSchema } from '../schemas/training-plan-row.schema';
+
 /**
  * Race goal from FormData (fields sent as strings)
  * Transforms string values to numbers for validation
@@ -123,3 +125,31 @@ export const updateStartDateSchema = z.object({
 });
 
 export type UpdateStartDateRequest = z.infer<typeof updateStartDateSchema>;
+
+/**
+ * Corrected training plan submission schema
+ * Used when submitting manually corrected rows from the manual correction UI
+ */
+export const correctedTrainingPlanSchema = z.object({
+  // Metadata for the plan
+  name: z.string().min(1, 'Training plan name is required').max(200),
+  startDate: z
+    .string()
+    .min(1, 'Start date is required')
+    .refine((date) => !isNaN(Date.parse(date)), {
+      message: 'Invalid date format',
+    }),
+  goal: z.string().max(500).optional(),
+  raceName: z.string().max(200).optional(),
+  raceDate: z
+    .string()
+    .refine((date) => !isNaN(Date.parse(date)), {
+      message: 'Invalid date format',
+    })
+    .optional(),
+  raceGoal: raceGoalInputSchema,
+  // The corrected training plan rows
+  rows: z.array(TrainingPlanRowSchema).min(1, 'Training plan must have at least one row'),
+});
+
+export type CorrectedTrainingPlanRequest = z.infer<typeof correctedTrainingPlanSchema>;

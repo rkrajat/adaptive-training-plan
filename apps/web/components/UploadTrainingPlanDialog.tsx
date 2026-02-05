@@ -6,6 +6,7 @@ import { CloudUpload, Loader2, XCircle } from "lucide-react";
 import type {
   ExperienceLevel,
   RaceGoalInput as RaceGoalInputType,
+  ExtractedTrainingPlanData,
 } from "@adaptive-training-plan/types";
 
 import { trainingPlansApi } from "@/lib/api";
@@ -23,6 +24,7 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ExperienceLevelSelector } from "@/components/ExperienceLevelSelector";
 import { RaceGoalInput } from "@/components/RaceGoalInput";
+import { ManualPlanCorrectionDialog } from "@/components/ManualPlanCorrectionDialog";
 import {
   useUserProfile,
   useUpdateExperienceLevel,
@@ -34,8 +36,23 @@ interface UploadTrainingPlanDialogProps {
 }
 
 /**
+ * Check if the response is a manual correction response
+ */
+const isManualCorrectionResponse = (
+  response: unknown
+): response is { status: "requires_manual_correction"; extractedData: ExtractedTrainingPlanData } => {
+  return (
+    typeof response === "object" &&
+    response !== null &&
+    "status" in response &&
+    (response as Record<string, unknown>).status === "requires_manual_correction"
+  );
+};
+
+/**
  * Upload Training Plan Dialog
  * Uses Drawer on mobile, Dialog on desktop
+ * Supports manual correction flow for PDF parsing errors
  */
 export const UploadTrainingPlanDialog = ({
   open,
@@ -57,6 +74,10 @@ export const UploadTrainingPlanDialog = ({
     ExperienceLevel | undefined
   >(user?.experienceLevel);
   const [raceGoal, setRaceGoal] = useState<RaceGoalInputType | undefined>(undefined);
+
+  // Manual correction state
+  const [showManualCorrection, setShowManualCorrection] = useState(false);
+  const [extractedData, setExtractedData] = useState<ExtractedTrainingPlanData | null>(null);
 
   const uploadMutation = useMutation({
     mutationFn: async () => {
@@ -80,11 +101,18 @@ export const UploadTrainingPlanDialog = ({
         raceGoal,
       });
     },
-    onSuccess: () => {
-      // Invalidate training plans queries to refetch
+    onSuccess: (response) => {
+      // Check if this is a manual correction response
+      if (isManualCorrectionResponse(response)) {
+        // Show manual correction dialog
+        setExtractedData(response.extractedData);
+        setShowManualCorrection(true);
+        return;
+      }
+
+      // Success - normal flow
       queryClient.invalidateQueries({ queryKey: ["trainingPlans"] });
       queryClient.invalidateQueries({ queryKey: ["trainingPlans", "active"] });
-      // Reset form and close dialog
       resetForm();
       onOpenChange(false);
     },
@@ -98,6 +126,8 @@ export const UploadTrainingPlanDialog = ({
     setRaceName("");
     setRaceDate("");
     setRaceGoal(undefined);
+    setShowManualCorrection(false);
+    setExtractedData(null);
     if (user?.experienceLevel) {
       setExperienceLevel(user.experienceLevel);
     } else {
@@ -152,206 +182,233 @@ export const UploadTrainingPlanDialog = ({
     uploadMutation.mutate();
   };
 
+  const handleManualCorrectionSuccess = () => {
+    // Close both dialogs and reset
+    setShowManualCorrection(false);
+    resetForm();
+    onOpenChange(false);
+  };
+
   return (
-    <ResponsiveDialog open={open} onOpenChange={onOpenChange} preventClose={uploadMutation.isPending}>
-      <ResponsiveDialogContent className="sm:max-w-[500px]">
-        <form onSubmit={handleSubmit}>
-          <ResponsiveDialogHeader>
-            <ResponsiveDialogTitle className="text-lg sm:text-xl">
-              Upload Training Plan
-            </ResponsiveDialogTitle>
-            <ResponsiveDialogDescription className="text-xs sm:text-sm">
-              Upload your training plan in CSV or PDF format to get personalized
-              recommendations
-            </ResponsiveDialogDescription>
-          </ResponsiveDialogHeader>
+    <>
+      <ResponsiveDialog open={open} onOpenChange={onOpenChange} preventClose={uploadMutation.isPending}>
+        <ResponsiveDialogContent className="sm:max-w-[500px]">
+          <form onSubmit={handleSubmit}>
+            <ResponsiveDialogHeader>
+              <ResponsiveDialogTitle className="text-lg sm:text-xl">
+                Upload Training Plan
+              </ResponsiveDialogTitle>
+              <ResponsiveDialogDescription className="text-xs sm:text-sm">
+                Upload your training plan in CSV or PDF format to get personalized
+                recommendations
+              </ResponsiveDialogDescription>
+            </ResponsiveDialogHeader>
 
-          <div className="space-y-3 sm:space-y-4 py-4">
-            {/* File Upload */}
-            <div className="space-y-1.5 sm:space-y-2">
-              <Label htmlFor="file" className="text-xs sm:text-sm">
-                Training Plan File (CSV or PDF) *
-              </Label>
-              <Input
-                id="file"
-                type="file"
-                accept=".csv,.pdf"
-                onChange={handleFileChange}
-                required
-                className="text-xs sm:text-sm"
-              />
-              {file && (
-                <p className="text-xs sm:text-sm text-muted-foreground break-words">
-                  Selected: {file.name}
-                  {file.name.toLowerCase().endsWith(".pdf") &&
-                    " (PDF will be converted to CSV)"}
+            <div className="space-y-3 sm:space-y-4 py-4">
+              {/* File Upload */}
+              <div className="space-y-1.5 sm:space-y-2">
+                <Label htmlFor="file" className="text-xs sm:text-sm">
+                  Training Plan File (CSV or PDF) *
+                </Label>
+                <Input
+                  id="file"
+                  type="file"
+                  accept=".csv,.pdf"
+                  onChange={handleFileChange}
+                  required
+                  className="text-xs sm:text-sm"
+                />
+                {file && (
+                  <p className="text-xs sm:text-sm text-muted-foreground break-words">
+                    Selected: {file.name}
+                    {file.name.toLowerCase().endsWith(".pdf") &&
+                      " (PDF will be converted to CSV)"}
+                  </p>
+                )}
+              </div>
+
+              {/* Plan Name */}
+              <div className="space-y-1.5 sm:space-y-2">
+                <Label htmlFor="name" className="text-xs sm:text-sm">
+                  Plan Name *
+                </Label>
+                <Input
+                  id="name"
+                  placeholder="e.g., Marathon Training Plan"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                  className="text-xs sm:text-sm"
+                />
+              </div>
+
+              {/* Start Date */}
+              <div className="space-y-1.5 sm:space-y-2">
+                <Label htmlFor="startDate" className="text-xs sm:text-sm">
+                  Training Plan Start Date *
+                </Label>
+                <Input
+                  id="startDate"
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  required
+                  className="text-xs sm:text-sm"
+                />
+                <p className="text-xs text-muted-foreground">
+                  First day of your training plan
                 </p>
+              </div>
+
+              {/* Race Goal - VDOT Calculation */}
+              <div className="space-y-1.5 sm:space-y-2 pt-2 border-t">
+                <Label className="text-xs sm:text-sm font-medium">
+                  Race Goal for Training Paces
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  If your training plan includes target paces, those will be used.
+                  Otherwise, paces will be calculated from your goal using the VDOT formula.
+                </p>
+                <RaceGoalInput
+                  value={raceGoal}
+                  onChange={setRaceGoal}
+                  disabled={uploadMutation.isPending}
+                />
+              </div>
+
+              {/* Goal */}
+              <div className="space-y-1.5 sm:space-y-2">
+                <Label htmlFor="goal" className="text-xs sm:text-sm">
+                  Goal (Optional)
+                </Label>
+                <Input
+                  id="goal"
+                  placeholder="e.g., Complete a marathon"
+                  value={goal}
+                  onChange={(e) => setGoal(e.target.value)}
+                  className="text-xs sm:text-sm"
+                />
+              </div>
+
+              {/* Race Name */}
+              <div className="space-y-1.5 sm:space-y-2">
+                <Label htmlFor="raceName" className="text-xs sm:text-sm">
+                  Race Name (Optional)
+                </Label>
+                <Input
+                  id="raceName"
+                  placeholder="e.g., Boston Marathon"
+                  value={raceName}
+                  onChange={(e) => setRaceName(e.target.value)}
+                  className="text-xs sm:text-sm"
+                />
+              </div>
+
+              {/* Race Date */}
+              <div className="space-y-1.5 sm:space-y-2">
+                <Label htmlFor="raceDate" className="text-xs sm:text-sm">
+                  Race Date (Optional)
+                </Label>
+                <Input
+                  id="raceDate"
+                  type="date"
+                  value={raceDate}
+                  onChange={(e) => setRaceDate(e.target.value)}
+                  className="text-xs sm:text-sm"
+                />
+              </div>
+
+              {/* Experience Level */}
+              <div className="space-y-1.5 sm:space-y-2 pt-2 border-t">
+                <Label className="text-xs sm:text-sm">
+                  Running Experience Level
+                  <span className="ml-1 text-orange-600">*</span>
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  {user?.experienceLevel
+                    ? "Current level selected. You can update it here if needed."
+                    : "Please select your experience level to receive personalized recommendations."}
+                </p>
+                <ExperienceLevelSelector
+                  value={experienceLevel}
+                  onChange={setExperienceLevel}
+                  disabled={uploadMutation.isPending}
+                  required={!user?.experienceLevel}
+                />
+              </div>
+
+              {/* Error Display */}
+              {uploadMutation.isError && (
+                <Alert variant="destructive" className="text-xs sm:text-sm">
+                  <XCircle className="h-4 w-4" />
+                  <AlertDescription className="break-words">
+                    {uploadMutation.error?.message ||
+                      "Failed to upload training plan"}
+                  </AlertDescription>
+                </Alert>
               )}
             </div>
 
-            {/* Plan Name */}
-            <div className="space-y-1.5 sm:space-y-2">
-              <Label htmlFor="name" className="text-xs sm:text-sm">
-                Plan Name *
-              </Label>
-              <Input
-                id="name"
-                placeholder="e.g., Marathon Training Plan"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-                className="text-xs sm:text-sm"
-              />
-            </div>
-
-            {/* Start Date */}
-            <div className="space-y-1.5 sm:space-y-2">
-              <Label htmlFor="startDate" className="text-xs sm:text-sm">
-                Training Plan Start Date *
-              </Label>
-              <Input
-                id="startDate"
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                required
-                className="text-xs sm:text-sm"
-              />
-              <p className="text-xs text-muted-foreground">
-                First day of your training plan
-              </p>
-            </div>
-
-            {/* Race Goal - VDOT Calculation */}
-            <div className="space-y-1.5 sm:space-y-2 pt-2 border-t">
-              <Label className="text-xs sm:text-sm font-medium">
-                Race Goal for Training Paces
-              </Label>
-              <p className="text-xs text-muted-foreground">
-                If your training plan includes target paces, those will be used.
-                Otherwise, paces will be calculated from your goal using the VDOT formula.
-              </p>
-              <RaceGoalInput
-                value={raceGoal}
-                onChange={setRaceGoal}
+            <ResponsiveDialogFooter className="flex-col-reverse sm:flex-row gap-2 sm:gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
                 disabled={uploadMutation.isPending}
-              />
-            </div>
+                className="w-full sm:w-auto"
+                size="sm"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                className="bg-orange-500 hover:bg-orange-600 w-full sm:w-auto"
+                disabled={
+                  uploadMutation.isPending ||
+                  !file ||
+                  !name ||
+                  !startDate ||
+                  !experienceLevel ||
+                  !raceGoal
+                }
+                size="sm"
+              >
+                {uploadMutation.isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    {file?.name.toLowerCase().endsWith(".pdf")
+                      ? "Converting PDF..."
+                      : "Uploading..."}
+                  </>
+                ) : (
+                  <>
+                    <CloudUpload className="mr-2 h-4 w-4" />
+                    Upload Plan
+                  </>
+                )}
+              </Button>
+            </ResponsiveDialogFooter>
+          </form>
+        </ResponsiveDialogContent>
+      </ResponsiveDialog>
 
-            {/* Goal */}
-            <div className="space-y-1.5 sm:space-y-2">
-              <Label htmlFor="goal" className="text-xs sm:text-sm">
-                Goal (Optional)
-              </Label>
-              <Input
-                id="goal"
-                placeholder="e.g., Complete a marathon"
-                value={goal}
-                onChange={(e) => setGoal(e.target.value)}
-                className="text-xs sm:text-sm"
-              />
-            </div>
-
-            {/* Race Name */}
-            <div className="space-y-1.5 sm:space-y-2">
-              <Label htmlFor="raceName" className="text-xs sm:text-sm">
-                Race Name (Optional)
-              </Label>
-              <Input
-                id="raceName"
-                placeholder="e.g., Boston Marathon"
-                value={raceName}
-                onChange={(e) => setRaceName(e.target.value)}
-                className="text-xs sm:text-sm"
-              />
-            </div>
-
-            {/* Race Date */}
-            <div className="space-y-1.5 sm:space-y-2">
-              <Label htmlFor="raceDate" className="text-xs sm:text-sm">
-                Race Date (Optional)
-              </Label>
-              <Input
-                id="raceDate"
-                type="date"
-                value={raceDate}
-                onChange={(e) => setRaceDate(e.target.value)}
-                className="text-xs sm:text-sm"
-              />
-            </div>
-
-            {/* Experience Level */}
-            <div className="space-y-1.5 sm:space-y-2 pt-2 border-t">
-              <Label className="text-xs sm:text-sm">
-                Running Experience Level
-                <span className="ml-1 text-orange-600">*</span>
-              </Label>
-              <p className="text-xs text-muted-foreground">
-                {user?.experienceLevel
-                  ? "Current level selected. You can update it here if needed."
-                  : "Please select your experience level to receive personalized recommendations."}
-              </p>
-              <ExperienceLevelSelector
-                value={experienceLevel}
-                onChange={setExperienceLevel}
-                disabled={uploadMutation.isPending}
-                required={!user?.experienceLevel}
-              />
-            </div>
-
-            {/* Error Display */}
-            {uploadMutation.isError && (
-              <Alert variant="destructive" className="text-xs sm:text-sm">
-                <XCircle className="h-4 w-4" />
-                <AlertDescription className="break-words">
-                  {uploadMutation.error?.message ||
-                    "Failed to upload training plan"}
-                </AlertDescription>
-              </Alert>
-            )}
-          </div>
-
-          <ResponsiveDialogFooter className="flex-col-reverse sm:flex-row gap-2 sm:gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={uploadMutation.isPending}
-              className="w-full sm:w-auto"
-              size="sm"
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              className="bg-orange-500 hover:bg-orange-600 w-full sm:w-auto"
-              disabled={
-                uploadMutation.isPending ||
-                !file ||
-                !name ||
-                !startDate ||
-                !experienceLevel ||
-                !raceGoal
-              }
-              size="sm"
-            >
-              {uploadMutation.isPending ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  {file?.name.toLowerCase().endsWith(".pdf")
-                    ? "Converting PDF..."
-                    : "Uploading..."}
-                </>
-              ) : (
-                <>
-                  <CloudUpload className="mr-2 h-4 w-4" />
-                  Upload Plan
-                </>
-              )}
-            </Button>
-          </ResponsiveDialogFooter>
-        </form>
-      </ResponsiveDialogContent>
-    </ResponsiveDialog>
+      {/* Manual Correction Dialog */}
+      {showManualCorrection && extractedData && raceGoal && (
+        <ManualPlanCorrectionDialog
+          open={showManualCorrection}
+          onOpenChange={setShowManualCorrection}
+          extractedData={extractedData}
+          metadata={{
+            name,
+            startDate,
+            goal: goal || undefined,
+            raceName: raceName || undefined,
+            raceDate: raceDate || undefined,
+            raceGoal,
+          }}
+          onSuccess={handleManualCorrectionSuccess}
+        />
+      )}
+    </>
   );
 };
