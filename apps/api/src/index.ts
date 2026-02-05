@@ -74,10 +74,10 @@ const startServer = async (): Promise<void> => {
   });
 
   // Configure server timeouts
-  // AI recommendations can take 30-60 seconds, so set generous timeouts
-  server.timeout = 120000; // 2 minutes - overall request timeout
-  server.keepAliveTimeout = 65000; // 65 seconds - keep-alive timeout (slightly higher than typical load balancer timeout)
-  server.headersTimeout = 66000; // 66 seconds - headers timeout (should be higher than keepAliveTimeout)
+  // Vision-based PDF extraction can take several minutes for image-heavy PDFs
+  server.timeout = 600000; // 10 minutes - overall request timeout
+  server.keepAliveTimeout = 605000; // 10 min 5 sec - keep-alive timeout (slightly higher than request timeout)
+  server.headersTimeout = 610000; // 10 min 10 sec - headers timeout (should be higher than keepAliveTimeout)
 };
 
 startServer();

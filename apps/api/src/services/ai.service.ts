@@ -1,9 +1,14 @@
 import type { ExperienceLevel, TrainingPaces } from "@adaptive-training-plan/types";
 import { groupTrainingPlanByWeek } from "@adaptive-training-plan/utils";
 import { openai } from "@ai-sdk/openai";
-import { generateText, streamText } from "ai";
+import { generateObject, generateText, streamText } from "ai";
 
 import { config } from "../config";
+import {
+  TrainingPlanSchema,
+  type TrainingPlan,
+  type TrainingPlanRow,
+} from "../schemas/training-plan-row.schema";
 import type {
   FormattedActivity,
   StravaActivity,
@@ -741,102 +746,132 @@ Keep the tone professional but encouraging. Be specific and actionable.`;
   }
 
   /**
-   * Convert PDF text to CSV format using LLM
-   * @param pdfText - Extracted text from PDF training plan
+   * Build the system prompt for PDF to structured plan conversion
    * @param startDate - Training plan start date in YYYY-MM-DD format
-   * @returns CSV formatted string
+   * @param errorContext - Optional error context from previous failed attempt
+   * @returns System prompt string
    */
-  async convertPdfTextToCsv(
-    pdfText: string,
-    startDate: string
-  ): Promise<string> {
-    try {
-      log.info("Converting PDF text to CSV using LLM", {
-        textLength: pdfText.length,
-        startDate,
-      });
-
-      const systemPrompt = `
+  private buildPdfConversionSystemPrompt(startDate: string, errorContext?: string): string {
+    let prompt = `
 ## YOUR ROLE
-You are a Running Training Plan Normalizer. Your job is to extract and standardize training plan data from any PDF — regardless of formatting — into a structured, machine-readable table.
+You are a Running Training Plan Normalizer. Your job is to extract and standardize training plan data from any PDF — regardless of formatting — into a structured JSON format.
 
-🧩 INPUT
-You will receive a PDF file or the extracted text from the PDF file by the user. The file may contain text, tables, or images showing a running training plan. If the file contains the training plan in miles and kilometers, consider the kilometers version.
+## INPUT
+You will receive extracted text from a PDF file containing a running training plan. The file may contain text or tables showing a running training plan. If the file contains the training plan in miles and kilometers, consider the kilometers version.
 
-📅 TRAINING PLAN START DATE
+## TRAINING PLAN START DATE
 The user has specified that this training plan starts on: ${startDate}
 Use this as the starting date for the training plan. If the PDF contains explicit dates, use those. Otherwise, start from ${startDate} and increment sequentially for each day.
 THIS IS VERY IMPORTANT. DO NOT CHANGE THE START DATE. AND ALWAYS USE CORRECT DATE AND DAYS.
 
-🎯 OUTPUT
-Your task is to produce a clean CSV (Comma Separated) table with the following columns:
-| date | day | type | planned_distance_km | target_pace_min_per_km | target_HR_zone | notes |
+## OUTPUT FORMAT
+You must output a JSON object with a "rows" array. Each row represents one day's workout with these fields:
 
-Field Rules:
-date → extract if explicitly mentioned in the PDF (e.g., "March 4", "10/03"); otherwise, infer sequential days starting from ${startDate}. The first training day should use ${startDate} as the date.
+- date: YYYY-MM-DD format (e.g., "2025-10-14")
+- day: Day abbreviation that MUST match the date (Mon, Tue, Wed, Thu, Fri, Sat, Sun)
+- type: One of: Easy, Long, Tempo, Interval, Recovery, Rest, Race, Cross-Training, Progression
+- planned_distance_km: Number in kilometers, rounded to one decimal (e.g., 9.7 for "6 miles")
+- target_pace_min_per_km: Pace range string like "5:30-5:45" or empty string for rest days
+- target_HR_zone: One of: Z1, Z2, Z3, Z4, Z5, or empty string
+- notes: Any additional context (max 500 chars)
 
-day → Mon, Tue, Wed, Thu, Fri, Sat, Sun. Make sure the day of the "date" matches this field. For example, if the date - 24th August 2025 is a Sunday, then the day should be Sun.
+## FIELD RULES
 
-type → one of {Easy, Long, Tempo, Interval, Recovery, Rest, Race, Cross-Training, Progression}.
+### date
+Extract if explicitly mentioned in the PDF (e.g., "March 4", "10/03"). Otherwise, infer sequential days starting from ${startDate}.
 
-planned_distance_km → convert all distances to kilometers, rounded to one decimal place. (e.g., "6 miles" → 9.7).
+### day
+MUST match the actual day of the date. For example:
+- If date is 2025-08-24 (a Sunday), day MUST be "Sun"
+- If date is 2025-08-25 (a Monday), day MUST be "Mon"
 
-target_pace_min_per_km → have the target pace in a range format (e.g., "6:00-6:15/km). If the input has only a single value, have the range as the same value (e.g., "6:00-6:00/km). If the plan doesn't clearly mention the pace, but rather has details like "conversational", "fast pace" etc, then try to recommend a page range in the above format, based on the context you understood from the training plan.
+### type
+Classify based on keywords:
+- "easy", "recovery", "jog" → Easy or Recovery
+- "long", "long run" → Long
+- "tempo", "threshold" → Tempo
+- "interval", "speed", "track" → Interval
+- "rest", "off" → Rest
+- "race" → Race
+- "gym", "strength", "yoga", "cross" → Cross-Training
+- "progression" → Progression
 
-target_HR_zone → Z1–Z5 if explicitly mentioned. If written as bpm or %HRmax, map approximately:
-Z1: <65% HRmax or <120 bpm
-Z2: 65–75% HRmax or 120–140 bpm
-Z3: 75–85% HRmax or 140–160 bpm
-Z4: 85–90% HRmax or 160–175 bpm
-Z5: >90% HRmax or >175 bpm
+### planned_distance_km
+- Convert miles to km: multiply by 1.609
+- Round to one decimal place
+- For Rest days, use 0
 
-notes → include any other textual context (e.g., "hill repeats", "easy aerobic", "steady state", "rest day", "cross-train").
+### target_pace_min_per_km
+- Use range format: "5:30-5:45"
+- If single value given, repeat it: "5:30-5:30"
+- For descriptive terms, estimate:
+  - "conversational" / "easy" → "6:00-6:30"
+  - "moderate" → "5:30-5:45"
+  - "fast" / "hard" → "4:30-5:00"
+- For Rest/Cross-Training, use empty string ""
 
-🧠 PROCESSING STEPS
-Read all text from the uploaded PDF.
+### target_HR_zone
+Map to Z1-Z5 if mentioned. Approximate mappings:
+- Z1: <65% HRmax or <120 bpm
+- Z2: 65–75% HRmax or 120–140 bpm
+- Z3: 75–85% HRmax or 140–160 bpm
+- Z4: 85–90% HRmax or 160–175 bpm
+- Z5: >90% HRmax or >175 bpm
+For Rest/Cross-Training, use empty string ""
 
-Identify individual sessions (each line or table row that describes a specific day's workout).
-
-Extract relevant data points using pattern recognition:
-- Numbers with "km" or "mile" → distance
-- Time formats (e.g., 5:00/km) → pace
-- Keywords → classify type (e.g., "interval", "tempo", "long run", "rest")
-- In case the overall distance is not given, convert pace and time to get that. (e.g., if pace is 4:15/km and the workout is 6min * 3, then total distance = 4.24km)
-
-Infer missing information logically:
-- If "Rest" or "Off" day → set distance = 0, pace = null, HR = null.
-- If information for a consecutive days is not given, then consider the day as Rest/Off day.
-- Normalize units → all distances in kilometers, paces in min/km.
-
-Output a single, well-formatted CSV table — no markdown, no commentary, only the table.
-
-🧾 OUTPUT FORMAT (STRICT)
-date,day,type,planned_distance_km,target_pace_min_per_km,target_HR_zone,notes
-2025-10-14,Tue,Easy,6,5:35,Z2,"Easy, aerobic run"
-2025-10-15,Wed,Intervals,7,4:25,Z4,"6x800m, intervals"
-2025-10-16,Thu,Rest,0,,,
-
-⚠️ OUTPUT RULES
-Do not add markdown syntax (\`\`\`csv or tables with borders).
-Do not include explanations, summaries, or confidence scores.
-If multiple weeks exist, continue the same format (one row per run).
-If the plan includes non-running sessions (e.g., gym, yoga), mark type = "Cross-Training".
-
-✅ EXAMPLE PROMPT FROM USER
-"Here's my training plan PDF. Please extract it into your standard CSV format."
-
-🧭 POST-PROCESS CHECKLIST (internal)
-Ensure every row corresponds to one unique day or run.
-Verify numeric conversions (miles→km, pace range→average).
-Ensure consistent column order and no missing headers.
-
-If you encounter ambiguous text, make reasonable assumptions but maintain structural consistency.
+## PROCESSING RULES
+1. Each row = one unique day
+2. If a day has no workout info, mark as Rest with distance 0
+3. If distance isn't given but pace and time are, calculate it
+4. Non-running sessions (gym, yoga) → type = "Cross-Training"
+5. Ensure dates are sequential with no gaps
 `;
 
-      const userPrompt = `Convert the following training plan text to CSV format:\n\n${pdfText}`;
+    if (errorContext) {
+      prompt += `
 
-      const result = await generateText({
+## PREVIOUS ATTEMPT FAILED
+Your previous response had validation errors. Please fix these issues:
+
+${errorContext}
+
+Pay special attention to:
+1. Ensuring the "day" field matches the actual day of the "date"
+2. Using valid type values: Easy, Long, Tempo, Interval, Recovery, Rest, Race, Cross-Training, Progression
+3. Using valid HR zones: Z1, Z2, Z3, Z4, Z5, or empty string
+4. Rest days should have planned_distance_km = 0
+`;
+    }
+
+    return prompt;
+  }
+
+  /**
+   * Convert PDF text to structured training plan using generateObject()
+   * Uses Zod schema validation for guaranteed output format
+   * @param pdfText - Extracted text from PDF training plan
+   * @param startDate - Training plan start date in YYYY-MM-DD format
+   * @param errorContext - Optional error context from previous failed attempt for retry
+   * @returns Validated TrainingPlan object
+   */
+  async convertPdfTextToStructuredPlan(
+    pdfText: string,
+    startDate: string,
+    errorContext?: string
+  ): Promise<TrainingPlan> {
+    try {
+      log.info("Converting PDF text to structured plan using generateObject", {
+        textLength: pdfText.length,
+        startDate,
+        isRetry: !!errorContext,
+      });
+
+      const systemPrompt = this.buildPdfConversionSystemPrompt(startDate, errorContext);
+      const userPrompt = `Extract the training plan from this text:\n\n${pdfText}`;
+
+      const result = await generateObject({
         model: openai(config.openai.model),
+        schema: TrainingPlanSchema,
         messages: [
           {
             role: "system",
@@ -850,19 +885,136 @@ If you encounter ambiguous text, make reasonable assumptions but maintain struct
         temperature: 0.1,
       });
 
-      log.info("PDF text to CSV conversion successful", {
-        resultLength: result.text.length,
+      log.info("PDF text to structured plan conversion successful", {
+        rowCount: result.object.rows.length,
         usage: result.usage,
       });
 
-      return result.text;
+      return result.object;
     } catch (error) {
-      log.error("Failed to convert PDF text to CSV", error);
+      log.error("Failed to convert PDF text to structured plan", error);
       throw new InternalServerError(
-        "Failed to convert PDF text to CSV format",
+        "Failed to convert PDF text to structured format",
         error
       );
     }
+  }
+
+  /**
+   * Convert PDF images to structured training plan using GPT-4o vision capability
+   * Used when PDF pages contain images instead of extractable text
+   * @param images - Array of PNG image buffers (rendered PDF pages)
+   * @param textContent - Any extractable text from the PDF (may be sparse/empty)
+   * @param startDate - Training plan start date in YYYY-MM-DD format
+   * @param errorContext - Optional error context from previous failed attempt
+   * @returns Validated TrainingPlan object
+   */
+  async convertPdfImagesToStructuredPlan(
+    images: Buffer[],
+    textContent: string,
+    startDate: string,
+    errorContext?: string
+  ): Promise<TrainingPlan> {
+    try {
+      log.info("Converting PDF images to structured plan using vision", {
+        imageCount: images.length,
+        textLength: textContent.length,
+        startDate,
+        isRetry: !!errorContext,
+        totalImageSizeBytes: images.reduce((sum, img) => sum + img.length, 0),
+      });
+
+      const systemPrompt = this.buildPdfConversionSystemPrompt(startDate, errorContext);
+
+      // Build user message content with text and images
+      type ContentPart =
+        | { type: "text"; text: string }
+        | { type: "image"; image: Buffer; mimeType: "image/png" };
+
+      const userContent: ContentPart[] = [
+        {
+          type: "text",
+          text: `Extract the training plan from the provided images. The training plan starts on ${startDate}.${
+            textContent.trim()
+              ? `\n\nAdditional extracted text from the PDF:\n${textContent}`
+              : ""
+          }`,
+        },
+        // Add each image as an ImagePart
+        ...images.map(
+          (img): ContentPart => ({
+            type: "image" as const,
+            image: img,
+            mimeType: "image/png" as const,
+          })
+        ),
+      ];
+
+      const result = await generateObject({
+        model: openai(config.openai.model),
+        schema: TrainingPlanSchema,
+        messages: [
+          {
+            role: "system",
+            content: systemPrompt,
+          },
+          {
+            role: "user",
+            content: userContent,
+          },
+        ],
+        temperature: 0.1,
+      });
+
+      log.info("PDF images to structured plan conversion successful", {
+        rowCount: result.object.rows.length,
+        usage: result.usage,
+      });
+
+      return result.object;
+    } catch (error) {
+      log.error("Failed to convert PDF images to structured plan", error);
+      throw new InternalServerError(
+        "Failed to convert PDF images to structured format",
+        error
+      );
+    }
+  }
+
+  /**
+   * Convert structured training plan to CSV string
+   * @param plan - Validated TrainingPlan object
+   * @returns CSV formatted string
+   */
+  structuredPlanToCsv(plan: TrainingPlan): string {
+    const headers = "date,day,type,planned_distance_km,target_pace_min_per_km,target_HR_zone,notes";
+
+    const rows = plan.rows.map((row: TrainingPlanRow) => {
+      // Escape notes field for CSV (double quotes inside, wrap in quotes)
+      const escapedNotes = row.notes
+        ? `"${row.notes.replace(/"/g, '""')}"`
+        : '""';
+
+      return `${row.date},${row.day},${row.type},${row.planned_distance_km},${row.target_pace_min_per_km},${row.target_HR_zone},${escapedNotes}`;
+    });
+
+    return [headers, ...rows].join("\n");
+  }
+
+  /**
+   * @deprecated Use convertPdfTextToStructuredPlan instead
+   * Convert PDF text to CSV format using LLM (legacy method)
+   * @param pdfText - Extracted text from PDF training plan
+   * @param startDate - Training plan start date in YYYY-MM-DD format
+   * @returns CSV formatted string
+   */
+  async convertPdfTextToCsv(
+    pdfText: string,
+    startDate: string
+  ): Promise<string> {
+    // Use new structured method and convert to CSV
+    const structuredPlan = await this.convertPdfTextToStructuredPlan(pdfText, startDate);
+    return this.structuredPlanToCsv(structuredPlan);
   }
 
   /**
