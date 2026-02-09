@@ -5,12 +5,19 @@ import {
   Clock,
   Eye,
   Footprints,
+  Gauge,
   Route,
   Timer,
   TrendingUp,
 } from "lucide-react";
 
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -20,6 +27,8 @@ interface WeeklyRunsReportProps {
   currentWeek: number;
   startDate: string;
   onViewActivities?: () => void;
+  onViewTrainingPaces?: () => void;
+  hasRaceGoal?: boolean;
 }
 
 interface StatItemProps {
@@ -39,7 +48,9 @@ const StatItem = ({ icon, label, value, subValue }: StatItemProps) => (
       <span className="text-xs font-medium">{label}</span>
     </div>
     <div className="text-lg font-bold">{value}</div>
-    {subValue && <div className="text-xs text-muted-foreground">{subValue}</div>}
+    {subValue && (
+      <div className="text-xs text-muted-foreground">{subValue}</div>
+    )}
   </div>
 );
 
@@ -80,7 +91,10 @@ const formatTime = (seconds: number): string => {
 const formatDateRange = (startDate: string, endDate: string): string => {
   const start = new Date(startDate);
   const end = new Date(endDate);
-  const formatOptions: Intl.DateTimeFormatOptions = { month: "short", day: "numeric" };
+  const formatOptions: Intl.DateTimeFormatOptions = {
+    month: "short",
+    day: "numeric",
+  };
   return `${start.toLocaleDateString("en-US", formatOptions)} - ${end.toLocaleDateString("en-US", formatOptions)}`;
 };
 
@@ -123,7 +137,8 @@ const EmptyState = ({
           No runs recorded for {weekRange}
         </p>
         <p className="text-xs text-muted-foreground mt-1">
-          Your weekly stats will appear here once you sync activities from Strava
+          Your weekly stats will appear here once you sync activities from
+          Strava
         </p>
         {onViewActivities && (
           <Button
@@ -149,6 +164,8 @@ export const WeeklyRunsReport = ({
   currentWeek,
   startDate,
   onViewActivities,
+  onViewTrainingPaces,
+  hasRaceGoal,
 }: WeeklyRunsReportProps) => {
   const { data, isLoading, error } = useWeeklySummary({
     startDate,
@@ -177,11 +194,16 @@ export const WeeklyRunsReport = ({
 
   // Show empty state if no runs
   if (data.numberOfRuns === 0) {
-    return <EmptyState weekRange={weekRange} onViewActivities={onViewActivities} />;
+    return (
+      <EmptyState weekRange={weekRange} onViewActivities={onViewActivities} />
+    );
   }
 
   return (
-    <Card className="mb-6 border-orange-200 bg-orange-50/30 dark:border-orange-800 dark:bg-orange-950/20" data-tour="weekly-runs-report">
+    <Card
+      className="mb-6 border-orange-200 bg-orange-50/30 dark:border-orange-800 dark:bg-orange-950/20"
+      data-tour="weekly-runs-report"
+    >
       <CardHeader className="pb-2">
         <CardTitle className="text-sm font-medium flex items-center gap-2">
           <Activity className="h-4 w-4 text-orange-600" />
@@ -189,16 +211,27 @@ export const WeeklyRunsReport = ({
           <span className="text-xs font-normal text-muted-foreground">
             ({weekRange})
           </span>
-          {onViewActivities && (
-            <button
-              onClick={onViewActivities}
-              className="hidden sm:inline-flex items-center text-xs font-normal px-2 py-1 rounded-md bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-950/50 dark:text-blue-400 dark:hover:bg-blue-900/50 transition-colors"
-              data-tour="recent-activities"
-            >
-              <Eye className="h-3 w-3 mr-1" />
-              View last 30 days
-            </button>
-          )}
+          <div className="hidden sm:flex items-center gap-2 ml-auto">
+            {hasRaceGoal && onViewTrainingPaces && (
+              <button
+                onClick={onViewTrainingPaces}
+                className="inline-flex items-center text-xs font-normal px-2 py-1 rounded-md bg-indigo-50 text-indigo-600 hover:bg-indigo-100 dark:bg-indigo-950/50 dark:text-indigo-400 dark:hover:bg-indigo-900/50 transition-colors"
+              >
+                <Gauge className="h-3 w-3 mr-1" />
+                Training Paces
+              </button>
+            )}
+            {onViewActivities && (
+              <button
+                onClick={onViewActivities}
+                className="inline-flex items-center text-xs font-normal px-2 py-1 rounded-md bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-950/50 dark:text-blue-400 dark:hover:bg-blue-900/50 transition-colors"
+                data-tour="recent-activities"
+              >
+                <Eye className="h-3 w-3 mr-1" />
+                View last 30 days
+              </button>
+            )}
+          </div>
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -230,16 +263,31 @@ export const WeeklyRunsReport = ({
           />
         </div>
       </CardContent>
-      {onViewActivities && (
-        <CardFooter className="pt-2 sm:hidden" data-tour="recent-activities">
-          <Button
-            variant="outline"
-            onClick={onViewActivities}
-            className="w-full border-blue-200 text-blue-600 hover:bg-blue-50 dark:border-blue-800 dark:text-blue-400 dark:hover:bg-blue-950/50"
-          >
-            <Eye className="h-4 w-4 mr-2" />
-            View last 30 days activities
-          </Button>
+      {(onViewActivities || (hasRaceGoal && onViewTrainingPaces)) && (
+        <CardFooter
+          className="pt-2 sm:hidden flex-col gap-2"
+          data-tour="recent-activities"
+        >
+          {hasRaceGoal && onViewTrainingPaces && (
+            <Button
+              variant="outline"
+              onClick={onViewTrainingPaces}
+              className="w-full border-indigo-200 text-indigo-600 hover:bg-indigo-50 dark:border-indigo-800 dark:text-indigo-400 dark:hover:bg-indigo-950/50"
+            >
+              <Gauge className="h-4 w-4 mr-2" />
+              View Training Paces
+            </Button>
+          )}
+          {onViewActivities && (
+            <Button
+              variant="outline"
+              onClick={onViewActivities}
+              className="w-full border-blue-200 text-blue-600 hover:bg-blue-50 dark:border-blue-800 dark:text-blue-400 dark:hover:bg-blue-950/50"
+            >
+              <Eye className="h-4 w-4 mr-2" />
+              View last 30 days activities
+            </Button>
+          )}
         </CardFooter>
       )}
     </Card>

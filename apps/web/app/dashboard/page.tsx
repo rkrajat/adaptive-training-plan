@@ -25,8 +25,10 @@ import {
   RecommendationsCard,
   RejectDialog,
   ReplaceConfirmationDialog,
+  PreRecommendationDialog,
 } from "./components/recommendations";
 import type { RejectAction } from "./components/recommendations";
+import { useWeeklySummary } from "@/hooks/use-weekly-summary";
 import { ActivitiesDialog } from "./components/activities";
 import { ViewActivitiesButton } from "./components/activities/view-activities-button";
 import { TrainingPlanSection } from "./components/training-plan";
@@ -36,6 +38,8 @@ import {
   isSuccessResponse,
 } from "./components/training-status";
 import { WeeklyRunsReport } from "./components/weekly-runs-report";
+import { OnboardingReminderBanner } from "./components/onboarding-reminder";
+import { TrainingPacesDialog } from "@/components/training-paces-dialog";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -53,7 +57,6 @@ export default function DashboardPage() {
     recommendationStatus,
     isGenerating,
     error: recommendationError,
-    handleRegenerate,
     generateRecommendations,
     setCompletion,
     setRecommendationId,
@@ -64,10 +67,8 @@ export default function DashboardPage() {
   const { data: activeRecommendation } = useActiveRecommendation();
 
   // Fetch training status (only when user has an active plan)
-  const {
-    data: trainingStatusData,
-    isLoading: isTrainingStatusLoading,
-  } = useTrainingStatus({ enabled: !!activePlan });
+  const { data: trainingStatusData, isLoading: isTrainingStatusLoading } =
+    useTrainingStatus({ enabled: !!activePlan });
 
   // Accept/reject mutations
   const acceptMutation = useAcceptRecommendation();
@@ -78,6 +79,17 @@ export default function DashboardPage() {
   const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
   const [isReplaceDialogOpen, setIsReplaceDialogOpen] = useState(false);
   const [isActivitiesDialogOpen, setIsActivitiesDialogOpen] = useState(false);
+  const [isPreRecommendationDialogOpen, setIsPreRecommendationDialogOpen] =
+    useState(false);
+  const [isTrainingPacesDialogOpen, setIsTrainingPacesDialogOpen] =
+    useState(false);
+
+  // Fetch weekly summary for pre-recommendation dialog
+  const { data: weeklySummary } = useWeeklySummary({
+    startDate: activePlan?.startDate || "",
+    currentWeek: activePlan?.currentWeek || 0,
+    enabled: !!activePlan,
+  });
 
   // Load active recommendation on mount
   useEffect(() => {
@@ -86,21 +98,34 @@ export default function DashboardPage() {
       setRecommendationId(activeRecommendation.id);
       setRecommendationStatus(activeRecommendation.status);
     }
-  }, [activeRecommendation, completion, setCompletion, setRecommendationId, setRecommendationStatus]);
+  }, [
+    activeRecommendation,
+    completion,
+    setCompletion,
+    setRecommendationId,
+    setRecommendationStatus,
+  ]);
 
-  // Handle regenerate click - show confirmation if active recommendation exists
+  // Handle regenerate click - show pre-recommendation dialog or confirmation
   const handleRegenerateClick = () => {
     if (activeRecommendation) {
+      // Show confirmation first if there's an active recommendation
       setIsReplaceDialogOpen(true);
     } else {
-      handleRegenerate();
+      // Show pre-recommendation context dialog for new recommendations
+      setIsPreRecommendationDialogOpen(true);
     }
   };
 
-  // Confirm replacement and generate new
+  // Confirm replacement and show pre-recommendation dialog
   const handleConfirmReplace = () => {
     setIsReplaceDialogOpen(false);
-    handleRegenerate();
+    setIsPreRecommendationDialogOpen(true);
+  };
+
+  // Handle generate from pre-recommendation dialog
+  const handleGenerateWithContext = (userFeedback?: string) => {
+    generateRecommendations(userFeedback).catch(console.error);
   };
 
   // Handle accept recommendation
@@ -158,7 +183,7 @@ export default function DashboardPage() {
             description: err.message,
           });
         },
-      }
+      },
     );
   };
 
@@ -206,11 +231,18 @@ export default function DashboardPage() {
       <OnboardingTour
         hasActivePlan={!!activePlan}
         hasRecommendation={!!completion && recommendationStatus === "pending"}
-        hasTrainingStatus={!!trainingStatusData && isSuccessResponse(trainingStatusData)}
+        hasTrainingStatus={
+          !!trainingStatusData && isSuccessResponse(trainingStatusData)
+        }
       />
 
+      {/* Onboarding Reminder - shown if profile incomplete */}
+      <OnboardingReminderBanner user={user} activePlan={activePlan} />
+
       {/* Training Status Banner - shown at top when eligible */}
-      {isTrainingStatusLoading && activePlan && <TrainingStatusBannerSkeleton />}
+      {isTrainingStatusLoading && activePlan && (
+        <TrainingStatusBannerSkeleton />
+      )}
       {trainingStatusData && isSuccessResponse(trainingStatusData) && (
         <TrainingStatusBanner
           status={trainingStatusData.status}
@@ -224,6 +256,8 @@ export default function DashboardPage() {
           currentWeek={activePlan.currentWeek}
           startDate={activePlan.startDate}
           onViewActivities={() => setIsActivitiesDialogOpen(true)}
+          onViewTrainingPaces={() => setIsTrainingPacesDialogOpen(true)}
+          hasRaceGoal={!!user?.raceGoal}
         />
       ) : (
         <ViewActivitiesButton
@@ -246,10 +280,10 @@ export default function DashboardPage() {
         originalPlan={
           activePlan
             ? {
-                csvContent: activePlan.csvContent,
-                currentWeek: activePlan.currentWeek,
-                startDate: activePlan.startDate,
-              }
+              csvContent: activePlan.csvContent,
+              currentWeek: activePlan.currentWeek,
+              startDate: activePlan.startDate,
+            }
             : undefined
         }
       />
@@ -283,6 +317,23 @@ export default function DashboardPage() {
         open={isActivitiesDialogOpen}
         onOpenChange={setIsActivitiesDialogOpen}
       />
+
+      <PreRecommendationDialog
+        open={isPreRecommendationDialogOpen}
+        onOpenChange={setIsPreRecommendationDialogOpen}
+        weeklySummary={weeklySummary}
+        currentWeek={activePlan?.currentWeek || 1}
+        onGenerate={handleGenerateWithContext}
+        isLoading={isGenerating}
+      />
+
+      {user?.raceGoal && (
+        <TrainingPacesDialog
+          open={isTrainingPacesDialogOpen}
+          onOpenChange={setIsTrainingPacesDialogOpen}
+          raceGoal={user.raceGoal}
+        />
+      )}
     </DashboardLayout>
   );
 }
