@@ -1,4 +1,5 @@
 import type { ExperienceLevel } from './user.types';
+import type { RaceGoal } from './race-goal.types';
 
 export interface Activity {
   id: number;
@@ -17,4 +18,5 @@ export interface User {
   lastName: string;
   profilePhoto: string;
   experienceLevel?: ExperienceLevel;
+  raceGoal?: RaceGoal;
 }

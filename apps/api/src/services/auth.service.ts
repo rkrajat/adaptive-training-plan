@@ -116,6 +116,8 @@ export class AuthService {
         firstName: user.firstName,
         lastName: user.lastName,
         profilePhoto: user.profilePhoto,
+        experienceLevel: user.experienceLevel,
+        raceGoal: user.raceGoal,
       };
     } catch (error) {
       if (error instanceof UnauthorizedError) {
