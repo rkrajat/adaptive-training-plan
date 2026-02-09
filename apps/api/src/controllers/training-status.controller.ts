@@ -183,11 +183,15 @@ export const getTrainingStatus = async (
     // Get start date as string
     const startDate = activePlan.startDate.toISOString().split("T")[0];
 
+    // Get user's first name for personalization
+    const athleteFirstName = user?.firstName;
+
     log.info("Generating training status", {
       userId,
       currentWeek,
       activitiesCount: enhancedActivities.length,
       experienceLevel,
+      hasAthleteName: !!athleteFirstName,
     });
 
     // Generate training status using AI
@@ -197,7 +201,8 @@ export const getTrainingStatus = async (
       startDate,
       experienceLevel,
       currentWeek,
-      activePlan.startDate
+      activePlan.startDate,
+      athleteFirstName
     );
 
     const response: TrainingStatusSuccessResponse = {
