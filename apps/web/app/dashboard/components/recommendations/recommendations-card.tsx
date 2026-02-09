@@ -6,7 +6,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 import { FeedbackButton } from "../feedback";
 import { AcceptRejectButtons } from "./accept-reject-buttons";
-import { DiffMarkdownRenderer } from "./diff-markdown-renderer";
+import { StructuredRecommendation } from "./structured-recommendation";
 import type { RecommendationStatus } from "./types";
 
 interface OriginalPlanData {
@@ -123,7 +123,7 @@ export const RecommendationsCard = ({
         {/* Streaming/Completed Content */}
         {completion && (
           <div className="space-y-4">
-            <DiffMarkdownRenderer
+            <StructuredRecommendation
               markdown={completion}
               originalPlan={originalPlan}
             />
