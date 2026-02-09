@@ -192,30 +192,34 @@ router.post(
       // Format activities with enhanced metadata for AI service
       const enhancedActivities = formatActivitiesForAI(rawActivities);
 
-      // Fetch user's experience level and race goal (training paces)
+      // Fetch user's experience level, race goal (training paces), and name
       const user = await User.findOne({ _id: userId });
       const experienceLevel = user?.experienceLevel;
+      const athleteFirstName = user?.firstName;
 
       // Get training paces from user's race goal (VDOT-derived)
       // These are fallback paces when the plan doesn't specify them
       const trainingPaces = user?.raceGoal?.paces;
 
-      log.info("Fetched user experience level and training paces for recommendations", {
+      log.info("Fetched user profile data for recommendations", {
         userId,
         experienceLevel,
         hasTrainingPaces: !!trainingPaces,
+        hasFirstName: !!athleteFirstName,
       });
 
       // Generate recommendations with enhanced training plan data
       // Training paces from VDOT are included to help the AI provide pace-specific recommendations
-      const result = await aiService.generateRecommendationsWithEnhancedPlan(
+      // Athlete's first name is passed for personalized coach's notes
+      const result = aiService.generateRecommendationsWithEnhancedPlan(
         enhancedActivities,
         trainingPlan.csvContent,
         trainingPlan.currentWeek,
         trainingPlan.startDate,
         userFeedback,
         experienceLevel,
-        trainingPaces
+        trainingPaces,
+        athleteFirstName
       );
 
       // Set headers for streaming (must be set before any res.write())
