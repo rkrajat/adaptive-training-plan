@@ -54,6 +54,101 @@ export interface TrainingPlanCreateResult {
  */
 export class TrainingPlanService {
   /**
+   * Process training plan file and generate CSV content
+   * This is the core logic extracted for testability
+   * @param file - Uploaded file (PDF or CSV)
+   * @param metadata - Training plan metadata including race goal
+   * @param fileType - "pdf" or "csv"
+   * @returns Generated CSV content string
+   * @internal Exposed for testing purposes
+   */
+  async processTrainingPlanFile(
+    file: Express.Multer.File,
+    metadata: TrainingPlanUploadRequest,
+    fileType: "csv" | "pdf"
+  ): Promise<string> {
+    let csvContent: string;
+
+    if (fileType === "pdf") {
+      log.info("Converting PDF to CSV", { filename: file.originalname });
+
+      const targetTimeSeconds = metadata.raceGoal?.targetTimeSeconds;
+
+      const conversionResult = await pdfToCsvService.convertPdfToCsvWithRetry(
+        file.buffer,
+        metadata.startDate,
+        targetTimeSeconds,
+        file.originalname
+      );
+
+      if (!conversionResult.success || !conversionResult.csvContent) {
+        // Check if manual correction is required
+        if (conversionResult.requiresManualCorrection && conversionResult.validationResult) {
+          const extractedData = pdfToCsvService.buildExtractedDataForCorrection(
+            conversionResult.validationResult
+          );
+
+          log.info("PDF conversion requires manual correction", {
+            validRows: extractedData.validRowCount,
+            invalidRows: extractedData.invalidRowCount,
+            attemptsMade: conversionResult.attemptsMade,
+          });
+
+          // Throw a special error that the route can catch and handle
+          const error = new AppError(
+            "PDF conversion requires manual correction",
+            422 // Unprocessable Entity
+          );
+          (error as AppError & { extractedData: ExtractedDataForCorrection; attemptsMade: number }).extractedData = extractedData;
+          (error as AppError & { extractedData: ExtractedDataForCorrection; attemptsMade: number }).attemptsMade = conversionResult.attemptsMade;
+          throw error;
+        }
+
+        const errorMessage =
+          conversionResult.error?.message ||
+          "Failed to convert PDF to training plan format";
+        throw new AppError(errorMessage, 400);
+      }
+
+      csvContent = conversionResult.csvContent;
+
+      log.info("PDF converted to CSV successfully", {
+        csvLength: csvContent.length,
+        attemptsMade: conversionResult.attemptsMade,
+      });
+    } else {
+      // Handle CSV files
+      const csvText = parseCsvBuffer(file.buffer);
+      const targetTimeSeconds = metadata.raceGoal?.targetTimeSeconds;
+
+      if (targetTimeSeconds) {
+        // Update CSV with matched pace group
+        log.info("Updating CSV with matched pace group", {
+          targetTimeSeconds,
+          startDate: metadata.startDate,
+        });
+
+        csvContent = await aiService.updateCsvWithMatchedPaceGroup(
+          csvText,
+          targetTimeSeconds,
+          metadata.startDate
+        );
+
+        log.info("CSV updated with matched pace group", {
+          csvLength: csvContent.length,
+        });
+      } else {
+        csvContent = csvText;
+      }
+    }
+
+    // Validate CSV structure
+    validateCsvStructure(csvContent);
+
+    return csvContent;
+  }
+
+  /**
    * Create a new training plan with initial version
    * Uses MongoDB transactions to ensure atomicity
    */
@@ -71,62 +166,8 @@ export class TrainingPlanService {
 
       validateCsvFile(file);
 
-      let csvContent: string;
-
-      if (fileType === "pdf") {
-        log.info("Converting PDF to CSV", { filename: file.originalname });
-
-        const conversionResult = await pdfToCsvService.convertPdfToCsvWithRetry(
-          file.buffer,
-          metadata.startDate
-        );
-
-        if (!conversionResult.success || !conversionResult.csvContent) {
-          // Check if manual correction is required
-          if (conversionResult.requiresManualCorrection && conversionResult.validationResult) {
-            // Abort transaction and return partial success for manual correction
-            await session.abortTransaction();
-
-            const extractedData = pdfToCsvService.buildExtractedDataForCorrection(
-              conversionResult.validationResult
-            );
-
-            log.info("PDF conversion requires manual correction", {
-              userId,
-              validRows: extractedData.validRowCount,
-              invalidRows: extractedData.invalidRowCount,
-              attemptsMade: conversionResult.attemptsMade,
-            });
-
-            // Throw a special error that the route can catch and handle
-            const error = new AppError(
-              "PDF conversion requires manual correction",
-              422 // Unprocessable Entity
-            );
-            (error as AppError & { extractedData: ExtractedDataForCorrection; attemptsMade: number }).extractedData = extractedData;
-            (error as AppError & { extractedData: ExtractedDataForCorrection; attemptsMade: number }).attemptsMade = conversionResult.attemptsMade;
-            throw error;
-          }
-
-          const errorMessage =
-            conversionResult.error?.message ||
-            "Failed to convert PDF to training plan format";
-          throw new AppError(errorMessage, 400);
-        }
-
-        csvContent = conversionResult.csvContent;
-
-        log.info("PDF converted to CSV successfully", {
-          csvLength: csvContent.length,
-          attemptsMade: conversionResult.attemptsMade,
-        });
-      } else {
-        // Handle CSV files - existing path
-        csvContent = parseCsvBuffer(file.buffer);
-      }
-
-      // Validate CSV structure (for both converted PDFs and direct CSV uploads)
-      validateCsvStructure(csvContent);
+      // Process file and get CSV content (core logic extracted for testability)
+      const csvContent = await this.processTrainingPlanFile(file, metadata, fileType);
 
       // Calculate VDOT and training paces from race goal
       let raceGoal: RaceGoal | undefined;

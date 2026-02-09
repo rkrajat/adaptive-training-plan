@@ -14,8 +14,8 @@
   "dependencies": {
     "@adaptive-training-plan/types": "workspace:*",
     "@adaptive-training-plan/utils": "workspace:*",
-    "@ai-sdk/openai": "^2.0.58",
-    "ai": "^5.0.82",
+    "@ai-sdk/openai": "^3.0.26",
+    "ai": "^6.0.77",
     "cors": "^2.8.5",
     "csv-parse": "^6.1.0",
     "dotenv": "^17.2.3",

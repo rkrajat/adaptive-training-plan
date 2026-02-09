@@ -1,0 +1,26 @@
+{
+  "8-Week-Sub-90-Minute-Half-Marathon-Training-Plan-KM.pdf": {
+    "name": "8-Week Sub-90 Minute Half Marathon Training Plan",
+    "startDate": "2026-03-02",
+    "raceGoal": {
+      "distance": 21097.5,
+      "targetTimeSeconds": 5400
+    }
+  },
+  "Half-Marathon-Training-Plan-Intermediate-PL.pdf": {
+    "name": "Half Marathon Training Plan Intermediate",
+    "startDate": "2026-03-02",
+    "raceGoal": {
+      "distance": 21097.5,
+      "targetTimeSeconds": 5400
+    }
+  },
+  "Stridezero_HM_Plan_week1-2.pdf": {
+    "name": "Stridezero Half Marathon Plan Week 1-2",
+    "startDate": "2026-03-02",
+    "raceGoal": {
+      "distance": 21097.5,
+      "targetTimeSeconds": 5400
+    }
+  }
+}

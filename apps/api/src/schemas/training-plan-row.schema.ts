@@ -58,9 +58,9 @@ export const TrainingPlanRowSchema = z.object({
   target_pace_min_per_km: z
     .string()
     .regex(paceRangePattern, "Pace must be in format like '5:30-5:45' or '5:30-5:45/km' or empty")
-    .default(""),
-  target_HR_zone: HRZoneEnum.default(""),
-  notes: z.string().max(500, "Notes cannot exceed 500 characters").default(""),
+    .nullable(),
+  target_HR_zone: HRZoneEnum.nullable(),
+  notes: z.string().max(300, "Notes cannot exceed 300 characters").nullable(),
 });
 
 export type TrainingPlanRow = z.infer<typeof TrainingPlanRowSchema>;

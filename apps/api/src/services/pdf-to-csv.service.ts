@@ -165,11 +165,14 @@ export class PdfToCsvService {
    * GPT-4o vision for those pages while using cheaper text extraction for text-based pages
    * @param pdfBuffer - PDF file buffer
    * @param startDate - Training plan start date in YYYY-MM-DD format
+   * @param targetTimeSeconds - Optional target race time in seconds for pace group matching
    * @returns Conversion result with validation details
    */
   async convertPdfToCsvWithRetry(
     pdfBuffer: Buffer,
-    startDate: string
+    startDate: string,
+    targetTimeSeconds?: number,
+    filename?: string
   ): Promise<PdfConversionResultWithValidation> {
     let attempts = 0;
     let lastValidationResult: ValidationResult | undefined;
@@ -235,14 +238,18 @@ export class PdfToCsvService {
               renderedImages,
               extractedText,
               startDate,
-              lastErrorContext
+              targetTimeSeconds,
+              lastErrorContext,
+              filename
             );
           } else {
             // Use text-only extraction (cheaper) for text-based PDFs
             structuredPlan = await aiService.convertPdfTextToStructuredPlan(
               extractedText,
               startDate,
-              lastErrorContext
+              targetTimeSeconds,
+              lastErrorContext,
+              filename
             );
           }
 
