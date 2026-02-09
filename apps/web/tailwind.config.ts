@@ -1,6 +1,7 @@
 import type { Config } from 'tailwindcss';
 import tailwindcssAnimate from 'tailwindcss-animate';
 import tailwindcssTypography from '@tailwindcss/typography';
+import plugin from 'tailwindcss/plugin';
 
 const config: Config = {
   darkMode: ['class'],
@@ -59,6 +60,23 @@ const config: Config = {
   plugins: [
     tailwindcssAnimate,
     tailwindcssTypography,
+    // Safe area inset utilities for iOS devices
+    plugin(({ addUtilities }) => {
+      addUtilities({
+        '.pb-safe': {
+          'padding-bottom': 'env(safe-area-inset-bottom)',
+        },
+        '.pt-safe': {
+          'padding-top': 'env(safe-area-inset-top)',
+        },
+        '.pl-safe': {
+          'padding-left': 'env(safe-area-inset-left)',
+        },
+        '.pr-safe': {
+          'padding-right': 'env(safe-area-inset-right)',
+        },
+      });
+    }),
   ],
 };
 

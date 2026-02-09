@@ -16,6 +16,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
+  viewportFit: "cover", // Enables safe-area-inset-* CSS environment variables on iOS
 };
 
 // Script to prevent flash of wrong theme on page load

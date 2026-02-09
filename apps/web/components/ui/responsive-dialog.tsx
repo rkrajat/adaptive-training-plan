@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useEffect, useState } from "react";
 
 import {
   Dialog,
@@ -19,6 +20,44 @@ import {
   DrawerTitle,
 } from "@/components/ui/drawer";
 import { useMediaQuery } from "@/hooks/use-media-query";
+
+/**
+ * Hook to detect keyboard visibility on mobile
+ * Uses visualViewport API for accurate detection on iOS Safari
+ */
+const useKeyboardVisible = () => {
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (typeof window !== "undefined" && window.visualViewport) {
+        const viewport = window.visualViewport;
+        // Keyboard is visible when visual viewport height is significantly smaller than window height
+        const heightDiff = window.innerHeight - viewport.height;
+        const isVisible = heightDiff > 100; // Threshold to detect keyboard
+        setIsKeyboardVisible(isVisible);
+        setKeyboardHeight(isVisible ? heightDiff : 0);
+      }
+    };
+
+    if (typeof window !== "undefined" && window.visualViewport) {
+      window.visualViewport.addEventListener("resize", handleResize);
+      window.visualViewport.addEventListener("scroll", handleResize);
+      // Initial check
+      handleResize();
+    }
+
+    return () => {
+      if (typeof window !== "undefined" && window.visualViewport) {
+        window.visualViewport.removeEventListener("resize", handleResize);
+        window.visualViewport.removeEventListener("scroll", handleResize);
+      }
+    };
+  }, []);
+
+  return { isKeyboardVisible, keyboardHeight };
+};
 
 interface ResponsiveDialogProps {
   open: boolean;
@@ -103,6 +142,7 @@ export const ResponsiveDialogContent = ({
   children,
 }: ResponsiveDialogContentProps) => {
   const { isMobile, preventClose } = React.useContext(ResponsiveDialogContext);
+  const { isKeyboardVisible } = useKeyboardVisible();
 
   if (isMobile) {
     return (
@@ -114,7 +154,19 @@ export const ResponsiveDialogContent = ({
           }
         }}
       >
-        <div className="overflow-y-auto max-h-[85vh] px-4 pb-4">{children}</div>
+        {/*
+          Mobile drawer content wrapper with keyboard-aware styling:
+          - Uses max-h-[70svh] with svh (small viewport height) which accounts for browser chrome
+          - When keyboard is visible, reduce height further to prevent content from being pushed off screen
+          - pb-safe adds padding for iOS home indicator
+        */}
+        <div
+          className={`overflow-y-auto px-4 pb-4 pb-safe transition-[max-height] duration-200 ${
+            isKeyboardVisible ? "max-h-[50svh]" : "max-h-[70svh]"
+          }`}
+        >
+          {children}
+        </div>
       </DrawerContent>
     );
   }
