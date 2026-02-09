@@ -1,17 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { useMemo } from "react";
 import {
   formatHeader,
   groupTrainingPlanByWeek,
 } from "@adaptive-training-plan/utils";
 
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Table,
   TableBody,
@@ -20,6 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { cn } from "@/lib/utils";
 
 interface TrainingPlanTableProps {
   csvContent: string;
@@ -29,7 +25,7 @@ interface TrainingPlanTableProps {
 
 /**
  * Training Plan Table component
- * Displays training plan data in a table format with collapsible weeks
+ * Displays training plan data in a tabs format with one tab per week
  */
 export const TrainingPlanTable = ({
   csvContent,
@@ -39,25 +35,8 @@ export const TrainingPlanTable = ({
   // Parse CSV content and group by week using shared utility
   const { headers, groupedWeeks, error } = useMemo(
     () => groupTrainingPlanByWeek(csvContent, startDate),
-    [csvContent, startDate]
+    [csvContent, startDate],
   );
-
-  // Track which weeks are expanded (current week is expanded by default)
-  const [expandedWeeks, setExpandedWeeks] = useState<Set<number>>(
-    new Set([currentWeek])
-  );
-
-  const toggleWeek = (weekNumber: number) => {
-    setExpandedWeeks((previous) => {
-      const newSet = new Set(previous);
-      if (newSet.has(weekNumber)) {
-        newSet.delete(weekNumber);
-      } else {
-        newSet.add(weekNumber);
-      }
-      return newSet;
-    });
-  };
 
   // Handle errors
   if (error) {
@@ -71,91 +50,83 @@ export const TrainingPlanTable = ({
   if (groupedWeeks.length === 0) {
     return (
       <div className="rounded-lg border border-border bg-muted p-4 text-center">
-        <p className="text-sm text-muted-foreground">No training data available</p>
+        <p className="text-sm text-muted-foreground">
+          No training data available
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-4">
-      {groupedWeeks.map((week) => {
-        const isExpanded = expandedWeeks.has(week.weekNumber);
-        const isCurrentWeek = week.weekNumber === currentWeek;
+    <Tabs defaultValue={`week-${currentWeek}`} className="w-full">
+      <div className="overflow-x-auto pb-2">
+        <TabsList className="inline-flex h-auto min-w-full gap-1 bg-muted/50 p-1">
+          {groupedWeeks.map((week) => {
+            const isCurrentWeek = week.weekNumber === currentWeek;
+            return (
+              <TabsTrigger
+                key={week.weekNumber}
+                value={`week-${week.weekNumber}`}
+                className={cn(
+                  "min-w-[60px] px-3 py-1.5 text-sm font-medium transition-all",
+                  "data-[state=active]:shadow-sm",
+                  isCurrentWeek &&
+                    "data-[state=active]:bg-orange-500 data-[state=active]:text-white",
+                  isCurrentWeek &&
+                    "data-[state=inactive]:bg-orange-100 data-[state=inactive]:text-orange-700 dark:data-[state=inactive]:bg-orange-950/50 dark:data-[state=inactive]:text-orange-400",
+                )}
+              >
+                W{week.weekNumber}
+              </TabsTrigger>
+            );
+          })}
+        </TabsList>
+      </div>
 
-        return (
-          <Collapsible
-            key={week.weekNumber}
-            open={isExpanded}
-            onOpenChange={() => toggleWeek(week.weekNumber)}
+      {groupedWeeks.map((week) => (
+        <TabsContent
+          key={week.weekNumber}
+          value={`week-${week.weekNumber}`}
+          className="mt-3"
+        >
+          <div
+            className={cn(
+              "rounded-lg border",
+              week.weekNumber === currentWeek
+                ? "border-orange-300 dark:border-orange-700"
+                : "border-border",
+            )}
           >
-            <div
-              className={`rounded-lg border ${
-                isCurrentWeek
-                  ? "border-orange-300 bg-orange-50 dark:bg-orange-950/30 dark:border-orange-700"
-                  : "border-border bg-card"
-              }`}
-            >
-              <CollapsibleTrigger className="flex w-full items-center justify-between p-4 text-left hover:bg-accent/50">
-                <div className="flex items-center gap-3">
-                  {isExpanded ? (
-                    <ChevronDown className="h-5 w-5 text-muted-foreground" />
-                  ) : (
-                    <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                  )}
-                  <h3
-                    className={`text-base font-semibold ${
-                      isCurrentWeek ? "text-orange-900 dark:text-orange-300" : "text-foreground"
-                    }`}
-                  >
-                    Week {week.weekNumber}
-                    {isCurrentWeek && (
-                      <span className="ml-2 text-sm font-normal text-orange-700 dark:text-orange-400">
-                        (Current Week)
-                      </span>
-                    )}
-                  </h3>
-                </div>
-                <span className="text-sm text-muted-foreground">
-                  {week.rows.length} {week.rows.length === 1 ? "day" : "days"}
-                </span>
-              </CollapsibleTrigger>
-
-              <CollapsibleContent>
-                <div className="overflow-x-auto border-t border-border">
-                  <Table>
-                    <TableHeader className="bg-muted">
-                      <TableRow>
-                        {headers.map((header) => (
-                          <TableHead
-                            key={header}
-                            className="whitespace-nowrap text-bold"
-                          >
-                            {formatHeader(header)}
-                          </TableHead>
-                        ))}
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {week.rows.map((row, rowIndex) => (
-                        <TableRow key={rowIndex}>
-                          {headers.map((header) => (
-                            <TableCell
-                              key={header}
-                              className="whitespace-nowrap"
-                            >
-                              {row[header] || "-"}
-                            </TableCell>
-                          ))}
-                        </TableRow>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader className="bg-muted">
+                  <TableRow>
+                    {headers.map((header) => (
+                      <TableHead
+                        key={header}
+                        className="whitespace-nowrap font-semibold"
+                      >
+                        {formatHeader(header)}
+                      </TableHead>
+                    ))}
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {week.rows.map((row, rowIndex) => (
+                    <TableRow key={rowIndex}>
+                      {headers.map((header) => (
+                        <TableCell key={header} className="whitespace-nowrap">
+                          {row[header] || "-"}
+                        </TableCell>
                       ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              </CollapsibleContent>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </div>
-          </Collapsible>
-        );
-      })}
-    </div>
+          </div>
+        </TabsContent>
+      ))}
+    </Tabs>
   );
 };

@@ -38,6 +38,8 @@ export interface UserProfileResponse {
   firstName: string;
   lastName: string;
   profilePhoto: string;
+  experienceLevel?: 'beginner' | 'intermediate' | 'advanced';
+  raceGoal?: RaceGoal;
 }
 
 /**

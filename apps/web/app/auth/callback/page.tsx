@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 
 import { setToken } from '@/lib/auth';
+import { authApi, trainingPlansApi } from '@/lib/api';
 
 const LoadingSpinner = () => (
   <div className="flex min-h-screen items-center justify-center bg-gray-50">
@@ -21,28 +22,54 @@ const CallbackContent = () => {
   const hasProcessed = useRef(false);
 
   useEffect(() => {
-    // Prevent double processing in React strict mode
-    if (hasProcessed.current) return;
-    hasProcessed.current = true;
+    const processAuth = async () => {
+      // Prevent double processing in React strict mode
+      if (hasProcessed.current) return;
+      hasProcessed.current = true;
 
-    const error = searchParams.get('error');
-    const token = searchParams.get('token');
+      const error = searchParams.get('error');
+      const token = searchParams.get('token');
 
-    if (error) {
-      router.push(`/login?error=${error}`);
-      return;
-    }
+      if (error) {
+        router.push(`/login?error=${error}`);
+        return;
+      }
 
-    if (!token) {
-      router.push('/login?error=no_token');
-      return;
-    }
+      if (!token) {
+        router.push('/login?error=no_token');
+        return;
+      }
 
-    // Store token in localStorage
-    setToken(token);
+      // Store token in localStorage
+      setToken(token);
 
-    // Redirect to dashboard
-    router.push('/dashboard');
+      try {
+        // Check if user has completed onboarding (has experience level and active plan)
+        const [user, plansResponse] = await Promise.all([
+          authApi.me(),
+          trainingPlansApi.listActive(),
+        ]);
+
+        const hasExperienceLevel = !!user.experienceLevel;
+        const hasActivePlan = plansResponse.plans.length > 0;
+
+        // If onboarding is incomplete, redirect to onboarding
+        if (!hasExperienceLevel || !hasActivePlan) {
+          router.push('/onboarding');
+          return;
+        }
+
+        // Otherwise, go to dashboard
+        router.push('/dashboard');
+      } catch (fetchError) {
+        // If there's an error fetching user data, just go to dashboard
+        // The dashboard will handle any errors
+        console.error('Error checking onboarding status:', fetchError);
+        router.push('/dashboard');
+      }
+    };
+
+    processAuth();
   }, [searchParams, router]);
 
   return <LoadingSpinner />;
