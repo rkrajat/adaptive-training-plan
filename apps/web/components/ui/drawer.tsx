@@ -10,6 +10,7 @@ const Drawer = ({
   <DrawerPrimitive.Root
     shouldScaleBackground={shouldScaleBackground}
     repositionInputs={false}
+    fixed={true}
     {...props}
   />
 )
