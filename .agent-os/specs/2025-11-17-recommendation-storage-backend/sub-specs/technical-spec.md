@@ -46,24 +46,69 @@ This system handles two distinct types of feedback that must not be confused:
 - **Virtual Fields**: None required
 - **Methods**: None required initially
 
-#### 2. Modify Recommendation Generation Endpoint
+#### 2. Recommendation Cache Infrastructure
+
+- **File**: `apps/api/src/utils/cache.ts`
+- **Purpose**: In-memory caching for recommendations using LRUCache
+- **Cache Key Format**: `recommendation:${userId}:${planId}:${weekNumber}`
+- **TTL**: Configurable via `CACHE_RECOMMENDATIONS_TTL_MS` env var (default: 1 hour)
+- **Cache Invalidation**:
+  - When user accepts recommendation
+  - When user rejects with "generate_new" action
+  - Automatic expiry based on TTL
+- **Functions**:
+  - `getRecommendationCacheKey()`: Generate cache key
+  - `invalidateUserRecommendationCache()`: Invalidate cache entries
+
+#### 3. Recommendation Generation Service
+
+- **File**: `apps/api/src/services/recommendation-generation.service.ts` (new)
+- **Purpose**: Centralized service for generating and caching recommendations
+- **Methods**:
+  - `generateAndCacheRecommendation()`: Check cache, generate if miss, cache result
+  - `getCachedRecommendation()`: Retrieve cached recommendation if available
+- **Behavior**:
+  - Checks cache first (by userId, planId, weekNumber)
+  - If cache hit, returns cached content
+  - If cache miss, generates new recommendation and caches it
+  - Does NOT save to database (only caches)
+
+#### 4. Modify Recommendation Generation Endpoint
 
 - **File**: `apps/api/src/routes/recommendations.ts`
 - **Endpoint**: `POST /api/recommendations/generate-with-plan`
 - **Current Behavior**: Streams recommendation content directly to response without storing
 - **Required Changes**:
-  1. Accumulate streamed content in memory during generation
-  2. After streaming completes, create Recommendation document with accumulated content
-  3. Return recommendation ID as custom header `X-Recommendation-Id` during streaming
-  4. Handle errors during storage gracefully (log but don't break streaming)
+  1. Check in-memory cache first
+  2. If cache hit, stream cached content (chunked for UX consistency)
+  3. If cache miss, generate new recommendation and cache it
+  4. Remove database save logic - recommendations only saved to DB on accept
 - **Response Format**:
   - Body: Streaming text content (unchanged)
-  - Headers: Add `X-Recommendation-Id: <mongodbObjectId>`
+  - No recommendation ID header (not saved to DB yet)
 - **Error Handling**:
-  - If recommendation storage fails, log error but complete streaming
-  - Return special error header if storage fails: `X-Storage-Error: true`
+  - If generation fails, return error response
+  - Cache errors are logged but don't break the flow
 
-#### 3. Recommendation Retrieval Endpoints
+#### 5. Accept Flow Updates
+
+- **File**: `apps/api/src/controllers/recommendation.controller.ts`
+- **Endpoint**: `POST /api/recommendations/:id/accept`
+- **Changes**:
+  - Check if recommendation exists in database
+  - If not in DB, check cache and create DB record from cached content
+  - Then proceed with normal accept flow
+  - Invalidate cache after accepting
+
+- **New Endpoint**: `POST /api/recommendations/accept-pending`
+- **Purpose**: Accept cached recommendation without DB ID
+- **Flow**:
+  1. Look up cached recommendation for user/plan/week
+  2. Create DB record with cached content
+  3. Accept the recommendation
+  4. Invalidate cache
+
+#### 6. Recommendation Retrieval Endpoints
 
 **A. Get Single Recommendation**
 
@@ -153,29 +198,33 @@ if (recommendation.userId.toString() !== userId) {
 ### Data Flow Architecture
 
 ```
-User requests recommendation
+User loads dashboard
         ↓
-Frontend: POST /api/recommendations/generate-with-plan
+Frontend: GET /api/recommendations/pending?planId=...
         ↓
-Backend: Generate AI recommendation (streaming)
+Backend: Check cache (key: userId:planId:weekNumber)
         ↓
-Backend: Accumulate content while streaming
+    [Cache Hit]              [Cache Miss]
+        ↓                         ↓
+Return cached content    Generate AI recommendation
+        ↓                         ↓
+                        Cache recommendation (TTL: 1hr)
+        ↓                         ↓
+Frontend: Display recommendation (no DB ID yet)
         ↓
-Backend: Stream completes → Save to MongoDB Recommendation
+User accepts recommendation
         ↓
-Backend: Include recommendation ID in response header
+Frontend: POST /api/recommendations/accept-pending
         ↓
-Frontend: Parse X-Recommendation-Id header
+Backend: Create DB record from cache
         ↓
-Frontend: Store recommendation ID in state
+Backend: Accept recommendation (set status, expiry)
         ↓
-Frontend: Display recommendation with feedback button
+Backend: Invalidate cache
         ↓
-User clicks feedback → Frontend sends recommendationId (not planId)
+Frontend: Recommendation now has DB ID
         ↓
-Backend: Validate recommendation exists and belongs to user
-        ↓
-Backend: Save feedback linked to correct recommendation
+User can provide feedback (linked to DB recommendation)
 ```
 
 ### Performance Considerations

@@ -23,13 +23,14 @@ This API specification involves two distinct types of feedback:
 
 ### POST /api/recommendations/generate-with-plan
 
-**Purpose**: Generate AI training recommendation with training plan context AND store the recommendation in database
+**Purpose**: Generate AI training recommendation with training plan context. Checks cache first, returns cached recommendation if available, otherwise generates and caches (does NOT save to database).
 
 **Changes from Current Implementation**:
-- Accumulate streamed content in memory during generation
-- After streaming completes, save recommendation to MongoDB
-- Add `X-Recommendation-Id` header to response with the stored recommendation's MongoDB ObjectId
-- Add `X-Storage-Error` header if storage fails (optional, for debugging)
+- Check in-memory cache first (keyed by userId, planId, weekNumber)
+- If cache hit, stream cached content (for UX consistency)
+- If cache miss, generate new recommendation and cache it
+- Removed database save logic - recommendations are only saved to DB when user accepts them
+- Cache has fixed TTL (configurable, default: 1 hour)
 
 #### Request
 
@@ -70,11 +71,11 @@ Content-Type: application/json
 Content-Type: text/plain; charset=utf-8
 Cache-Control: no-cache
 Connection: keep-alive
-X-Recommendation-Id: 507f191e810c19729de860ea  // NEW: MongoDB ObjectId of stored recommendation
-X-Storage-Error: true  // OPTIONAL: Only present if storage failed
 ```
 
 **Body**: Streaming text (markdown recommendation content)
+
+**Note**: Recommendation is cached in memory but NOT saved to database. Use `POST /api/recommendations/accept-pending` or `POST /api/recommendations/:id/accept` to save to database.
 
 ```
 # Weekly Training Recommendation
@@ -121,33 +122,90 @@ Based on your recent activities...
 
 **Implementation Steps**:
 1. Validate request body (existing)
-2. Fetch training plan and Strava data (existing)
-3. Generate AI recommendation via streaming (existing)
-4. **NEW**: Accumulate chunks in memory variable during streaming
-5. **NEW**: After streaming completes, create Recommendation document:
-   ```typescript
-   const recommendation = new Recommendation({
-     userId: req.user.userId,
-     trainingPlanId: planId,
-     weekNumber: trainingPlan.currentWeek,
-     content: accumulatedContent,
-     athleteInputFeedback: userFeedback || null, // Store athlete's input text if provided
-     isRegenerated: !!userFeedback,
-     previousRecommendationId: null, // Future enhancement
-   });
-   await recommendation.save();
-   ```
-6. **NEW**: Set response header: `res.setHeader('X-Recommendation-Id', recommendation._id.toString())`
-7. **NEW**: Handle storage errors gracefully:
-   ```typescript
-   try {
-     await recommendation.save();
-     res.setHeader('X-Recommendation-Id', recommendation._id.toString());
-   } catch (error) {
-     log.error('Failed to store recommendation', error);
-     res.setHeader('X-Storage-Error', 'true');
-   }
-   ```
+2. Fetch training plan to get current week
+3. Check in-memory cache first using `getRecommendationCacheKey(userId, planId, weekNumber)`
+4. If cache hit, stream cached content (chunked for UX consistency)
+5. If cache miss:
+   - Fetch training plan and Strava data
+   - Generate AI recommendation via streaming
+   - Accumulate streamed content
+   - Store in cache with TTL (NOT in database)
+   - Stream the generated content
+6. Cache is invalidated when user accepts recommendation or rejects with "generate_new" action
+
+---
+
+## New Endpoints
+
+### GET /api/recommendations/pending
+
+**Purpose**: Get or generate pending recommendation from cache. Auto-generates if cache miss.
+
+**Authentication**: Required (JWT)
+
+**Query Parameters**:
+- `planId` (required): Training plan ID
+
+**Response (200)**:
+```json
+{
+  "content": "# Weekly Training Recommendation\n\nBased on your recent...",
+  "cached": true
+}
+```
+
+**Response Fields**:
+- `content`: Full recommendation markdown content
+- `cached`: Boolean indicating if this was from cache (true) or newly generated (false)
+
+**Errors**:
+- 400: Missing or invalid planId
+- 401: User not authenticated
+- 403: Training plan doesn't belong to user
+- 500: Generation failed
+
+**Implementation**: Calls `recommendationGenerationService.generateAndCacheRecommendation()` which checks cache first, generates if needed, and caches the result.
+
+---
+
+### POST /api/recommendations/accept-pending
+
+**Purpose**: Accept a cached (pending) recommendation that hasn't been saved to database yet. Creates DB record and accepts it.
+
+**Authentication**: Required (JWT)
+
+**Request Body**:
+```json
+{
+  "planId": "507f1f77bcf86cd799439011"
+}
+```
+
+**Response (200)**:
+```json
+{
+  "recommendation": {
+    "id": "507f191e810c19729de860ea",
+    "status": "accepted",
+    "acceptedAt": "2026-01-21T14:30:00.000Z",
+    "expiresAt": "2026-01-26T23:59:59.999Z",
+    ...
+  }
+}
+```
+
+**Errors**:
+- 400: Missing planId
+- 401: User not authenticated
+- 404: No pending recommendation found in cache
+- 500: Internal server error
+
+**Implementation**:
+1. Fetch training plan to get current week
+2. Look up cached recommendation
+3. Create DB record with cached content
+4. Accept the recommendation (sets status, expiry, etc.)
+5. Invalidate cache entry
 
 ---
 

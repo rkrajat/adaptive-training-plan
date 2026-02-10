@@ -5,7 +5,7 @@
 
 ## Overview
 
-Implement backend persistence for AI-generated training recommendations to enable proper feedback tracking and recommendation history. Currently, recommendations are generated and streamed to the frontend but not stored in the database, preventing users from providing feedback on specific recommendations and the system from tracking recommendation effectiveness over time.
+Implement backend persistence for AI-generated training recommendations to enable proper feedback tracking and recommendation history. Recommendations are now auto-generated server-side and cached in memory, then saved to the database only when the user explicitly accepts them. This improves performance by avoiding unnecessary database writes and allows users to preview recommendations before committing to them.
 
 **Important Context**: The system has two distinct types of feedback:
 1. **Athlete Input Feedback (userFeedback)**: Free-text provided by users WHEN REQUESTING a recommendation (e.g., "I felt the long run was too difficult"). This is INPUT to the AI generation process to create better recommendations.
@@ -18,16 +18,19 @@ Implement backend persistence for AI-generated training recommendations to enabl
 **As a** backend system, I want to persist each generated recommendation with its content, metadata, and associated training plan, so that recommendations can be referenced for feedback collection, history tracking, and future analysis.
 
 **Workflow:**
-1. User requests a training recommendation via `/api/recommendations/generate-with-plan` with optional athlete input feedback (e.g., "reduce intensity")
-2. Backend generates AI recommendation content via streaming, incorporating the athlete input if provided
-3. After generation completes, backend creates Recommendation document in MongoDB with:
-   - Full recommendation text/markdown content
+1. User loads dashboard with active training plan
+2. Backend automatically checks in-memory cache for existing recommendation (keyed by userId, planId, weekNumber)
+3. If cache miss, backend generates AI recommendation content via streaming, incorporating any athlete input feedback if provided
+4. Generated recommendation is stored in in-memory cache (NOT in database) with TTL (default: 1 hour)
+5. Frontend fetches cached recommendation via `GET /api/recommendations/pending` endpoint
+6. When user accepts the recommendation, backend creates Recommendation document in MongoDB with:
+   - Full recommendation text/markdown content (from cache)
    - Associated userId and trainingPlanId
    - Week number from training plan
    - Athlete input feedback (if user provided input when requesting the recommendation)
    - Generation timestamp
-4. Backend returns recommendation ID to frontend via response header along with streamed content
-5. Recommendation ID is stored in frontend state for later evaluation feedback submission
+7. Cache entry is invalidated after saving to database
+8. Recommendation ID is stored in frontend state for later evaluation feedback submission
 
 ### User Story 2: Linking Feedback to Stored Recommendations
 

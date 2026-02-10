@@ -46,14 +46,20 @@ This is the API specification for the spec detailed in @.agent-os/specs/2026-01-
 
 ### POST /api/recommendations/:id/accept
 
-**Purpose:** Accept a recommendation, marking it as the user's active recommendation until expiry. Any previously accepted recommendation for this user is automatically rejected.
+**Purpose:** Accept a recommendation, marking it as the user's active recommendation until expiry. Any previously accepted recommendation for this user is automatically rejected. If recommendation doesn't exist in database, checks cache and creates DB record first.
 
 **Authentication:** JWT required
 
 **Parameters:**
-- `id` (path): Recommendation ID (MongoDB ObjectId)
+- `id` (path): Recommendation ID (MongoDB ObjectId) - can be a placeholder if accepting from cache
 
 **Request Body:** None
+
+**Note:** If recommendation doesn't exist in DB, the endpoint will:
+1. Look up cached recommendation for the user
+2. Create DB record with cached content
+3. Then proceed with normal accept flow
+4. Invalidate cache after accepting
 
 **Response (200):**
 ```json
@@ -77,7 +83,7 @@ This is the API specification for the spec detailed in @.agent-os/specs/2026-01-
 
 ### POST /api/recommendations/:id/reject
 
-**Purpose:** Reject a recommendation with a specified follow-up action.
+**Purpose:** Reject a recommendation with a specified follow-up action. If action is "generate_new", invalidates the recommendation cache to allow fresh generation.
 
 **Authentication:** JWT required
 
@@ -90,6 +96,8 @@ This is the API specification for the spec detailed in @.agent-os/specs/2026-01-
   "action": "generate_new" | "discard"
 }
 ```
+
+**Cache Invalidation:** When `action` is "generate_new", the endpoint invalidates the recommendation cache for the user/plan/week combination, allowing a fresh recommendation to be generated on next request.
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
@@ -149,7 +157,8 @@ export const rejectRecommendationSchema = z.object({
 5. Verify recommendation exists
 6. Verify recommendation belongs to authenticated user
 7. Update recommendation: status='rejected', rejectedAt=now
-8. Return success response with action echoed back
+8. **If action is "generate_new"**: Invalidate recommendation cache for user/plan/week
+9. Return success response with action echoed back
 
 ### Get Active Flow
 

@@ -2,8 +2,13 @@ import { getCurrentWeekNumber } from "@adaptive-training-plan/utils";
 import type { Request, Response } from "express";
 import mongoose from "mongoose";
 
+
 import { Recommendation } from "../models/Recommendation";
 import { recommendationAcceptanceService } from "../services/recommendation-acceptance.service";
+import {
+  invalidateUserRecommendationCache,
+  recommendationsCache,
+} from "../utils/cache";
 import {
   NotFoundError,
   ForbiddenError,
@@ -247,8 +252,70 @@ export const acceptRecommendation = async (
       return;
     }
 
+    // Check if recommendation exists in database
+    let recommendation = await Recommendation.findById(id);
+
+    // If not in DB, check cache and create DB record
+    if (!recommendation) {
+      // Find the most recent cached recommendation for this user
+      // (typically there should be one for the current week)
+      let cachedContent: string | null = null;
+      let planId: string | null = null;
+      let weekNumber: number | null = null;
+
+      // Find cached recommendation for this user
+      for (const [_, value] of recommendationsCache.entries()) {
+        if (value.userId === userId) {
+          cachedContent = value.content;
+          planId = value.planId;
+          weekNumber = value.weekNumber;
+          break;
+        }
+      }
+
+      if (cachedContent && planId && weekNumber !== null) {
+        log.info("Creating DB record from cached recommendation", {
+          userId,
+          planId,
+          weekNumber,
+        });
+
+        // Create DB record with cached content
+        recommendation = await Recommendation.create({
+          userId,
+          trainingPlanId: planId,
+          weekNumber,
+          content: cachedContent,
+          athleteInputFeedback: null,
+          isRegenerated: false,
+        });
+
+        log.info("DB record created from cache", {
+          recommendationId: recommendation._id,
+          userId,
+          planId,
+          weekNumber,
+        });
+      } else {
+        throw new NotFoundError("Recommendation not found");
+      }
+    }
+
+    // Accept the recommendation (now it exists in DB)
     const acceptedRecommendation =
-      await recommendationAcceptanceService.acceptRecommendation(id, userId);
+      await recommendationAcceptanceService.acceptRecommendation(
+        String(recommendation._id),
+        userId
+      );
+
+    // Invalidate cache entry after saving to DB
+    if (recommendation.trainingPlanId && recommendation.weekNumber) {
+      invalidateUserRecommendationCache(
+        userId,
+        String(recommendation.trainingPlanId),
+        recommendation.weekNumber
+      );
+    }
 
     sendSuccess(res, { recommendation: acceptedRecommendation });
   } catch (error) {

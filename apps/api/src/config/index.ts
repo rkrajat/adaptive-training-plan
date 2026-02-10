@@ -59,6 +59,7 @@ const configSchema = z.object({
   // Cache Settings
   cache: z.object({
     activitiesTtlMs: z.number().int().positive().default(600000), // 10 min in ms
+    recommendationsTtlMs: z.number().int().positive().default(3600000), // 1 hour in ms
     maxEntries: z.number().int().positive().default(1000),
   }),
 });
@@ -109,6 +110,9 @@ const parseConfig = () => {
     cache: {
       activitiesTtlMs: process.env.CACHE_ACTIVITIES_TTL_MS
         ? parseInt(process.env.CACHE_ACTIVITIES_TTL_MS, 10)
+        : undefined,
+      recommendationsTtlMs: process.env.CACHE_RECOMMENDATIONS_TTL_MS
+        ? parseInt(process.env.CACHE_RECOMMENDATIONS_TTL_MS, 10)
         : undefined,
       maxEntries: process.env.CACHE_MAX_ENTRIES
         ? parseInt(process.env.CACHE_MAX_ENTRIES, 10)

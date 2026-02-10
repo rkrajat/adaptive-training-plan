@@ -20,8 +20,9 @@ New compound index: `{ userId: 1, status: 1, expiresAt: 1 }` for efficient activ
 | Method | Endpoint | Purpose |
 |--------|----------|---------|
 | GET | `/api/recommendations/active` | Retrieve user's current active accepted recommendation (if not expired) |
-| POST | `/api/recommendations/:id/accept` | Accept a recommendation, set expiry, reject any previous active |
-| POST | `/api/recommendations/:id/reject` | Reject a recommendation with action ('generate_new' or 'discard') |
+| POST | `/api/recommendations/:id/accept` | Accept a recommendation, set expiry, reject any previous active. Checks cache if not in DB. |
+| POST | `/api/recommendations/accept-pending` | Accept a cached recommendation (no DB ID yet). Creates DB record and accepts. |
+| POST | `/api/recommendations/:id/reject` | Reject a recommendation with action ('generate_new' or 'discard'). Invalidates cache if action is 'generate_new'. |
 
 ### Expiry Calculation Logic
 
@@ -51,12 +52,21 @@ New compound index: `{ userId: 1, status: 1, expiresAt: 1 }` for efficient activ
 - Buttons only visible for 'pending' status recommendations
 - Loading spinners during mutation operations
 
+### Cache Integration
+
+- Recommendations are cached in memory before being saved to database
+- Accept flow checks cache if recommendation not found in DB, creates DB record from cache
+- Reject with "generate_new" action invalidates cache to allow fresh generation
+- Cache is invalidated after successful acceptance
+- Cache key format: `recommendation:${userId}:${planId}:${weekNumber}`
+
 ### Error Handling
 
 - Validate recommendation ownership before accept/reject
 - Prevent accepting non-pending recommendations
 - Handle concurrent accept requests gracefully (only one active per user)
 - Display user-friendly error messages via toast notifications
+- Gracefully handle cache misses (generate new recommendation if needed)
 
 ## Environment Configuration
 

@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { useAuthGuard } from "@/hooks/use-auth-guard";
 import { useDashboardData } from "@/hooks/use-dashboard-data";
 import { useRecommendations } from "@/hooks/use-recommendations";
+import { recommendationsApi } from "@/lib/api";
 import {
   useActiveRecommendation,
   useAcceptRecommendation,
@@ -58,6 +59,7 @@ export default function DashboardPage() {
     isGenerating,
     error: recommendationError,
     generateRecommendations,
+    fetchPendingRecommendation,
     setCompletion,
     setRecommendationId,
     setRecommendationStatus,
@@ -106,6 +108,28 @@ export default function DashboardPage() {
     setRecommendationStatus,
   ]);
 
+  // Non-blocking auto-fetch pending recommendation on dashboard load
+  useEffect(() => {
+    // Only fetch if:
+    // 1. activePlan is loaded
+    // 2. User doesn't have an active (accepted) recommendation
+    // 3. No recommendation is currently displayed
+    if (
+      activePlan &&
+      !activeRecommendation &&
+      !completion &&
+      !isGenerating
+    ) {
+      fetchPendingRecommendation(activePlan.id).catch(console.error);
+    }
+  }, [
+    activePlan,
+    activeRecommendation,
+    completion,
+    isGenerating,
+    fetchPendingRecommendation,
+  ]);
+
   // Handle regenerate click - show pre-recommendation dialog or confirmation
   const handleRegenerateClick = () => {
     if (activeRecommendation) {
@@ -130,6 +154,23 @@ export default function DashboardPage() {
 
   // Handle accept recommendation
   const handleAccept = () => {
+    // If recommendationId is null, it means it's from cache - use acceptPending
+    if (!recommendationId && activePlan) {
+      recommendationsApi.acceptPending(activePlan.id)
+        .then(() => {
+          setRecommendationStatus("accepted");
+          toast.success("Recommendation accepted!", {
+            description: "Your recommendation is saved for this week.",
+          });
+        })
+        .catch((err: Error) => {
+          toast.error("Failed to accept recommendation", {
+            description: err.message,
+          });
+        });
+      return;
+    }
+
     if (!recommendationId) return;
 
     acceptMutation.mutate(recommendationId, {

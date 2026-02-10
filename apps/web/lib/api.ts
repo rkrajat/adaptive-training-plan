@@ -135,25 +135,6 @@ export const trainingPlansApi = {
 };
 
 export const recommendationsApi = {
-  generate: async (regenerate = false): Promise<Response> => {
-    // Use native fetch for streaming support (ky doesn't support streaming well)
-    const token = getToken();
-    const headers: HeadersInit = {
-      "Content-Type": "application/json",
-    };
-    if (token) {
-      headers["Authorization"] = `Bearer ${token}`;
-    }
-
-    const response = await fetch(`${API_URL}/api/recommendations/generate`, {
-      method: "POST",
-      headers,
-      body: JSON.stringify({ regenerate }),
-    });
-
-    return response;
-  },
-
   generateWithPlan: async (planId: string, userFeedback?: string) => {
     const token = getToken();
     const headers: HeadersInit = {
@@ -181,9 +162,25 @@ export const recommendationsApi = {
       .json<ActiveRecommendationResponse>();
   },
 
+  getPending: async (planId: string): Promise<{ content: string; cached: boolean }> => {
+    return api
+      .get("api/recommendations/pending", {
+        searchParams: { planId },
+      })
+      .json<{ content: string; cached: boolean }>();
+  },
+
   accept: async (recommendationId: string): Promise<AcceptRecommendationResponse> => {
     return api
       .post(`api/recommendations/${recommendationId}/accept`)
+      .json<AcceptRecommendationResponse>();
+  },
+
+  acceptPending: async (planId: string): Promise<AcceptRecommendationResponse> => {
+    return api
+      .post("api/recommendations/accept-pending", {
+        json: { planId },
+      })
       .json<AcceptRecommendationResponse>();
   },
 

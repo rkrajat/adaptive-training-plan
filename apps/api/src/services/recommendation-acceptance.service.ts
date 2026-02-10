@@ -9,6 +9,7 @@ import {
   Recommendation,
   type IRecommendation,
 } from "../models/Recommendation";
+import { invalidateUserRecommendationCache } from "../utils/cache";
 import {
   NotFoundError,
   ForbiddenError,
@@ -185,6 +186,7 @@ export class RecommendationAcceptanceService {
    * Reject a recommendation
    * Sets status to rejected and records timestamp
    * Returns the action to be taken (generate_new or discard)
+   * Invalidates cache if action is "generate_new"
    */
   rejectRecommendation = async (
     recommendationId: string,
@@ -224,6 +226,20 @@ export class RecommendationAcceptanceService {
       recommendation.status = "rejected";
       recommendation.rejectedAt = now;
       await recommendation.save();
+
+      // Invalidate cache if action is "generate_new"
+      if (action === "generate_new") {
+        invalidateUserRecommendationCache(
+          userId,
+          String(recommendation.trainingPlanId),
+          recommendation.weekNumber
+        );
+        log.info("Cache invalidated for generate_new action", {
+          userId,
+          planId: recommendation.trainingPlanId,
+          weekNumber: recommendation.weekNumber,
+        });
+      }
 
       log.info("Recommendation rejected successfully", {
         recommendationId,

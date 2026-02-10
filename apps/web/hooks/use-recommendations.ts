@@ -14,6 +14,7 @@ interface UseRecommendationsReturn {
   isGenerating: boolean;
   error: Error | null;
   generateRecommendations: (userFeedback?: string) => Promise<void>;
+  fetchPendingRecommendation: (planId: string) => Promise<void>;
   handleRegenerate: () => void;
   setCompletion: (content: string) => void;
   setRecommendationId: (id: string | null) => void;
@@ -35,6 +36,27 @@ export const useRecommendations = (
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
+  const fetchPendingRecommendation = async (
+    planId: string,
+  ): Promise<void> => {
+    try {
+      setError(null);
+
+      // Fetch pending recommendation from cache (or generate if cache miss)
+      const result = await recommendationsApi.getPending(planId);
+
+      // Update state with cached recommendation
+      setCompletion(result.content);
+      // Pending recommendations from cache don't have a DB ID yet
+      setRecommendationId(null);
+      setRecommendationStatus("pending");
+    } catch (err) {
+      console.error("Error fetching pending recommendation:", err);
+      // Don't set error state - graceful degradation (dashboard should still load)
+      // setError(err as Error);
+    }
+  };
+
   const generateRecommendations = async (
     userFeedback?: string,
   ): Promise<void> => {
@@ -52,7 +74,7 @@ export const useRecommendations = (
         );
       }
 
-      // Use the new endpoint with training plan
+      // Use the new endpoint with training plan (which now fetches from cache)
       const response: Response = await recommendationsApi.generateWithPlan(
         activePlan.id,
         userFeedback,
@@ -89,6 +111,9 @@ export const useRecommendations = (
         setCompletion(cleanContent);
         // New recommendations start as pending
         setRecommendationStatus("pending");
+      } else {
+        // If no ID, it's from cache (not saved to DB yet)
+        setRecommendationStatus("pending");
       }
     } catch (err) {
       console.error("Error generating recommendations:", err);
@@ -110,6 +135,7 @@ export const useRecommendations = (
     isGenerating,
     error,
     generateRecommendations,
+    fetchPendingRecommendation,
     handleRegenerate,
     setCompletion,
     setRecommendationId,
