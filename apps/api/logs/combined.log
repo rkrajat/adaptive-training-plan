@@ -1,0 +1,412 @@
+{"filename":"8-Week-Sub-90-Minute-Half-Marathon-Training-Plan-KM.pdf","level":"info","message":"Converting PDF to CSV","timestamp":"2026-02-07 13:44:47"}
+{"level":"info","message":"Analyzing PDF for text vs image content","timestamp":"2026-02-07 13:44:47"}
+{"level":"info","message":"Analyzing PDF for text/image content","timestamp":"2026-02-07 13:44:47"}
+{"hasImageOnlyPages":false,"imageOnlyPageCount":0,"imageOnlyPageNumbers":[],"level":"info","message":"PDF analysis complete","timestamp":"2026-02-07 13:44:47","totalPages":1}
+{"level":"info","message":"Extracting text from PDF","timestamp":"2026-02-07 13:44:47"}
+{"level":"info","message":"PDF text extraction successful","pages":1,"textLength":2266,"timestamp":"2026-02-07 13:44:47"}
+{"foundKeywords":15,"level":"info","message":"PDF content validation successful","textLength":2264,"timestamp":"2026-02-07 13:44:47"}
+{"extractionMethod":"text","isRetry":false,"level":"info","message":"PDF conversion attempt 1/3","startDate":"2025-01-01","timestamp":"2026-02-07 13:44:47"}
+{"isRetry":false,"level":"info","message":"Converting PDF text to structured plan using generateObject","startDate":"2025-01-01","targetTimeSeconds":5400,"textLength":2266,"timestamp":"2026-02-07 13:44:47"}
+{"level":"info","message":"PDF text to structured plan conversion successful","rowCount":56,"timestamp":"2026-02-07 13:45:19","usage":{"cachedInputTokens":2560,"inputTokens":2645,"outputTokens":4243,"reasoningTokens":0,"totalTokens":6888}}
+{"attempts":1,"extractionMethod":"text","level":"info","message":"PDF conversion successful","rowCount":56,"timestamp":"2026-02-07 13:45:19"}
+{"attemptsMade":1,"csvLength":6050,"level":"info","message":"PDF converted to CSV successfully","timestamp":"2026-02-07 13:45:19"}
+{"filename":"8-Week-Sub-90-Minute-Half-Marathon-Training-Plan-KM.pdf","level":"info","message":"Converting PDF to CSV","timestamp":"2026-02-07 13:52:42"}
+{"level":"info","message":"Analyzing PDF for text vs image content","timestamp":"2026-02-07 13:52:42"}
+{"level":"info","message":"Analyzing PDF for text/image content","timestamp":"2026-02-07 13:52:42"}
+{"hasImageOnlyPages":false,"imageOnlyPageCount":0,"imageOnlyPageNumbers":[],"level":"info","message":"PDF analysis complete","timestamp":"2026-02-07 13:52:42","totalPages":1}
+{"level":"info","message":"Extracting text from PDF","timestamp":"2026-02-07 13:52:42"}
+{"level":"info","message":"PDF text extraction successful","pages":1,"textLength":2266,"timestamp":"2026-02-07 13:52:42"}
+{"foundKeywords":15,"level":"info","message":"PDF content validation successful","textLength":2264,"timestamp":"2026-02-07 13:52:42"}
+{"extractionMethod":"text","isRetry":false,"level":"info","message":"PDF conversion attempt 1/3","startDate":"2025-01-01","timestamp":"2026-02-07 13:52:42"}
+{"isRetry":false,"level":"info","message":"Converting PDF text to structured plan using generateObject","startDate":"2025-01-01","targetTimeSeconds":5400,"textLength":2266,"timestamp":"2026-02-07 13:52:42"}
+{"level":"info","message":"PDF text to structured plan conversion successful","rowCount":54,"timestamp":"2026-02-07 13:53:05","usage":{"cachedInputTokens":2816,"inputTokens":2926,"outputTokens":3266,"reasoningTokens":0,"totalTokens":6192}}
+{"attempts":1,"extractionMethod":"text","level":"info","message":"PDF conversion successful","rowCount":54,"timestamp":"2026-02-07 13:53:05"}
+{"attemptsMade":1,"csvLength":3580,"level":"info","message":"PDF converted to CSV successfully","timestamp":"2026-02-07 13:53:05"}
+{"filename":"8-Week-Sub-90-Minute-Half-Marathon-Training-Plan-KM.pdf","level":"info","message":"Converting PDF to CSV","timestamp":"2026-02-07 13:54:27"}
+{"level":"info","message":"Analyzing PDF for text vs image content","timestamp":"2026-02-07 13:54:27"}
+{"level":"info","message":"Analyzing PDF for text/image content","timestamp":"2026-02-07 13:54:27"}
+{"hasImageOnlyPages":false,"imageOnlyPageCount":0,"imageOnlyPageNumbers":[],"level":"info","message":"PDF analysis complete","timestamp":"2026-02-07 13:54:27","totalPages":1}
+{"level":"info","message":"Extracting text from PDF","timestamp":"2026-02-07 13:54:27"}
+{"level":"info","message":"PDF text extraction successful","pages":1,"textLength":2266,"timestamp":"2026-02-07 13:54:27"}
+{"foundKeywords":15,"level":"info","message":"PDF content validation successful","textLength":2264,"timestamp":"2026-02-07 13:54:27"}
+{"extractionMethod":"text","isRetry":false,"level":"info","message":"PDF conversion attempt 1/3","startDate":"2025-01-01","timestamp":"2026-02-07 13:54:27"}
+{"isRetry":false,"level":"info","message":"Converting PDF text to structured plan using generateObject","startDate":"2025-01-01","targetTimeSeconds":5400,"textLength":2266,"timestamp":"2026-02-07 13:54:27"}
+{"level":"info","message":"PDF text to structured plan conversion successful","rowCount":53,"timestamp":"2026-02-07 13:54:45","usage":{"cachedInputTokens":2816,"inputTokens":2926,"outputTokens":3215,"reasoningTokens":0,"totalTokens":6141}}
+{"attempts":1,"extractionMethod":"text","level":"info","message":"PDF conversion successful","rowCount":53,"timestamp":"2026-02-07 13:54:45"}
+{"attemptsMade":1,"csvLength":3806,"level":"info","message":"PDF converted to CSV successfully","timestamp":"2026-02-07 13:54:45"}
+{"filename":"8-Week-Sub-90-Minute-Half-Marathon-Training-Plan-KM.pdf","level":"info","message":"Converting PDF to CSV","timestamp":"2026-02-07 13:58:33"}
+{"level":"info","message":"Analyzing PDF for text vs image content","timestamp":"2026-02-07 13:58:33"}
+{"level":"info","message":"Analyzing PDF for text/image content","timestamp":"2026-02-07 13:58:33"}
+{"hasImageOnlyPages":false,"imageOnlyPageCount":0,"imageOnlyPageNumbers":[],"level":"info","message":"PDF analysis complete","timestamp":"2026-02-07 13:58:33","totalPages":1}
+{"level":"info","message":"Extracting text from PDF","timestamp":"2026-02-07 13:58:33"}
+{"level":"info","message":"PDF text extraction successful","pages":1,"textLength":2266,"timestamp":"2026-02-07 13:58:33"}
+{"foundKeywords":15,"level":"info","message":"PDF content validation successful","textLength":2264,"timestamp":"2026-02-07 13:58:33"}
+{"extractionMethod":"text","isRetry":false,"level":"info","message":"PDF conversion attempt 1/3","startDate":"2025-01-01","timestamp":"2026-02-07 13:58:33"}
+{"isRetry":false,"level":"info","message":"Converting PDF text to structured plan using generateObject","startDate":"2025-01-01","targetTimeSeconds":5400,"textLength":2266,"timestamp":"2026-02-07 13:58:33"}
+{"level":"info","message":"PDF text to structured plan conversion successful","rowCount":55,"timestamp":"2026-02-07 13:58:50","usage":{"cachedInputTokens":2816,"inputTokens":2926,"outputTokens":3209,"reasoningTokens":0,"totalTokens":6135}}
+{"errorCount":2,"extractionMethod":"text","level":"warn","message":"PDF conversion validation failed, attempt 1","sampleErrors":[{"field":"planned_distance_km","message":"Rest days should have 0 distance (got 21km)","row":53},{"field":"type","message":"Days with distance > 0 should not be marked as Rest","row":53}],"timestamp":"2026-02-07 13:58:50","willRetry":true}
+{"extractionMethod":"text","isRetry":true,"level":"info","message":"PDF conversion attempt 2/3","startDate":"2025-01-01","timestamp":"2026-02-07 13:58:51"}
+{"isRetry":true,"level":"info","message":"Converting PDF text to structured plan using generateObject","startDate":"2025-01-01","targetTimeSeconds":5400,"textLength":2266,"timestamp":"2026-02-07 13:58:51"}
+{"level":"info","message":"PDF text to structured plan conversion successful","rowCount":54,"timestamp":"2026-02-07 13:59:10","usage":{"cachedInputTokens":1920,"inputTokens":3087,"outputTokens":3308,"reasoningTokens":0,"totalTokens":6395}}
+{"attempts":2,"extractionMethod":"text","level":"info","message":"PDF conversion successful","rowCount":54,"timestamp":"2026-02-07 13:59:10"}
+{"attemptsMade":2,"csvLength":3826,"level":"info","message":"PDF converted to CSV successfully","timestamp":"2026-02-07 13:59:10"}
+{"filename":"8-Week-Sub-90-Minute-Half-Marathon-Training-Plan-KM.pdf","level":"info","message":"Converting PDF to CSV","timestamp":"2026-02-07 13:59:31"}
+{"level":"info","message":"Analyzing PDF for text vs image content","timestamp":"2026-02-07 13:59:31"}
+{"level":"info","message":"Analyzing PDF for text/image content","timestamp":"2026-02-07 13:59:31"}
+{"hasImageOnlyPages":false,"imageOnlyPageCount":0,"imageOnlyPageNumbers":[],"level":"info","message":"PDF analysis complete","timestamp":"2026-02-07 13:59:31","totalPages":1}
+{"level":"info","message":"Extracting text from PDF","timestamp":"2026-02-07 13:59:31"}
+{"level":"info","message":"PDF text extraction successful","pages":1,"textLength":2266,"timestamp":"2026-02-07 13:59:31"}
+{"foundKeywords":15,"level":"info","message":"PDF content validation successful","textLength":2264,"timestamp":"2026-02-07 13:59:31"}
+{"extractionMethod":"text","isRetry":false,"level":"info","message":"PDF conversion attempt 1/3","startDate":"2025-01-01","timestamp":"2026-02-07 13:59:31"}
+{"isRetry":false,"level":"info","message":"Converting PDF text to structured plan using generateObject","startDate":"2025-01-01","targetTimeSeconds":5400,"textLength":2266,"timestamp":"2026-02-07 13:59:31"}
+{"level":"info","message":"PDF text to structured plan conversion successful","rowCount":54,"timestamp":"2026-02-07 13:59:51","usage":{"cachedInputTokens":2816,"inputTokens":2926,"outputTokens":3277,"reasoningTokens":0,"totalTokens":6203}}
+{"attempts":1,"extractionMethod":"text","level":"info","message":"PDF conversion successful","rowCount":54,"timestamp":"2026-02-07 13:59:51"}
+{"attemptsMade":1,"csvLength":3902,"level":"info","message":"PDF converted to CSV successfully","timestamp":"2026-02-07 13:59:51"}
+{"filename":"8-Week-Sub-90-Minute-Half-Marathon-Training-Plan-KM.pdf","level":"info","message":"Converting PDF to CSV","timestamp":"2026-02-07 14:03:34"}
+{"level":"info","message":"Analyzing PDF for text vs image content","timestamp":"2026-02-07 14:03:34"}
+{"level":"info","message":"Analyzing PDF for text/image content","timestamp":"2026-02-07 14:03:34"}
+{"hasImageOnlyPages":false,"imageOnlyPageCount":0,"imageOnlyPageNumbers":[],"level":"info","message":"PDF analysis complete","timestamp":"2026-02-07 14:03:34","totalPages":1}
+{"level":"info","message":"Extracting text from PDF","timestamp":"2026-02-07 14:03:34"}
+{"level":"info","message":"PDF text extraction successful","pages":1,"textLength":2266,"timestamp":"2026-02-07 14:03:34"}
+{"foundKeywords":15,"level":"info","message":"PDF content validation successful","textLength":2264,"timestamp":"2026-02-07 14:03:34"}
+{"extractionMethod":"text","isRetry":false,"level":"info","message":"PDF conversion attempt 1/3","startDate":"2025-01-01","timestamp":"2026-02-07 14:03:34"}
+{"isRetry":false,"level":"info","message":"Converting PDF text to structured plan using generateObject","startDate":"2025-01-01","targetTimeSeconds":5400,"textLength":2266,"timestamp":"2026-02-07 14:03:34"}
+{"level":"info","message":"PDF text to structured plan conversion successful","rowCount":54,"timestamp":"2026-02-07 14:03:53","usage":{"cachedInputTokens":2816,"inputTokens":2926,"outputTokens":3250,"reasoningTokens":0,"totalTokens":6176}}
+{"attempts":1,"extractionMethod":"text","level":"info","message":"PDF conversion successful","rowCount":54,"timestamp":"2026-02-07 14:03:53"}
+{"attemptsMade":1,"csvLength":3837,"level":"info","message":"PDF converted to CSV successfully","timestamp":"2026-02-07 14:03:53"}
+{"filename":"8-Week-Sub-90-Minute-Half-Marathon-Training-Plan-KM.pdf","level":"info","message":"Converting PDF to CSV","timestamp":"2026-02-07 14:04:13"}
+{"level":"info","message":"Analyzing PDF for text vs image content","timestamp":"2026-02-07 14:04:13"}
+{"level":"info","message":"Analyzing PDF for text/image content","timestamp":"2026-02-07 14:04:13"}
+{"hasImageOnlyPages":false,"imageOnlyPageCount":0,"imageOnlyPageNumbers":[],"level":"info","message":"PDF analysis complete","timestamp":"2026-02-07 14:04:13","totalPages":1}
+{"level":"info","message":"Extracting text from PDF","timestamp":"2026-02-07 14:04:13"}
+{"level":"info","message":"PDF text extraction successful","pages":1,"textLength":2266,"timestamp":"2026-02-07 14:04:13"}
+{"foundKeywords":15,"level":"info","message":"PDF content validation successful","textLength":2264,"timestamp":"2026-02-07 14:04:13"}
+{"extractionMethod":"text","isRetry":false,"level":"info","message":"PDF conversion attempt 1/3","startDate":"2025-01-01","timestamp":"2026-02-07 14:04:13"}
+{"isRetry":false,"level":"info","message":"Converting PDF text to structured plan using generateObject","startDate":"2025-01-01","targetTimeSeconds":5400,"textLength":2266,"timestamp":"2026-02-07 14:04:13"}
+{"level":"info","message":"PDF text to structured plan conversion successful","rowCount":54,"timestamp":"2026-02-07 14:04:35","usage":{"cachedInputTokens":2816,"inputTokens":2926,"outputTokens":3269,"reasoningTokens":0,"totalTokens":6195}}
+{"attempts":1,"extractionMethod":"text","level":"info","message":"PDF conversion successful","rowCount":54,"timestamp":"2026-02-07 14:04:35"}
+{"attemptsMade":1,"csvLength":3884,"level":"info","message":"PDF converted to CSV successfully","timestamp":"2026-02-07 14:04:35"}
+{"filename":"8-Week-Sub-90-Minute-Half-Marathon-Training-Plan-KM.pdf","level":"info","message":"Converting PDF to CSV","timestamp":"2026-02-07 14:04:49"}
+{"level":"info","message":"Analyzing PDF for text vs image content","timestamp":"2026-02-07 14:04:49"}
+{"level":"info","message":"Analyzing PDF for text/image content","timestamp":"2026-02-07 14:04:49"}
+{"hasImageOnlyPages":false,"imageOnlyPageCount":0,"imageOnlyPageNumbers":[],"level":"info","message":"PDF analysis complete","timestamp":"2026-02-07 14:04:49","totalPages":1}
+{"level":"info","message":"Extracting text from PDF","timestamp":"2026-02-07 14:04:49"}
+{"level":"info","message":"PDF text extraction successful","pages":1,"textLength":2266,"timestamp":"2026-02-07 14:04:49"}
+{"foundKeywords":15,"level":"info","message":"PDF content validation successful","textLength":2264,"timestamp":"2026-02-07 14:04:49"}
+{"extractionMethod":"text","isRetry":false,"level":"info","message":"PDF conversion attempt 1/3","startDate":"2025-01-01","timestamp":"2026-02-07 14:04:49"}
+{"isRetry":false,"level":"info","message":"Converting PDF text to structured plan using generateObject","startDate":"2025-01-01","targetTimeSeconds":5400,"textLength":2266,"timestamp":"2026-02-07 14:04:49"}
+{"level":"info","message":"PDF text to structured plan conversion successful","rowCount":54,"timestamp":"2026-02-07 14:05:10","usage":{"cachedInputTokens":2816,"inputTokens":2926,"outputTokens":3269,"reasoningTokens":0,"totalTokens":6195}}
+{"attempts":1,"extractionMethod":"text","level":"info","message":"PDF conversion successful","rowCount":54,"timestamp":"2026-02-07 14:05:10"}
+{"attemptsMade":1,"csvLength":3896,"level":"info","message":"PDF converted to CSV successfully","timestamp":"2026-02-07 14:05:10"}
+{"filename":"8-Week-Sub-90-Minute-Half-Marathon-Training-Plan-KM.pdf","level":"info","message":"Converting PDF to CSV","timestamp":"2026-02-07 14:10:38"}
+{"level":"info","message":"Analyzing PDF for text vs image content","timestamp":"2026-02-07 14:10:38"}
+{"level":"info","message":"Analyzing PDF for text/image content","timestamp":"2026-02-07 14:10:38"}
+{"hasImageOnlyPages":false,"imageOnlyPageCount":0,"imageOnlyPageNumbers":[],"level":"info","message":"PDF analysis complete","timestamp":"2026-02-07 14:10:38","totalPages":1}
+{"level":"info","message":"Extracting text from PDF","timestamp":"2026-02-07 14:10:38"}
+{"level":"info","message":"PDF text extraction successful","pages":1,"textLength":2266,"timestamp":"2026-02-07 14:10:38"}
+{"foundKeywords":15,"level":"info","message":"PDF content validation successful","textLength":2264,"timestamp":"2026-02-07 14:10:38"}
+{"extractionMethod":"text","isRetry":false,"level":"info","message":"PDF conversion attempt 1/3","startDate":"2025-01-01","timestamp":"2026-02-07 14:10:38"}
+{"isRetry":false,"level":"info","message":"Converting PDF text to structured plan using generateObject","startDate":"2025-01-01","targetTimeSeconds":5400,"textLength":2266,"timestamp":"2026-02-07 14:10:38"}
+{"level":"info","message":"PDF text to structured plan conversion successful","rowCount":54,"timestamp":"2026-02-07 14:11:03","usage":{"cachedInputTokens":2816,"inputTokens":2926,"outputTokens":3316,"reasoningTokens":0,"totalTokens":6242}}
+{"attempts":1,"extractionMethod":"text","level":"info","message":"PDF conversion successful","rowCount":54,"timestamp":"2026-02-07 14:11:03"}
+{"attemptsMade":1,"csvLength":3852,"level":"info","message":"PDF converted to CSV successfully","timestamp":"2026-02-07 14:11:03"}
+{"filename":"8-Week-Sub-90-Minute-Half-Marathon-Training-Plan-KM.pdf","level":"info","message":"Converting PDF to CSV","timestamp":"2026-02-07 14:12:59"}
+{"level":"info","message":"Analyzing PDF for text vs image content","timestamp":"2026-02-07 14:12:59"}
+{"level":"info","message":"Analyzing PDF for text/image content","timestamp":"2026-02-07 14:12:59"}
+{"hasImageOnlyPages":false,"imageOnlyPageCount":0,"imageOnlyPageNumbers":[],"level":"info","message":"PDF analysis complete","timestamp":"2026-02-07 14:12:59","totalPages":1}
+{"level":"info","message":"Extracting text from PDF","timestamp":"2026-02-07 14:12:59"}
+{"level":"info","message":"PDF text extraction successful","pages":1,"textLength":2266,"timestamp":"2026-02-07 14:12:59"}
+{"foundKeywords":15,"level":"info","message":"PDF content validation successful","textLength":2264,"timestamp":"2026-02-07 14:12:59"}
+{"extractionMethod":"text","isRetry":false,"level":"info","message":"PDF conversion attempt 1/3","startDate":"2025-01-01","timestamp":"2026-02-07 14:12:59"}
+{"isRetry":false,"level":"info","message":"Converting PDF text to structured plan using generateObject","startDate":"2025-01-01","targetTimeSeconds":5400,"textLength":2266,"timestamp":"2026-02-07 14:12:59"}
+{"level":"info","message":"PDF text to structured plan conversion successful","rowCount":54,"timestamp":"2026-02-07 14:13:19","usage":{"cachedInputTokens":2816,"inputTokens":2926,"outputTokens":3253,"reasoningTokens":0,"totalTokens":6179}}
+{"attempts":1,"extractionMethod":"text","level":"info","message":"PDF conversion successful","rowCount":54,"timestamp":"2026-02-07 14:13:19"}
+{"attemptsMade":1,"csvLength":3842,"level":"info","message":"PDF converted to CSV successfully","timestamp":"2026-02-07 14:13:19"}
+{"filename":"8-Week-Sub-90-Minute-Half-Marathon-Training-Plan-KM.pdf","level":"info","message":"Converting PDF to CSV","timestamp":"2026-02-07 14:14:44"}
+{"level":"info","message":"Analyzing PDF for text vs image content","timestamp":"2026-02-07 14:14:44"}
+{"level":"info","message":"Analyzing PDF for text/image content","timestamp":"2026-02-07 14:14:44"}
+{"hasImageOnlyPages":false,"imageOnlyPageCount":0,"imageOnlyPageNumbers":[],"level":"info","message":"PDF analysis complete","timestamp":"2026-02-07 14:14:44","totalPages":1}
+{"level":"info","message":"Extracting text from PDF","timestamp":"2026-02-07 14:14:44"}
+{"level":"info","message":"PDF text extraction successful","pages":1,"textLength":2266,"timestamp":"2026-02-07 14:14:44"}
+{"foundKeywords":15,"level":"info","message":"PDF content validation successful","textLength":2264,"timestamp":"2026-02-07 14:14:44"}
+{"extractionMethod":"text","isRetry":false,"level":"info","message":"PDF conversion attempt 1/3","startDate":"2025-01-01","timestamp":"2026-02-07 14:14:44"}
+{"isRetry":false,"level":"info","message":"Converting PDF text to structured plan using generateObject","startDate":"2025-01-01","targetTimeSeconds":5400,"textLength":2266,"timestamp":"2026-02-07 14:14:44"}
+{"level":"info","message":"PDF text to structured plan conversion successful","rowCount":54,"timestamp":"2026-02-07 14:15:04","usage":{"cachedInputTokens":2816,"inputTokens":2926,"outputTokens":3277,"reasoningTokens":0,"totalTokens":6203}}
+{"attempts":1,"extractionMethod":"text","level":"info","message":"PDF conversion successful","rowCount":54,"timestamp":"2026-02-07 14:15:04"}
+{"attemptsMade":1,"csvLength":3670,"level":"info","message":"PDF converted to CSV successfully","timestamp":"2026-02-07 14:15:04"}
+{"filename":"8-Week-Sub-90-Minute-Half-Marathon-Training-Plan-KM.pdf","level":"info","message":"Converting PDF to CSV","timestamp":"2026-02-07 16:56:06"}
+{"level":"info","message":"Analyzing PDF for text vs image content","timestamp":"2026-02-07 16:56:06"}
+{"level":"info","message":"Analyzing PDF for text/image content","timestamp":"2026-02-07 16:56:06"}
+{"hasImageOnlyPages":false,"imageOnlyPageCount":0,"imageOnlyPageNumbers":[],"level":"info","message":"PDF analysis complete","timestamp":"2026-02-07 16:56:07","totalPages":1}
+{"level":"info","message":"Extracting text from PDF","timestamp":"2026-02-07 16:56:07"}
+{"level":"info","message":"PDF text extraction successful","pages":1,"textLength":2266,"timestamp":"2026-02-07 16:56:07"}
+{"foundKeywords":15,"level":"info","message":"PDF content validation successful","textLength":2264,"timestamp":"2026-02-07 16:56:07"}
+{"extractionMethod":"text","isRetry":false,"level":"info","message":"PDF conversion attempt 1/3","startDate":"2026-03-02","timestamp":"2026-02-07 16:56:07"}
+{"isRetry":false,"level":"info","message":"Converting PDF text to structured plan using generateObject","startDate":"2026-03-02","targetTimeSeconds":5400,"textLength":2266,"timestamp":"2026-02-07 16:56:07"}
+{"filename":"8-Week-Sub-90-Minute-Half-Marathon-Training-Plan-KM.pdf","level":"info","message":"Converting PDF to CSV","timestamp":"2026-02-07 16:58:25"}
+{"level":"info","message":"Analyzing PDF for text vs image content","timestamp":"2026-02-07 16:58:25"}
+{"level":"info","message":"Analyzing PDF for text/image content","timestamp":"2026-02-07 16:58:25"}
+{"hasImageOnlyPages":false,"imageOnlyPageCount":0,"imageOnlyPageNumbers":[],"level":"info","message":"PDF analysis complete","timestamp":"2026-02-07 16:58:25","totalPages":1}
+{"level":"info","message":"Extracting text from PDF","timestamp":"2026-02-07 16:58:25"}
+{"level":"info","message":"PDF text extraction successful","pages":1,"textLength":2266,"timestamp":"2026-02-07 16:58:25"}
+{"foundKeywords":15,"level":"info","message":"PDF content validation successful","textLength":2264,"timestamp":"2026-02-07 16:58:25"}
+{"extractionMethod":"text","isRetry":false,"level":"info","message":"PDF conversion attempt 1/3","startDate":"2026-03-02","timestamp":"2026-02-07 16:58:25"}
+{"isRetry":false,"level":"info","message":"Converting PDF text to structured plan using generateObject","startDate":"2026-03-02","targetTimeSeconds":5400,"textLength":2266,"timestamp":"2026-02-07 16:58:25"}
+{"level":"info","message":"PDF text to structured plan conversion successful","rowCount":56,"timestamp":"2026-02-07 17:00:29","usage":{"cachedInputTokens":0,"inputTokens":2926,"outputTokens":10964,"reasoningTokens":7616,"totalTokens":13890}}
+{"attempts":1,"extractionMethod":"text","level":"info","message":"PDF conversion successful","rowCount":56,"timestamp":"2026-02-07 17:00:29"}
+{"attemptsMade":1,"csvLength":3971,"level":"info","message":"PDF converted to CSV successfully","timestamp":"2026-02-07 17:00:29"}
+{"filename":"8-Week-Sub-90-Minute-Half-Marathon-Training-Plan-KM.pdf","level":"info","message":"Converting PDF to CSV","timestamp":"2026-02-07 17:02:46"}
+{"level":"info","message":"Analyzing PDF for text vs image content","timestamp":"2026-02-07 17:02:46"}
+{"level":"info","message":"Analyzing PDF for text/image content","timestamp":"2026-02-07 17:02:46"}
+{"hasImageOnlyPages":false,"imageOnlyPageCount":0,"imageOnlyPageNumbers":[],"level":"info","message":"PDF analysis complete","timestamp":"2026-02-07 17:02:46","totalPages":1}
+{"level":"info","message":"Extracting text from PDF","timestamp":"2026-02-07 17:02:46"}
+{"level":"info","message":"PDF text extraction successful","pages":1,"textLength":2266,"timestamp":"2026-02-07 17:02:46"}
+{"foundKeywords":15,"level":"info","message":"PDF content validation successful","textLength":2264,"timestamp":"2026-02-07 17:02:46"}
+{"extractionMethod":"text","isRetry":false,"level":"info","message":"PDF conversion attempt 1/3","startDate":"2026-03-02","timestamp":"2026-02-07 17:02:46"}
+{"isRetry":false,"level":"info","message":"Converting PDF text to structured plan using generateObject","startDate":"2026-03-02","targetTimeSeconds":5400,"textLength":2266,"timestamp":"2026-02-07 17:02:46"}
+{"error":"No object generated: response did not match schema.","level":"error","message":"Failed to convert PDF text to structured plan","stack":"AI_NoObjectGeneratedError: No object generated: response did not match schema.\n    at parseAndValidateObjectResult (file:///Users/anmolarora/me/adaptive-training-plan/node_modules/.pnpm/ai@5.0.82_zod@4.1.12/node_modules/ai/src/generate-object/parse-and-validate-object-result.ts:53:11)\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at parseAndValidateObjectResultWithRepair (file:///Users/anmolarora/me/adaptive-training-plan/node_modules/.pnpm/ai@5.0.82_zod@4.1.12/node_modules/ai/src/generate-object/parse-and-validate-object-result.ts:88:12)\n    at fn (file:///Users/anmolarora/me/adaptive-training-plan/node_modules/.pnpm/ai@5.0.82_zod@4.1.12/node_modules/ai/src/generate-object/generate-object.ts:437:24)\n    at file:///Users/anmolarora/me/adaptive-training-plan/node_modules/.pnpm/ai@5.0.82_zod@4.1.12/node_modules/ai/src/telemetry/record-span.ts:18:22\n    at generateObject (file:///Users/anmolarora/me/adaptive-training-plan/node_modules/.pnpm/ai@5.0.82_zod@4.1.12/node_modules/ai/src/generate-object/generate-object.ts:277:12)\n    at AIService.convertPdfTextToStructuredPlan (/Users/anmolarora/me/adaptive-training-plan/apps/api/src/services/ai.service.ts:948:22)\n    at PdfToCsvService.convertPdfToCsvWithRetry (/Users/anmolarora/me/adaptive-training-plan/apps/api/src/services/pdf-to-csv.service.ts:245:30)\n    at TrainingPlanService.processTrainingPlanFile (/Users/anmolarora/me/adaptive-training-plan/apps/api/src/services/training-plan.service.ts:77:32)\n    at /Users/anmolarora/me/adaptive-training-plan/apps/api/src/services/training-plan.service.integration.test.ts:168:21","timestamp":"2026-02-07 17:05:30"}
+{"error":"Failed to convert PDF text to structured format","level":"error","message":"PDF conversion error on attempt 1","stack":"Error: Failed to convert PDF text to structured format\n    at new AppError (/Users/anmolarora/me/adaptive-training-plan/apps/api/src/utils/error.ts:23:11)\n    at new InternalServerError (/Users/anmolarora/me/adaptive-training-plan/apps/api/src/utils/error.ts:77:5)\n    at AIService.convertPdfTextToStructuredPlan (/Users/anmolarora/me/adaptive-training-plan/apps/api/src/services/ai.service.ts:972:13)\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at PdfToCsvService.convertPdfToCsvWithRetry (/Users/anmolarora/me/adaptive-training-plan/apps/api/src/services/pdf-to-csv.service.ts:245:30)\n    at TrainingPlanService.processTrainingPlanFile (/Users/anmolarora/me/adaptive-training-plan/apps/api/src/services/training-plan.service.ts:77:32)\n    at /Users/anmolarora/me/adaptive-training-plan/apps/api/src/services/training-plan.service.integration.test.ts:168:21\n    at file:///Users/anmolarora/me/adaptive-training-plan/node_modules/.pnpm/@vitest+runner@3.2.4/node_modules/@vitest/runner/dist/chunk-hooks.js:752:20","timestamp":"2026-02-07 17:05:30"}
+{"extractionMethod":"text","isRetry":true,"level":"info","message":"PDF conversion attempt 2/3","startDate":"2026-03-02","timestamp":"2026-02-07 17:05:31"}
+{"isRetry":true,"level":"info","message":"Converting PDF text to structured plan using generateObject","startDate":"2026-03-02","targetTimeSeconds":5400,"textLength":2266,"timestamp":"2026-02-07 17:05:31"}
+{"filename":"8-Week-Sub-90-Minute-Half-Marathon-Training-Plan-KM.pdf","level":"info","message":"Converting PDF to CSV","timestamp":"2026-02-07 17:08:32"}
+{"level":"info","message":"Analyzing PDF for text vs image content","timestamp":"2026-02-07 17:08:32"}
+{"level":"info","message":"Analyzing PDF for text/image content","timestamp":"2026-02-07 17:08:32"}
+{"hasImageOnlyPages":false,"imageOnlyPageCount":0,"imageOnlyPageNumbers":[],"level":"info","message":"PDF analysis complete","timestamp":"2026-02-07 17:08:32","totalPages":1}
+{"level":"info","message":"Extracting text from PDF","timestamp":"2026-02-07 17:08:32"}
+{"level":"info","message":"PDF text extraction successful","pages":1,"textLength":2266,"timestamp":"2026-02-07 17:08:32"}
+{"foundKeywords":15,"level":"info","message":"PDF content validation successful","textLength":2264,"timestamp":"2026-02-07 17:08:32"}
+{"extractionMethod":"text","isRetry":false,"level":"info","message":"PDF conversion attempt 1/3","startDate":"2026-03-02","timestamp":"2026-02-07 17:08:32"}
+{"isRetry":false,"level":"info","message":"Converting PDF text to structured plan using generateObject","startDate":"2026-03-02","targetTimeSeconds":5400,"textLength":2266,"timestamp":"2026-02-07 17:08:32"}
+{"level":"info","message":"PDF text to structured plan conversion successful","rowCount":56,"timestamp":"2026-02-07 17:08:54","usage":{"cachedInputTokens":0,"inputTokens":2926,"outputTokens":3455,"reasoningTokens":0,"totalTokens":6381}}
+{"attempts":1,"extractionMethod":"text","level":"info","message":"PDF conversion successful","rowCount":56,"timestamp":"2026-02-07 17:08:54"}
+{"attemptsMade":1,"csvLength":4033,"level":"info","message":"PDF converted to CSV successfully","timestamp":"2026-02-07 17:08:54"}
+{"filename":"8-Week-Sub-90-Minute-Half-Marathon-Training-Plan-KM.pdf","level":"info","message":"Converting PDF to CSV","timestamp":"2026-02-07 17:16:58"}
+{"level":"info","message":"Analyzing PDF for text vs image content","timestamp":"2026-02-07 17:16:58"}
+{"level":"info","message":"Analyzing PDF for text/image content","timestamp":"2026-02-07 17:16:58"}
+{"hasImageOnlyPages":false,"imageOnlyPageCount":0,"imageOnlyPageNumbers":[],"level":"info","message":"PDF analysis complete","timestamp":"2026-02-07 17:16:58","totalPages":1}
+{"level":"info","message":"Extracting text from PDF","timestamp":"2026-02-07 17:16:58"}
+{"level":"info","message":"PDF text extraction successful","pages":1,"textLength":2266,"timestamp":"2026-02-07 17:16:58"}
+{"foundKeywords":15,"level":"info","message":"PDF content validation successful","textLength":2264,"timestamp":"2026-02-07 17:16:58"}
+{"extractionMethod":"text","isRetry":false,"level":"info","message":"PDF conversion attempt 1/3","startDate":"2026-03-02","timestamp":"2026-02-07 17:16:58"}
+{"isRetry":false,"level":"info","message":"Converting PDF text to structured plan using generateObject","startDate":"2026-03-02","targetTimeSeconds":5400,"textLength":2266,"timestamp":"2026-02-07 17:16:58"}
+{"level":"info","message":"PDF text to structured plan conversion successful","rowCount":56,"timestamp":"2026-02-07 17:17:17","usage":{"cachedInputTokens":2688,"inputTokens":2791,"outputTokens":3099,"reasoningTokens":0,"totalTokens":5890}}
+{"attempts":1,"extractionMethod":"text","level":"info","message":"PDF conversion successful","rowCount":56,"timestamp":"2026-02-07 17:17:17"}
+{"attemptsMade":1,"csvLength":3785,"level":"info","message":"PDF converted to CSV successfully","timestamp":"2026-02-07 17:17:17"}
+{"filename":"8-Week-Sub-90-Minute-Half-Marathon-Training-Plan-KM.pdf","level":"info","message":"Converting PDF to CSV","timestamp":"2026-02-09 13:47:34"}
+{"level":"info","message":"Analyzing PDF for text vs image content","timestamp":"2026-02-09 13:47:34"}
+{"level":"info","message":"Analyzing PDF for text/image content","timestamp":"2026-02-09 13:47:34"}
+{"hasImageOnlyPages":false,"imageOnlyPageCount":0,"imageOnlyPageNumbers":[],"level":"info","message":"PDF analysis complete","timestamp":"2026-02-09 13:47:34","totalPages":1}
+{"level":"info","message":"Extracting text from PDF","timestamp":"2026-02-09 13:47:34"}
+{"level":"info","message":"PDF text extraction successful","pages":1,"textLength":2266,"timestamp":"2026-02-09 13:47:34"}
+{"foundKeywords":15,"level":"info","message":"PDF content validation successful","textLength":2264,"timestamp":"2026-02-09 13:47:34"}
+{"extractionMethod":"text","isRetry":false,"level":"info","message":"PDF conversion attempt 1/3","startDate":"2026-03-02","timestamp":"2026-02-09 13:47:34"}
+{"isRetry":false,"level":"info","message":"Converting PDF text to structured plan using generateObject","startDate":"2026-03-02","targetTimeSeconds":5400,"textLength":2266,"timestamp":"2026-02-09 13:47:34"}
+{"level":"info","message":"PDF text to structured plan conversion successful","rowCount":56,"timestamp":"2026-02-09 13:48:07","usage":{"cachedInputTokens":2816,"inputTokenDetails":{"cacheReadTokens":2816,"noCacheTokens":84},"inputTokens":2900,"outputTokenDetails":{"reasoningTokens":0,"textTokens":3319},"outputTokens":3319,"raw":{"input_tokens":2900,"input_tokens_details":{"cached_tokens":2816},"output_tokens":3319,"output_tokens_details":{"reasoning_tokens":0}},"reasoningTokens":0,"totalTokens":6219}}
+{"attempts":1,"extractionMethod":"text","level":"info","message":"PDF conversion successful","rowCount":56,"timestamp":"2026-02-09 13:48:07"}
+{"attemptsMade":1,"csvLength":3759,"level":"info","message":"PDF converted to CSV successfully","timestamp":"2026-02-09 13:48:07"}
+{"filename":"8-Week-Sub-90-Minute-Half-Marathon-Training-Plan-KM.pdf","level":"info","message":"Converting PDF to CSV","timestamp":"2026-02-09 13:48:18"}
+{"level":"info","message":"Analyzing PDF for text vs image content","timestamp":"2026-02-09 13:48:18"}
+{"level":"info","message":"Analyzing PDF for text/image content","timestamp":"2026-02-09 13:48:18"}
+{"hasImageOnlyPages":false,"imageOnlyPageCount":0,"imageOnlyPageNumbers":[],"level":"info","message":"PDF analysis complete","timestamp":"2026-02-09 13:48:18","totalPages":1}
+{"level":"info","message":"Extracting text from PDF","timestamp":"2026-02-09 13:48:18"}
+{"level":"info","message":"PDF text extraction successful","pages":1,"textLength":2266,"timestamp":"2026-02-09 13:48:18"}
+{"foundKeywords":15,"level":"info","message":"PDF content validation successful","textLength":2264,"timestamp":"2026-02-09 13:48:18"}
+{"extractionMethod":"text","isRetry":false,"level":"info","message":"PDF conversion attempt 1/3","startDate":"2026-03-02","timestamp":"2026-02-09 13:48:18"}
+{"isRetry":false,"level":"info","message":"Converting PDF text to structured plan using generateObject","startDate":"2026-03-02","targetTimeSeconds":5400,"textLength":2266,"timestamp":"2026-02-09 13:48:18"}
+{"level":"info","message":"PDF text to structured plan conversion successful","rowCount":56,"timestamp":"2026-02-09 13:48:45","usage":{"cachedInputTokens":2816,"inputTokenDetails":{"cacheReadTokens":2816,"noCacheTokens":84},"inputTokens":2900,"outputTokenDetails":{"reasoningTokens":0,"textTokens":3235},"outputTokens":3235,"raw":{"input_tokens":2900,"input_tokens_details":{"cached_tokens":2816},"output_tokens":3235,"output_tokens_details":{"reasoning_tokens":0}},"reasoningTokens":0,"totalTokens":6135}}
+{"attempts":1,"extractionMethod":"text","level":"info","message":"PDF conversion successful","rowCount":56,"timestamp":"2026-02-09 13:48:45"}
+{"attemptsMade":1,"csvLength":3664,"level":"info","message":"PDF converted to CSV successfully","timestamp":"2026-02-09 13:48:45"}
+{"filename":"Half-Marathon-Training-Plan-Intermediate-PL.pdf","level":"info","message":"Converting PDF to CSV","timestamp":"2026-02-09 13:48:45"}
+{"level":"info","message":"Analyzing PDF for text vs image content","timestamp":"2026-02-09 13:48:45"}
+{"level":"info","message":"Analyzing PDF for text/image content","timestamp":"2026-02-09 13:48:45"}
+{"hasImageOnlyPages":true,"imageOnlyPageCount":3,"imageOnlyPageNumbers":[2,3,4],"level":"info","message":"PDF analysis complete","timestamp":"2026-02-09 13:48:46","totalPages":4}
+{"level":"info","message":"Rendering PDF pages as images","pageCount":3,"pages":[2,3,4],"timestamp":"2026-02-09 13:48:46"}
+{"level":"info","message":"PDF pages rendered successfully","renderedCount":3,"timestamp":"2026-02-09 13:48:46","totalSizeBytes":745342}
+{"level":"info","message":"Extracting text from PDF","timestamp":"2026-02-09 13:48:46"}
+{"level":"info","message":"PDF text extraction successful","pages":4,"textLength":5480,"timestamp":"2026-02-09 13:48:46"}
+{"imageOnlyPages":3,"level":"info","message":"Using vision extraction for image-heavy PDF","renderedImageCount":3,"timestamp":"2026-02-09 13:48:46","totalPages":4}
+{"extractionMethod":"vision","isRetry":false,"level":"info","message":"PDF conversion attempt 1/3","startDate":"2026-03-02","timestamp":"2026-02-09 13:48:46"}
+{"imageCount":3,"isRetry":false,"level":"info","message":"Converting PDF images to structured plan using vision","startDate":"2026-03-02","targetTimeSeconds":5400,"textLength":5480,"timestamp":"2026-02-09 13:48:46","totalImageSizeBytes":745342}
+{"level":"info","message":"PDF images to structured plan conversion successful","rowCount":112,"timestamp":"2026-02-09 13:49:35","usage":{"cachedInputTokens":6400,"inputTokenDetails":{"cacheReadTokens":6400,"noCacheTokens":133},"inputTokens":6533,"outputTokenDetails":{"reasoningTokens":0,"textTokens":6475},"outputTokens":6475,"raw":{"input_tokens":6533,"input_tokens_details":{"cached_tokens":6400},"output_tokens":6475,"output_tokens_details":{"reasoning_tokens":0}},"reasoningTokens":0,"totalTokens":13008}}
+{"attempts":1,"extractionMethod":"vision","level":"info","message":"PDF conversion successful","rowCount":112,"timestamp":"2026-02-09 13:49:35"}
+{"attemptsMade":1,"csvLength":7820,"level":"info","message":"PDF converted to CSV successfully","timestamp":"2026-02-09 13:49:35"}
+{"filename":"Stridezero_HM_Plan_week1-2.pdf","level":"info","message":"Converting PDF to CSV","timestamp":"2026-02-09 13:49:35"}
+{"level":"info","message":"Analyzing PDF for text vs image content","timestamp":"2026-02-09 13:49:35"}
+{"level":"info","message":"Analyzing PDF for text/image content","timestamp":"2026-02-09 13:49:35"}
+{"hasImageOnlyPages":false,"imageOnlyPageCount":0,"imageOnlyPageNumbers":[],"level":"info","message":"PDF analysis complete","timestamp":"2026-02-09 13:49:36","totalPages":1}
+{"level":"info","message":"Extracting text from PDF","timestamp":"2026-02-09 13:49:36"}
+{"level":"info","message":"PDF text extraction successful","pages":1,"textLength":941,"timestamp":"2026-02-09 13:49:36"}
+{"foundKeywords":13,"level":"info","message":"PDF content validation successful","textLength":939,"timestamp":"2026-02-09 13:49:36"}
+{"extractionMethod":"text","isRetry":false,"level":"info","message":"PDF conversion attempt 1/3","startDate":"2026-03-02","timestamp":"2026-02-09 13:49:36"}
+{"isRetry":false,"level":"info","message":"Converting PDF text to structured plan using generateObject","startDate":"2026-03-02","targetTimeSeconds":5400,"textLength":941,"timestamp":"2026-02-09 13:49:36"}
+{"level":"info","message":"PDF text to structured plan conversion successful","rowCount":14,"timestamp":"2026-02-09 13:49:42","usage":{"cachedInputTokens":2304,"inputTokenDetails":{"cacheReadTokens":2304,"noCacheTokens":50},"inputTokens":2354,"outputTokenDetails":{"reasoningTokens":0,"textTokens":769},"outputTokens":769,"raw":{"input_tokens":2354,"input_tokens_details":{"cached_tokens":2304},"output_tokens":769,"output_tokens_details":{"reasoning_tokens":0}},"reasoningTokens":0,"totalTokens":3123}}
+{"attempts":1,"extractionMethod":"text","level":"info","message":"PDF conversion successful","rowCount":14,"timestamp":"2026-02-09 13:49:42"}
+{"attemptsMade":1,"csvLength":754,"level":"info","message":"PDF converted to CSV successfully","timestamp":"2026-02-09 13:49:42"}
+{"filename":"8-Week-Sub-90-Minute-Half-Marathon-Training-Plan-KM.pdf","level":"info","message":"Converting PDF to CSV","timestamp":"2026-02-09 14:18:43"}
+{"level":"info","message":"Analyzing PDF for text vs image content","timestamp":"2026-02-09 14:18:43"}
+{"level":"info","message":"Analyzing PDF for text/image content","timestamp":"2026-02-09 14:18:43"}
+{"hasImageOnlyPages":false,"imageOnlyPageCount":0,"imageOnlyPageNumbers":[],"level":"info","message":"PDF analysis complete","timestamp":"2026-02-09 14:18:43","totalPages":1}
+{"level":"info","message":"Extracting text from PDF","timestamp":"2026-02-09 14:18:43"}
+{"level":"info","message":"PDF text extraction successful","pages":1,"textLength":2266,"timestamp":"2026-02-09 14:18:43"}
+{"foundKeywords":15,"level":"info","message":"PDF content validation successful","textLength":2264,"timestamp":"2026-02-09 14:18:43"}
+{"extractionMethod":"text","isRetry":false,"level":"info","message":"PDF conversion attempt 1/3","startDate":"2026-03-02","timestamp":"2026-02-09 14:18:43"}
+{"isRetry":false,"level":"info","message":"Converting PDF text to structured plan using generateObject","startDate":"2026-03-02","targetTimeSeconds":5400,"textLength":2266,"timestamp":"2026-02-09 14:18:43"}
+{"level":"info","message":"PDF text to structured plan conversion successful","rowCount":56,"timestamp":"2026-02-09 14:19:09","usage":{"cachedInputTokens":3072,"inputTokenDetails":{"cacheReadTokens":3072,"noCacheTokens":118},"inputTokens":3190,"outputTokenDetails":{"reasoningTokens":0,"textTokens":3324},"outputTokens":3324,"raw":{"input_tokens":3190,"input_tokens_details":{"cached_tokens":3072},"output_tokens":3324,"output_tokens_details":{"reasoning_tokens":0}},"reasoningTokens":0,"totalTokens":6514}}
+{"attempts":1,"extractionMethod":"text","level":"info","message":"PDF conversion successful","rowCount":56,"timestamp":"2026-02-09 14:19:09"}
+{"attemptsMade":1,"csvLength":3794,"level":"info","message":"PDF converted to CSV successfully","timestamp":"2026-02-09 14:19:09"}
+{"filename":"Half-Marathon-Training-Plan-Intermediate-PL.pdf","level":"info","message":"Converting PDF to CSV","timestamp":"2026-02-09 14:19:09"}
+{"level":"info","message":"Analyzing PDF for text vs image content","timestamp":"2026-02-09 14:19:09"}
+{"level":"info","message":"Analyzing PDF for text/image content","timestamp":"2026-02-09 14:19:09"}
+{"hasImageOnlyPages":true,"imageOnlyPageCount":3,"imageOnlyPageNumbers":[2,3,4],"level":"info","message":"PDF analysis complete","timestamp":"2026-02-09 14:19:09","totalPages":4}
+{"level":"info","message":"Rendering PDF pages as images","pageCount":3,"pages":[2,3,4],"timestamp":"2026-02-09 14:19:09"}
+{"level":"info","message":"PDF pages rendered successfully","renderedCount":3,"timestamp":"2026-02-09 14:19:10","totalSizeBytes":745342}
+{"level":"info","message":"Extracting text from PDF","timestamp":"2026-02-09 14:19:10"}
+{"level":"info","message":"PDF text extraction successful","pages":4,"textLength":5480,"timestamp":"2026-02-09 14:19:10"}
+{"imageOnlyPages":3,"level":"info","message":"Using vision extraction for image-heavy PDF","renderedImageCount":3,"timestamp":"2026-02-09 14:19:10","totalPages":4}
+{"extractionMethod":"vision","isRetry":false,"level":"info","message":"PDF conversion attempt 1/3","startDate":"2026-03-02","timestamp":"2026-02-09 14:19:10"}
+{"imageCount":3,"isRetry":false,"level":"info","message":"Converting PDF images to structured plan using vision","startDate":"2026-03-02","targetTimeSeconds":5400,"textLength":5480,"timestamp":"2026-02-09 14:19:10","totalImageSizeBytes":745342}
+{"level":"info","message":"PDF images to structured plan conversion successful","rowCount":112,"timestamp":"2026-02-09 14:19:57","usage":{"cachedInputTokens":6784,"inputTokenDetails":{"cacheReadTokens":6784,"noCacheTokens":39},"inputTokens":6823,"outputTokenDetails":{"reasoningTokens":0,"textTokens":6479},"outputTokens":6479,"raw":{"input_tokens":6823,"input_tokens_details":{"cached_tokens":6784},"output_tokens":6479,"output_tokens_details":{"reasoning_tokens":0}},"reasoningTokens":0,"totalTokens":13302}}
+{"attempts":1,"extractionMethod":"vision","level":"info","message":"PDF conversion successful","rowCount":112,"timestamp":"2026-02-09 14:19:57"}
+{"attemptsMade":1,"csvLength":7822,"level":"info","message":"PDF converted to CSV successfully","timestamp":"2026-02-09 14:19:57"}
+{"filename":"Stridezero_HM_Plan_week1-2.pdf","level":"info","message":"Converting PDF to CSV","timestamp":"2026-02-09 14:19:57"}
+{"level":"info","message":"Analyzing PDF for text vs image content","timestamp":"2026-02-09 14:19:57"}
+{"level":"info","message":"Analyzing PDF for text/image content","timestamp":"2026-02-09 14:19:57"}
+{"hasImageOnlyPages":false,"imageOnlyPageCount":0,"imageOnlyPageNumbers":[],"level":"info","message":"PDF analysis complete","timestamp":"2026-02-09 14:19:57","totalPages":1}
+{"level":"info","message":"Extracting text from PDF","timestamp":"2026-02-09 14:19:57"}
+{"level":"info","message":"PDF text extraction successful","pages":1,"textLength":941,"timestamp":"2026-02-09 14:19:57"}
+{"foundKeywords":13,"level":"info","message":"PDF content validation successful","textLength":939,"timestamp":"2026-02-09 14:19:57"}
+{"extractionMethod":"text","isRetry":false,"level":"info","message":"PDF conversion attempt 1/3","startDate":"2026-03-02","timestamp":"2026-02-09 14:19:57"}
+{"isRetry":false,"level":"info","message":"Converting PDF text to structured plan using generateObject","startDate":"2026-03-02","targetTimeSeconds":5400,"textLength":941,"timestamp":"2026-02-09 14:19:57"}
+{"level":"info","message":"PDF text to structured plan conversion successful","rowCount":14,"timestamp":"2026-02-09 14:20:03","usage":{"cachedInputTokens":2560,"inputTokenDetails":{"cacheReadTokens":2560,"noCacheTokens":84},"inputTokens":2644,"outputTokenDetails":{"reasoningTokens":0,"textTokens":763},"outputTokens":763,"raw":{"input_tokens":2644,"input_tokens_details":{"cached_tokens":2560},"output_tokens":763,"output_tokens_details":{"reasoning_tokens":0}},"reasoningTokens":0,"totalTokens":3407}}
+{"attempts":1,"extractionMethod":"text","level":"info","message":"PDF conversion successful","rowCount":14,"timestamp":"2026-02-09 14:20:03"}
+{"attemptsMade":1,"csvLength":742,"level":"info","message":"PDF converted to CSV successfully","timestamp":"2026-02-09 14:20:03"}
+{"filename":"8-Week-Sub-90-Minute-Half-Marathon-Training-Plan-KM.pdf","level":"info","message":"Converting PDF to CSV","timestamp":"2026-02-09 14:41:04"}
+{"level":"info","message":"Analyzing PDF for text vs image content","timestamp":"2026-02-09 14:41:04"}
+{"level":"info","message":"Analyzing PDF for text/image content","timestamp":"2026-02-09 14:41:04"}
+{"hasImageOnlyPages":false,"imageOnlyPageCount":0,"imageOnlyPageNumbers":[],"level":"info","message":"PDF analysis complete","timestamp":"2026-02-09 14:41:04","totalPages":1}
+{"level":"info","message":"Extracting text from PDF","timestamp":"2026-02-09 14:41:04"}
+{"level":"info","message":"PDF text extraction successful","pages":1,"textLength":2266,"timestamp":"2026-02-09 14:41:04"}
+{"foundKeywords":15,"level":"info","message":"PDF content validation successful","textLength":2264,"timestamp":"2026-02-09 14:41:04"}
+{"extractionMethod":"text","isRetry":false,"level":"info","message":"PDF conversion attempt 1/3","startDate":"2026-03-02","timestamp":"2026-02-09 14:41:04"}
+{"isRetry":false,"level":"info","message":"Converting PDF text to structured plan using generateObject","startDate":"2026-03-02","targetTimeSeconds":5400,"textLength":2266,"timestamp":"2026-02-09 14:41:04"}
+{"level":"info","message":"PDF text to structured plan conversion successful","rowCount":56,"timestamp":"2026-02-09 14:41:41","usage":{"cachedInputTokens":0,"inputTokenDetails":{"cacheReadTokens":0,"noCacheTokens":3248},"inputTokens":3248,"outputTokenDetails":{"reasoningTokens":0,"textTokens":3237},"outputTokens":3237,"raw":{"input_tokens":3248,"input_tokens_details":{"cached_tokens":0},"output_tokens":3237,"output_tokens_details":{"reasoning_tokens":0}},"reasoningTokens":0,"totalTokens":6485}}
+{"attempts":1,"extractionMethod":"text","level":"info","message":"PDF conversion successful","rowCount":56,"timestamp":"2026-02-09 14:41:41"}
+{"attemptsMade":1,"csvLength":3441,"level":"info","message":"PDF converted to CSV successfully","timestamp":"2026-02-09 14:41:41"}
+{"filename":"Half-Marathon-Training-Plan-Intermediate-PL.pdf","level":"info","message":"Converting PDF to CSV","timestamp":"2026-02-09 14:41:41"}
+{"level":"info","message":"Analyzing PDF for text vs image content","timestamp":"2026-02-09 14:41:41"}
+{"level":"info","message":"Analyzing PDF for text/image content","timestamp":"2026-02-09 14:41:41"}
+{"hasImageOnlyPages":true,"imageOnlyPageCount":3,"imageOnlyPageNumbers":[2,3,4],"level":"info","message":"PDF analysis complete","timestamp":"2026-02-09 14:41:41","totalPages":4}
+{"level":"info","message":"Rendering PDF pages as images","pageCount":3,"pages":[2,3,4],"timestamp":"2026-02-09 14:41:41"}
+{"level":"info","message":"PDF pages rendered successfully","renderedCount":3,"timestamp":"2026-02-09 14:41:41","totalSizeBytes":745342}
+{"level":"info","message":"Extracting text from PDF","timestamp":"2026-02-09 14:41:41"}
+{"level":"info","message":"PDF text extraction successful","pages":4,"textLength":5480,"timestamp":"2026-02-09 14:41:41"}
+{"imageOnlyPages":3,"level":"info","message":"Using vision extraction for image-heavy PDF","renderedImageCount":3,"timestamp":"2026-02-09 14:41:41","totalPages":4}
+{"extractionMethod":"vision","isRetry":false,"level":"info","message":"PDF conversion attempt 1/3","startDate":"2026-03-02","timestamp":"2026-02-09 14:41:41"}
+{"imageCount":3,"isRetry":false,"level":"info","message":"Converting PDF images to structured plan using vision","startDate":"2026-03-02","targetTimeSeconds":5400,"textLength":5480,"timestamp":"2026-02-09 14:41:41","totalImageSizeBytes":745342}
+{"level":"info","message":"PDF images to structured plan conversion successful","rowCount":112,"timestamp":"2026-02-09 14:42:46","usage":{"cachedInputTokens":6784,"inputTokenDetails":{"cacheReadTokens":6784,"noCacheTokens":97},"inputTokens":6881,"outputTokenDetails":{"reasoningTokens":0,"textTokens":6423},"outputTokens":6423,"raw":{"input_tokens":6881,"input_tokens_details":{"cached_tokens":6784},"output_tokens":6423,"output_tokens_details":{"reasoning_tokens":0}},"reasoningTokens":0,"totalTokens":13304}}
+{"attempts":1,"extractionMethod":"vision","level":"info","message":"PDF conversion successful","rowCount":112,"timestamp":"2026-02-09 14:42:46"}
+{"attemptsMade":1,"csvLength":7812,"level":"info","message":"PDF converted to CSV successfully","timestamp":"2026-02-09 14:42:46"}
+{"filename":"8-Week-Sub-90-Minute-Half-Marathon-Training-Plan-KM.pdf","level":"info","message":"Converting PDF to CSV","timestamp":"2026-02-09 17:37:04"}
+{"level":"info","message":"Analyzing PDF for text vs image content","timestamp":"2026-02-09 17:37:04"}
+{"level":"info","message":"Analyzing PDF for text/image content","timestamp":"2026-02-09 17:37:04"}
+{"hasImageOnlyPages":false,"imageOnlyPageCount":0,"imageOnlyPageNumbers":[],"level":"info","message":"PDF analysis complete","timestamp":"2026-02-09 17:37:04","totalPages":1}
+{"level":"info","message":"Extracting text from PDF","timestamp":"2026-02-09 17:37:04"}
+{"level":"info","message":"PDF text extraction successful","pages":1,"textLength":2266,"timestamp":"2026-02-09 17:37:04"}
+{"foundKeywords":15,"level":"info","message":"PDF content validation successful","textLength":2264,"timestamp":"2026-02-09 17:37:04"}
+{"extractionMethod":"text","isRetry":false,"level":"info","message":"PDF conversion attempt 1/3","startDate":"2026-03-02","timestamp":"2026-02-09 17:37:04"}
+{"isRetry":false,"level":"info","message":"Converting PDF text to structured plan using generateObject","startDate":"2026-03-02","targetTimeSeconds":5400,"textLength":2266,"timestamp":"2026-02-09 17:37:04"}
+{"level":"info","message":"PDF text to structured plan conversion successful","rowCount":56,"timestamp":"2026-02-09 17:37:43","usage":{"cachedInputTokens":0,"inputTokenDetails":{"cacheReadTokens":0,"noCacheTokens":3245},"inputTokens":3245,"outputTokenDetails":{"reasoningTokens":0,"textTokens":3357},"outputTokens":3357,"raw":{"input_tokens":3245,"input_tokens_details":{"cached_tokens":0},"output_tokens":3357,"output_tokens_details":{"reasoning_tokens":0}},"reasoningTokens":0,"totalTokens":6602}}
+{"attempts":1,"extractionMethod":"text","level":"info","message":"PDF conversion successful","rowCount":56,"timestamp":"2026-02-09 17:37:43"}
+{"attemptsMade":1,"csvLength":3864,"level":"info","message":"PDF converted to CSV successfully","timestamp":"2026-02-09 17:37:43"}
+{"filename":"Half-Marathon-Training-Plan-Intermediate-PL.pdf","level":"info","message":"Converting PDF to CSV","timestamp":"2026-02-09 17:37:43"}
+{"level":"info","message":"Analyzing PDF for text vs image content","timestamp":"2026-02-09 17:37:43"}
+{"level":"info","message":"Analyzing PDF for text/image content","timestamp":"2026-02-09 17:37:43"}
+{"hasImageOnlyPages":true,"imageOnlyPageCount":3,"imageOnlyPageNumbers":[2,3,4],"level":"info","message":"PDF analysis complete","timestamp":"2026-02-09 17:37:43","totalPages":4}
+{"level":"info","message":"Rendering PDF pages as images","pageCount":3,"pages":[2,3,4],"timestamp":"2026-02-09 17:37:43"}
+{"level":"info","message":"PDF pages rendered successfully","renderedCount":3,"timestamp":"2026-02-09 17:37:43","totalSizeBytes":745342}
+{"level":"info","message":"Extracting text from PDF","timestamp":"2026-02-09 17:37:43"}
+{"level":"info","message":"PDF text extraction successful","pages":4,"textLength":5480,"timestamp":"2026-02-09 17:37:43"}
+{"imageOnlyPages":3,"level":"info","message":"Using vision extraction for image-heavy PDF","renderedImageCount":3,"timestamp":"2026-02-09 17:37:43","totalPages":4}
+{"extractionMethod":"vision","isRetry":false,"level":"info","message":"PDF conversion attempt 1/3","startDate":"2026-03-02","timestamp":"2026-02-09 17:37:43"}
+{"imageCount":3,"isRetry":false,"level":"info","message":"Converting PDF images to structured plan using vision","startDate":"2026-03-02","targetTimeSeconds":5400,"textLength":5480,"timestamp":"2026-02-09 17:37:43","totalImageSizeBytes":745342}
+{"level":"info","message":"PDF images to structured plan conversion successful","rowCount":112,"timestamp":"2026-02-09 17:39:12","usage":{"cachedInputTokens":6784,"inputTokenDetails":{"cacheReadTokens":6784,"noCacheTokens":94},"inputTokens":6878,"outputTokenDetails":{"reasoningTokens":0,"textTokens":6479},"outputTokens":6479,"raw":{"input_tokens":6878,"input_tokens_details":{"cached_tokens":6784},"output_tokens":6479,"output_tokens_details":{"reasoning_tokens":0}},"reasoningTokens":0,"totalTokens":13357}}
+{"attempts":1,"extractionMethod":"vision","level":"info","message":"PDF conversion successful","rowCount":112,"timestamp":"2026-02-09 17:39:12"}
+{"attemptsMade":1,"csvLength":7867,"level":"info","message":"PDF converted to CSV successfully","timestamp":"2026-02-09 17:39:12"}
+{"filename":"8-Week-Sub-90-Minute-Half-Marathon-Training-Plan-KM.pdf","level":"info","message":"Converting PDF to CSV","timestamp":"2026-02-09 20:38:15"}
+{"level":"info","message":"Analyzing PDF for text vs image content","timestamp":"2026-02-09 20:38:15"}
+{"level":"info","message":"Analyzing PDF for text/image content","timestamp":"2026-02-09 20:38:15"}
+{"hasImageOnlyPages":false,"imageOnlyPageCount":0,"imageOnlyPageNumbers":[],"level":"info","message":"PDF analysis complete","timestamp":"2026-02-09 20:38:15","totalPages":1}
+{"level":"info","message":"Extracting text from PDF","timestamp":"2026-02-09 20:38:15"}
+{"level":"info","message":"PDF text extraction successful","pages":1,"textLength":2266,"timestamp":"2026-02-09 20:38:15"}
+{"foundKeywords":15,"level":"info","message":"PDF content validation successful","textLength":2264,"timestamp":"2026-02-09 20:38:15"}
+{"extractionMethod":"text","isRetry":false,"level":"info","message":"PDF conversion attempt 1/3","startDate":"2026-03-02","timestamp":"2026-02-09 20:38:15"}
+{"isRetry":false,"level":"info","message":"Converting PDF text to structured plan using generateObject","startDate":"2026-03-02","targetTimeSeconds":5400,"textLength":2266,"timestamp":"2026-02-09 20:38:15"}
+{"level":"info","message":"PDF text to structured plan conversion successful","rowCount":56,"timestamp":"2026-02-09 20:38:41","usage":{"cachedInputTokens":0,"inputTokenDetails":{"cacheReadTokens":0,"noCacheTokens":3338},"inputTokens":3338,"outputTokenDetails":{"reasoningTokens":0,"textTokens":3292},"outputTokens":3292,"raw":{"input_tokens":3338,"input_tokens_details":{"cached_tokens":0},"output_tokens":3292,"output_tokens_details":{"reasoning_tokens":0}},"reasoningTokens":0,"totalTokens":6630}}
+{"attempts":1,"extractionMethod":"text","level":"info","message":"PDF conversion successful","rowCount":56,"timestamp":"2026-02-09 20:38:41"}
+{"attemptsMade":1,"csvLength":3621,"level":"info","message":"PDF converted to CSV successfully","timestamp":"2026-02-09 20:38:41"}
+{"filename":"Half-Marathon-Training-Plan-Intermediate-PL.pdf","level":"info","message":"Converting PDF to CSV","timestamp":"2026-02-09 20:38:41"}
+{"level":"info","message":"Analyzing PDF for text vs image content","timestamp":"2026-02-09 20:38:41"}
+{"level":"info","message":"Analyzing PDF for text/image content","timestamp":"2026-02-09 20:38:41"}
+{"hasImageOnlyPages":true,"imageOnlyPageCount":3,"imageOnlyPageNumbers":[2,3,4],"level":"info","message":"PDF analysis complete","timestamp":"2026-02-09 20:38:41","totalPages":4}
+{"level":"info","message":"Rendering PDF pages as images","pageCount":3,"pages":[2,3,4],"timestamp":"2026-02-09 20:38:41"}
+{"level":"info","message":"PDF pages rendered successfully","renderedCount":3,"timestamp":"2026-02-09 20:38:42","totalSizeBytes":745342}
+{"level":"info","message":"Extracting text from PDF","timestamp":"2026-02-09 20:38:42"}
+{"level":"info","message":"PDF text extraction successful","pages":4,"textLength":5480,"timestamp":"2026-02-09 20:38:42"}
+{"imageOnlyPages":3,"level":"info","message":"Using vision extraction for image-heavy PDF","renderedImageCount":3,"timestamp":"2026-02-09 20:38:42","totalPages":4}
+{"extractionMethod":"vision","isRetry":false,"level":"info","message":"PDF conversion attempt 1/3","startDate":"2026-03-02","timestamp":"2026-02-09 20:38:42"}
+{"imageCount":3,"isRetry":false,"level":"info","message":"Converting PDF images to structured plan using vision","startDate":"2026-03-02","targetTimeSeconds":5400,"textLength":5480,"timestamp":"2026-02-09 20:38:42","totalImageSizeBytes":745342}
+{"level":"info","message":"PDF images to structured plan conversion successful","rowCount":112,"timestamp":"2026-02-09 20:39:39","usage":{"cachedInputTokens":6912,"inputTokenDetails":{"cacheReadTokens":6912,"noCacheTokens":59},"inputTokens":6971,"outputTokenDetails":{"reasoningTokens":0,"textTokens":6482},"outputTokens":6482,"raw":{"input_tokens":6971,"input_tokens_details":{"cached_tokens":6912},"output_tokens":6482,"output_tokens_details":{"reasoning_tokens":0}},"reasoningTokens":0,"totalTokens":13453}}
+{"attempts":1,"extractionMethod":"vision","level":"info","message":"PDF conversion successful","rowCount":112,"timestamp":"2026-02-09 20:39:39"}
+{"attemptsMade":1,"csvLength":7834,"level":"info","message":"PDF converted to CSV successfully","timestamp":"2026-02-09 20:39:39"}
+{"filename":"8-Week-Sub-90-Minute-Half-Marathon-Training-Plan-KM.pdf","level":"info","message":"Converting PDF to CSV","timestamp":"2026-02-09 21:25:49"}
+{"level":"info","message":"Analyzing PDF for text vs image content","timestamp":"2026-02-09 21:25:49"}
+{"level":"info","message":"Analyzing PDF for text/image content","timestamp":"2026-02-09 21:25:49"}
+{"hasImageOnlyPages":false,"imageOnlyPageCount":0,"imageOnlyPageNumbers":[],"level":"info","message":"PDF analysis complete","timestamp":"2026-02-09 21:25:49","totalPages":1}
+{"level":"info","message":"Extracting text from PDF","timestamp":"2026-02-09 21:25:49"}
+{"level":"info","message":"PDF text extraction successful","pages":1,"textLength":2266,"timestamp":"2026-02-09 21:25:49"}
+{"foundKeywords":15,"level":"info","message":"PDF content validation successful","textLength":2264,"timestamp":"2026-02-09 21:25:49"}
+{"extractionMethod":"text","isRetry":false,"level":"info","message":"PDF conversion attempt 1/3","startDate":"2026-03-02","timestamp":"2026-02-09 21:25:49"}
+{"isRetry":false,"level":"info","message":"Converting PDF text to structured plan using generateObject","startDate":"2026-03-02","targetTimeSeconds":5400,"textLength":2266,"timestamp":"2026-02-09 21:25:49"}
+{"level":"info","message":"PDF text to structured plan conversion successful","rowCount":56,"timestamp":"2026-02-09 21:26:24","usage":{"cachedInputTokens":0,"inputTokenDetails":{"cacheReadTokens":0,"noCacheTokens":3431},"inputTokens":3431,"outputTokenDetails":{"reasoningTokens":0,"textTokens":3330},"outputTokens":3330,"raw":{"input_tokens":3431,"input_tokens_details":{"cached_tokens":0},"output_tokens":3330,"output_tokens_details":{"reasoning_tokens":0}},"reasoningTokens":0,"totalTokens":6761}}
+{"attempts":1,"extractionMethod":"text","level":"info","message":"PDF conversion successful","rowCount":56,"timestamp":"2026-02-09 21:26:24"}
+{"attemptsMade":1,"csvLength":3818,"level":"info","message":"PDF converted to CSV successfully","timestamp":"2026-02-09 21:26:24"}
+{"filename":"Half-Marathon-Training-Plan-Intermediate-PL.pdf","level":"info","message":"Converting PDF to CSV","timestamp":"2026-02-09 21:26:24"}
+{"level":"info","message":"Analyzing PDF for text vs image content","timestamp":"2026-02-09 21:26:24"}
+{"level":"info","message":"Analyzing PDF for text/image content","timestamp":"2026-02-09 21:26:24"}
+{"hasImageOnlyPages":true,"imageOnlyPageCount":3,"imageOnlyPageNumbers":[2,3,4],"level":"info","message":"PDF analysis complete","timestamp":"2026-02-09 21:26:24","totalPages":4}
+{"level":"info","message":"Rendering PDF pages as images","pageCount":3,"pages":[2,3,4],"timestamp":"2026-02-09 21:26:24"}
+{"level":"info","message":"PDF pages rendered successfully","renderedCount":3,"timestamp":"2026-02-09 21:26:24","totalSizeBytes":745342}
+{"level":"info","message":"Extracting text from PDF","timestamp":"2026-02-09 21:26:24"}
+{"level":"info","message":"PDF text extraction successful","pages":4,"textLength":5480,"timestamp":"2026-02-09 21:26:24"}
+{"imageOnlyPages":3,"level":"info","message":"Using vision extraction for image-heavy PDF","renderedImageCount":3,"timestamp":"2026-02-09 21:26:24","totalPages":4}
+{"extractionMethod":"vision","isRetry":false,"level":"info","message":"PDF conversion attempt 1/3","startDate":"2026-03-02","timestamp":"2026-02-09 21:26:24"}
+{"imageCount":3,"isRetry":false,"level":"info","message":"Converting PDF images to structured plan using vision","startDate":"2026-03-02","targetTimeSeconds":5400,"textLength":5480,"timestamp":"2026-02-09 21:26:24","totalImageSizeBytes":745342}
+{"level":"info","message":"PDF images to structured plan conversion successful","rowCount":112,"timestamp":"2026-02-09 21:27:37","usage":{"cachedInputTokens":0,"inputTokenDetails":{"cacheReadTokens":0,"noCacheTokens":7064},"inputTokens":7064,"outputTokenDetails":{"reasoningTokens":0,"textTokens":6482},"outputTokens":6482,"raw":{"input_tokens":7064,"input_tokens_details":{"cached_tokens":0},"output_tokens":6482,"output_tokens_details":{"reasoning_tokens":0}},"reasoningTokens":0,"totalTokens":13546}}
+{"attempts":1,"extractionMethod":"vision","level":"info","message":"PDF conversion successful","rowCount":112,"timestamp":"2026-02-09 21:27:37"}
+{"attemptsMade":1,"csvLength":7834,"level":"info","message":"PDF converted to CSV successfully","timestamp":"2026-02-09 21:27:37"}
+{"filename":"8-Week-Sub-90-Minute-Half-Marathon-Training-Plan-KM.pdf","level":"info","message":"Converting PDF to CSV","timestamp":"2026-02-09 21:32:25"}
+{"level":"info","message":"Analyzing PDF for text vs image content","timestamp":"2026-02-09 21:32:25"}
+{"level":"info","message":"Analyzing PDF for text/image content","timestamp":"2026-02-09 21:32:25"}
+{"hasImageOnlyPages":false,"imageOnlyPageCount":0,"imageOnlyPageNumbers":[],"level":"info","message":"PDF analysis complete","timestamp":"2026-02-09 21:32:25","totalPages":1}
+{"level":"info","message":"Extracting text from PDF","timestamp":"2026-02-09 21:32:25"}
+{"level":"info","message":"PDF text extraction successful","pages":1,"textLength":2266,"timestamp":"2026-02-09 21:32:25"}
+{"foundKeywords":15,"level":"info","message":"PDF content validation successful","textLength":2264,"timestamp":"2026-02-09 21:32:25"}
+{"extractionMethod":"text","isRetry":false,"level":"info","message":"PDF conversion attempt 1/3","startDate":"2026-03-02","timestamp":"2026-02-09 21:32:25"}
+{"isRetry":false,"level":"info","message":"Converting PDF text to structured plan using generateObject","startDate":"2026-03-02","targetTimeSeconds":5400,"textLength":2266,"timestamp":"2026-02-09 21:32:25"}
+{"level":"info","message":"PDF text to structured plan conversion successful","rowCount":56,"timestamp":"2026-02-09 21:33:15","usage":{"cachedInputTokens":1024,"inputTokenDetails":{"cacheReadTokens":1024,"noCacheTokens":2495},"inputTokens":3519,"outputTokenDetails":{"reasoningTokens":0,"textTokens":3315},"outputTokens":3315,"raw":{"input_tokens":3519,"input_tokens_details":{"cached_tokens":1024},"output_tokens":3315,"output_tokens_details":{"reasoning_tokens":0}},"reasoningTokens":0,"totalTokens":6834}}
+{"attempts":1,"extractionMethod":"text","level":"info","message":"PDF conversion successful","rowCount":56,"timestamp":"2026-02-09 21:33:15"}
+{"attemptsMade":1,"csvLength":3775,"level":"info","message":"PDF converted to CSV successfully","timestamp":"2026-02-09 21:33:15"}
+{"filename":"Half-Marathon-Training-Plan-Intermediate-PL.pdf","level":"info","message":"Converting PDF to CSV","timestamp":"2026-02-09 21:33:16"}
+{"level":"info","message":"Analyzing PDF for text vs image content","timestamp":"2026-02-09 21:33:16"}
+{"level":"info","message":"Analyzing PDF for text/image content","timestamp":"2026-02-09 21:33:16"}
+{"hasImageOnlyPages":true,"imageOnlyPageCount":3,"imageOnlyPageNumbers":[2,3,4],"level":"info","message":"PDF analysis complete","timestamp":"2026-02-09 21:33:16","totalPages":4}
+{"level":"info","message":"Rendering PDF pages as images","pageCount":3,"pages":[2,3,4],"timestamp":"2026-02-09 21:33:16"}
+{"level":"info","message":"PDF pages rendered successfully","renderedCount":3,"timestamp":"2026-02-09 21:33:16","totalSizeBytes":745342}
+{"level":"info","message":"Extracting text from PDF","timestamp":"2026-02-09 21:33:16"}
+{"level":"info","message":"PDF text extraction successful","pages":4,"textLength":5480,"timestamp":"2026-02-09 21:33:16"}
+{"imageOnlyPages":3,"level":"info","message":"Using vision extraction for image-heavy PDF","renderedImageCount":3,"timestamp":"2026-02-09 21:33:16","totalPages":4}
+{"extractionMethod":"vision","isRetry":false,"level":"info","message":"PDF conversion attempt 1/3","startDate":"2026-03-02","timestamp":"2026-02-09 21:33:16"}
+{"imageCount":3,"isRetry":false,"level":"info","message":"Converting PDF images to structured plan using vision","startDate":"2026-03-02","targetTimeSeconds":5400,"textLength":5480,"timestamp":"2026-02-09 21:33:16","totalImageSizeBytes":745342}
+{"level":"info","message":"PDF images to structured plan conversion successful","rowCount":112,"timestamp":"2026-02-09 21:35:38","usage":{"cachedInputTokens":7040,"inputTokenDetails":{"cacheReadTokens":7040,"noCacheTokens":112},"inputTokens":7152,"outputTokenDetails":{"reasoningTokens":0,"textTokens":6479},"outputTokens":6479,"raw":{"input_tokens":7152,"input_tokens_details":{"cached_tokens":7040},"output_tokens":6479,"output_tokens_details":{"reasoning_tokens":0}},"reasoningTokens":0,"totalTokens":13631}}
+{"attempts":1,"extractionMethod":"vision","level":"info","message":"PDF conversion successful","rowCount":112,"timestamp":"2026-02-09 21:35:38"}
+{"attemptsMade":1,"csvLength":7842,"level":"info","message":"PDF converted to CSV successfully","timestamp":"2026-02-09 21:35:38"}

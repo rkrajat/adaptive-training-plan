@@ -22,7 +22,7 @@ Implement backend persistence for AI-generated training recommendations to enabl
 2. Backend automatically checks in-memory cache for existing recommendation (keyed by userId, planId, weekNumber)
 3. If cache miss, backend generates AI recommendation content via streaming, incorporating any athlete input feedback if provided
 4. Generated recommendation is stored in in-memory cache (NOT in database) with TTL (default: 1 hour)
-5. Frontend fetches cached recommendation via `GET /api/recommendations/pending` endpoint
+5. Frontend pre-generates recommendation via `GET /api/recommendations/pre-generate` endpoint
 6. When user accepts the recommendation, backend creates Recommendation document in MongoDB with:
    - Full recommendation text/markdown content (from cache)
    - Associated userId and trainingPlanId

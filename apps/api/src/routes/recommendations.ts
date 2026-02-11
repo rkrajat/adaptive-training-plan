@@ -56,45 +56,51 @@ router.post(
         planId,
         userId,
         currentWeek: trainingPlan.currentWeek,
+        hasUserFeedback: !!userFeedback,
       });
 
-      // Check cache first
-      const cachedContent = recommendationGenerationService.getCachedRecommendation(
-        userId,
-        planId,
-        trainingPlan.currentWeek
-      );
-
-      if (cachedContent) {
-        log.info("Returning cached recommendation", {
+      // If userFeedback is provided, we want to regenerate with feedback
+      // The service will handle cache invalidation in that case
+      // If no feedback, check cache first for performance
+      if (!userFeedback || !userFeedback.trim()) {
+        const cachedContent = recommendationGenerationService.getCachedRecommendation(
           userId,
           planId,
-          weekNumber: trainingPlan.currentWeek,
-        });
+          trainingPlan.currentWeek
+        );
 
-        // Set headers for streaming (for UX consistency)
-        res.setHeader("Content-Type", "text/plain; charset=utf-8");
-        res.setHeader("Cache-Control", "no-cache");
-        res.setHeader("Connection", "keep-alive");
+        if (cachedContent) {
+          log.info("Returning cached recommendation", {
+            userId,
+            planId,
+            weekNumber: trainingPlan.currentWeek,
+          });
 
-        // Stream cached content (simulate streaming by sending in chunks)
-        const chunkSize = 100;
-        for (let i = 0; i < cachedContent.length; i += chunkSize) {
-          res.write(cachedContent.slice(i, i + chunkSize));
+          // Set headers for streaming (for UX consistency)
+          res.setHeader("Content-Type", "text/plain; charset=utf-8");
+          res.setHeader("Cache-Control", "no-cache");
+          res.setHeader("Connection", "keep-alive");
+
+          // Stream cached content (simulate streaming by sending in chunks)
+          const chunkSize = 100;
+          for (let i = 0; i < cachedContent.length; i += chunkSize) {
+            res.write(cachedContent.slice(i, i + chunkSize));
+          }
+
+          res.end();
+          return;
         }
-
-        res.end();
-        return;
       }
 
-      // Cache miss - generate new recommendation
-      log.info("Cache miss, generating new recommendation", {
+      // Generate and cache recommendation
+      // If userFeedback is provided, service will invalidate cache and regenerate
+      log.info("Generating recommendation", {
         userId,
         planId,
         weekNumber: trainingPlan.currentWeek,
+        hasUserFeedback: !!userFeedback,
       });
 
-      // Generate and cache recommendation
       const result = await recommendationGenerationService.generateAndCacheRecommendation(
         userId,
         planId,
@@ -143,8 +149,8 @@ router.post(
   },
 );
 
-// GET /api/recommendations/pending - Get or generate pending recommendation from cache
-router.get("/pending", authenticateJWT, async (req: Request, res: Response) => {
+// GET /api/recommendations/pre-generate - Pre-generate and cache recommendation (background)
+router.get("/pre-generate", authenticateJWT, async (req: Request, res: Response) => {
   try {
     // Validate user authentication
     if (!req.user) {
@@ -168,7 +174,7 @@ router.get("/pending", authenticateJWT, async (req: Request, res: Response) => {
 
     const weekNumber = trainingPlan.currentWeek;
 
-    log.info("Fetching pending recommendation", {
+    log.info("Pre-generating recommendation", {
       userId,
       planId,
       weekNumber,
@@ -187,14 +193,14 @@ router.get("/pending", authenticateJWT, async (req: Request, res: Response) => {
     });
   } catch (error) {
     if (error instanceof AppError) {
-      log.warn("Error fetching pending recommendation", {
+      log.warn("Error pre-generating recommendation", {
         error: error.message,
       });
       res.status(error.statusCode).json({ error: error.message });
       return;
     }
 
-    log.error("Unexpected error in pending recommendation route", error);
+    log.error("Unexpected error in pre-generate recommendation route", error);
     sendInternalError(res, "Internal server error");
   }
 });

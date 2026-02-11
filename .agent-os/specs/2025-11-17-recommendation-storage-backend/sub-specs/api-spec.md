@@ -137,9 +137,9 @@ Based on your recent activities...
 
 ## New Endpoints
 
-### GET /api/recommendations/pending
+### GET /api/recommendations/pre-generate
 
-**Purpose**: Get or generate pending recommendation from cache. Auto-generates if cache miss.
+**Purpose**: Pre-generate and cache recommendation in background. Returns cached if available, generates and caches if cache miss.
 
 **Authentication**: Required (JWT)
 

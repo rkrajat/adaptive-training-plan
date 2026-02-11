@@ -162,9 +162,9 @@ export const recommendationsApi = {
       .json<ActiveRecommendationResponse>();
   },
 
-  getPending: async (planId: string): Promise<{ content: string; cached: boolean }> => {
+  preGenerate: async (planId: string): Promise<{ content: string; cached: boolean }> => {
     return api
-      .get("api/recommendations/pending", {
+      .get("api/recommendations/pre-generate", {
         searchParams: { planId },
       })
       .json<{ content: string; cached: boolean }>();

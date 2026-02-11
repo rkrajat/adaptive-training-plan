@@ -2,7 +2,7 @@ import type {
   RecommendationStatus,
   TrainingPlan,
 } from "@adaptive-training-plan/types";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
 import { recommendationsApi } from "@/lib/api";
 import { extractRecommendationMetadata } from "@/lib/stream-utils";
@@ -14,7 +14,7 @@ interface UseRecommendationsReturn {
   isGenerating: boolean;
   error: Error | null;
   generateRecommendations: (userFeedback?: string) => Promise<void>;
-  fetchPendingRecommendation: (planId: string) => Promise<void>;
+  preGenerateRecommendation: (planId: string) => Promise<void>;
   handleRegenerate: () => void;
   setCompletion: (content: string) => void;
   setRecommendationId: (id: string | null) => void;
@@ -36,26 +36,20 @@ export const useRecommendations = (
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
-  const fetchPendingRecommendation = async (
-    planId: string,
-  ): Promise<void> => {
-    try {
-      setError(null);
-
-      // Fetch pending recommendation from cache (or generate if cache miss)
-      const result = await recommendationsApi.getPending(planId);
-
-      // Update state with cached recommendation
-      setCompletion(result.content);
-      // Pending recommendations from cache don't have a DB ID yet
-      setRecommendationId(null);
-      setRecommendationStatus("pending");
-    } catch (err) {
-      console.error("Error fetching pending recommendation:", err);
-      // Don't set error state - graceful degradation (dashboard should still load)
-      // setError(err as Error);
-    }
-  };
+  const preGenerateRecommendation = useCallback(
+    async (planId: string): Promise<void> => {
+      try {
+        // Pre-generate recommendation in background (generates and caches, or returns cached)
+        // This is purely for cache pre-population - never updates UI state
+        await recommendationsApi.preGenerate(planId);
+      } catch (err) {
+        console.error("Error pre-generating recommendation:", err);
+        // Silently fail - this is just background cache pre-population
+        // Don't set error state - graceful degradation (dashboard should still load)
+      }
+    },
+    []
+  );
 
   const generateRecommendations = async (
     userFeedback?: string,
@@ -135,7 +129,7 @@ export const useRecommendations = (
     isGenerating,
     error,
     generateRecommendations,
-    fetchPendingRecommendation,
+    preGenerateRecommendation,
     handleRegenerate,
     setCompletion,
     setRecommendationId,

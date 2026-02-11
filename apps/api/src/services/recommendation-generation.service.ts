@@ -3,6 +3,7 @@ import type { StravaActivity } from "../types/strava.types";
 import { formatActivitiesForAI } from "../utils/activity-formatter";
 import {
   getRecommendationCacheKey,
+  invalidateUserRecommendationCache,
   recommendationsCache,
 } from "../utils/cache";
 import { log } from "../utils/logger";
@@ -34,8 +35,19 @@ export class RecommendationGenerationService {
     userFeedback?: string
   ): Promise<CachedRecommendationResult> {
     try {
-      // Check cache first
       const cacheKey = getRecommendationCacheKey(userId, planId, weekNumber);
+
+      // If userFeedback is provided, invalidate cache to ensure fresh generation with feedback
+      if (userFeedback && userFeedback.trim()) {
+        log.info("User feedback provided, invalidating cache for fresh generation", {
+          userId,
+          planId,
+          weekNumber,
+        });
+        invalidateUserRecommendationCache(userId, planId, weekNumber);
+      }
+
+      // Check cache (will be empty if we just invalidated it)
       const cached = recommendationsCache.get(cacheKey);
 
       if (cached) {

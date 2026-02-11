@@ -59,7 +59,7 @@ export default function DashboardPage() {
     isGenerating,
     error: recommendationError,
     generateRecommendations,
-    fetchPendingRecommendation,
+    preGenerateRecommendation,
     setCompletion,
     setRecommendationId,
     setRecommendationStatus,
@@ -108,27 +108,17 @@ export default function DashboardPage() {
     setRecommendationStatus,
   ]);
 
-  // Non-blocking auto-fetch pending recommendation on dashboard load
+  // Pre-generate recommendation in background once when activePlan is available (populates cache)
+  // This happens silently - user doesn't see it until they submit the dialog
   useEffect(() => {
-    // Only fetch if:
-    // 1. activePlan is loaded
-    // 2. User doesn't have an active (accepted) recommendation
-    // 3. No recommendation is currently displayed
-    if (
-      activePlan &&
-      !activeRecommendation &&
-      !completion &&
-      !isGenerating
-    ) {
-      fetchPendingRecommendation(activePlan.id).catch(console.error);
+    if (activePlan?.id) {
+      // Silently pre-generate in background to populate cache
+      // This never updates UI - it's purely for cache pre-population
+      preGenerateRecommendation(activePlan.id).catch(() => {
+        // Silently fail - this is just cache pre-population
+      });
     }
-  }, [
-    activePlan,
-    activeRecommendation,
-    completion,
-    isGenerating,
-    fetchPendingRecommendation,
-  ]);
+  }, [activePlan?.id, preGenerateRecommendation]);
 
   // Handle regenerate click - show pre-recommendation dialog or confirmation
   const handleRegenerateClick = () => {

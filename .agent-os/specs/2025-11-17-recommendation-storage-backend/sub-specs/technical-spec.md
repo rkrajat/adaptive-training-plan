@@ -200,7 +200,7 @@ if (recommendation.userId.toString() !== userId) {
 ```
 User loads dashboard
         ↓
-Frontend: GET /api/recommendations/pending?planId=...
+Frontend: GET /api/recommendations/pre-generate?planId=...
         ↓
 Backend: Check cache (key: userId:planId:weekNumber)
         ↓
