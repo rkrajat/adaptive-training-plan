@@ -288,7 +288,7 @@ export const PreRecommendationDialog = ({
           </div>
 
           {/* Key Observations */}
-          <div className="space-y-2">
+          {/* <div className="space-y-2">
             <h4 className="text-sm font-medium flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-amber-600" />
               Key Observations
@@ -303,7 +303,7 @@ export const PreRecommendationDialog = ({
                 />
               ))}
             </div>
-          </div>
+          </div> */}
 
           {/* What We're Considering */}
           <div className="space-y-2">

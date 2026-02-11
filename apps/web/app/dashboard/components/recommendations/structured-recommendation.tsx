@@ -294,7 +294,7 @@ export const StructuredRecommendation = ({
   return (
     <div className="space-y-2.5 sm:space-y-4">
       {/* Quick Summary Card */}
-      {quickSummary && (
+      {/* {quickSummary && (
         <div className="p-3 rounded-lg bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800">
           <div className="flex items-start gap-2">
             <Sparkles className="h-4 w-4 text-purple-600 dark:text-purple-400 mt-0.5 flex-shrink-0" />
@@ -303,7 +303,7 @@ export const StructuredRecommendation = ({
             </p>
           </div>
         </div>
-      )}
+      )} */}
 
       {/* Structured Sections */}
       <div className="border rounded-lg divide-y divide-border">
