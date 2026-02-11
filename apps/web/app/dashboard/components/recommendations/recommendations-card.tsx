@@ -1,4 +1,4 @@
-import { XCircle } from "lucide-react";
+import { Activity, XCircle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -28,6 +28,10 @@ interface RecommendationsCardProps {
   isRejecting?: boolean;
   /** Original training plan data for diff highlighting */
   originalPlan?: OriginalPlanData;
+  /** Current training week number */
+  currentWeek?: number;
+  /** Callback when week summary button is clicked */
+  onViewWeeklySummary?: () => void;
 }
 
 /**
@@ -46,6 +50,8 @@ export const RecommendationsCard = ({
   isAccepting = false,
   isRejecting = false,
   originalPlan,
+  currentWeek,
+  onViewWeeklySummary,
 }: RecommendationsCardProps) => {
   const showAcceptReject =
     recommendationStatus === "pending" &&
@@ -55,12 +61,26 @@ export const RecommendationsCard = ({
     onReject;
   return (
     <Card className="mb-6 sm:mb-8" data-tour="recommendations-card">
-      <CardHeader>
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0">
-          <CardTitle className="text-lg sm:text-xl">
-            Weekly Training Recommendation
-          </CardTitle>
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+      <CardHeader className="pb-3 sm:pb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 sm:gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2.5 sm:gap-4">
+            <CardTitle className="text-lg sm:text-xl">
+              Weekly Training Recommendation
+            </CardTitle>
+            {currentWeek && onViewWeeklySummary && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onViewWeeklySummary}
+                className="h-8 text-xs w-full sm:w-auto border-orange-200 text-orange-600 hover:bg-orange-50 dark:border-orange-800 dark:text-orange-400 dark:hover:bg-orange-950/50"
+                data-tour="weekly-runs-report"
+              >
+                <Activity className="h-3.5 w-3.5 mr-1.5" />
+                View Week {currentWeek} Summary
+              </Button>
+            )}
+          </div>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-2">
             {/* Accept/Reject Buttons - only for pending recommendations */}
             {showAcceptReject && (
               <AcceptRejectButtons

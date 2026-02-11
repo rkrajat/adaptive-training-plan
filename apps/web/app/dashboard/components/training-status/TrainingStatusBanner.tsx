@@ -16,7 +16,7 @@ interface TrainingStatusBannerProps {
  */
 export const TrainingStatusBannerSkeleton = () => {
   return (
-    <div className="w-full rounded-lg border p-4 mb-6 animate-pulse">
+    <div className="w-full h-full rounded-lg border p-4 animate-pulse">
       <div className="flex items-start gap-3">
         <Skeleton className="h-5 w-5 rounded-full flex-shrink-0 mt-0.5" />
         <div className="flex-1 space-y-2">
@@ -45,7 +45,7 @@ export const TrainingStatusBanner = ({
 
   return (
     <div
-      className={`w-full rounded-lg border ${config.borderClass} ${config.bgClass} p-4 mb-6 shadow-sm transition-all duration-300 ease-in-out`}
+      className={`w-full rounded-lg border ${config.borderClass} ${config.bgClass} p-4 shadow-sm transition-all duration-300 ease-in-out`}
       role="status"
       aria-label={`Training status: ${config.label}`}
       data-tour="training-status-banner"

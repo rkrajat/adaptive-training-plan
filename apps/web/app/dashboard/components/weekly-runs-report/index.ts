@@ -1,1 +1,1 @@
-export { WeeklyRunsReport } from "./weekly-runs-report";
+export { WeeklySummaryDialog } from "./weekly-summary-dialog";

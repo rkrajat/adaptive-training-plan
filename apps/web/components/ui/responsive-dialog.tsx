@@ -20,6 +20,7 @@ import {
   DrawerTitle,
 } from "@/components/ui/drawer";
 import { useMediaQuery } from "@/hooks/use-media-query";
+import { cn } from "@/lib/utils";
 
 /**
  * Hook to detect keyboard visibility on mobile
@@ -147,7 +148,7 @@ export const ResponsiveDialogContent = ({
   if (isMobile) {
     return (
       <DrawerContent
-        className={className}
+        className={cn("max-h-[85svh]", isKeyboardVisible && "max-h-[50svh]", className)}
         onInteractOutside={(event) => {
           if (preventClose) {
             event.preventDefault();
@@ -155,16 +156,12 @@ export const ResponsiveDialogContent = ({
         }}
       >
         {/*
-          Mobile drawer content wrapper with keyboard-aware styling:
-          - Uses max-h-[70svh] with svh (small viewport height) which accounts for browser chrome
-          - When keyboard is visible, reduce height further to prevent content from being pushed off screen
+          Mobile drawer content wrapper:
+          - Max height applied to DrawerContent itself to cap the drawer size
+          - Overflow handling allows scrolling when content exceeds available space
           - pb-safe adds padding for iOS home indicator
         */}
-        <div
-          className={`overflow-y-auto px-4 pb-4 pb-safe transition-[max-height] duration-200 ${
-            isKeyboardVisible ? "max-h-[50svh]" : "max-h-[70svh]"
-          }`}
-        >
+        <div className="overflow-y-auto px-4 pb-4 pb-safe">
           {children}
         </div>
       </DrawerContent>
@@ -244,7 +241,12 @@ export const ResponsiveDialogFooter = ({
   const { isMobile } = React.useContext(ResponsiveDialogContext);
 
   if (isMobile) {
-    return <DrawerFooter className={className}>{children}</DrawerFooter>;
+    // Override mt-auto from DrawerFooter to keep footer close to content
+    return (
+      <DrawerFooter className={cn("mt-0", className)}>
+        {children}
+      </DrawerFooter>
+    );
   }
 
   return <DialogFooter className={className}>{children}</DialogFooter>;
