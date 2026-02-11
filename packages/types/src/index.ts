@@ -5,6 +5,14 @@ export type {
   TrainingPlanWithContent,
   TrainingPlanVersion,
   TrainingPlanWithVersions,
+  WorkoutType,
+  DayAbbreviation,
+  HRZone,
+  TrainingPlanRow,
+  RowValidationError,
+  InvalidRow,
+  ExtractedTrainingPlanData,
+  ManualCorrectionResponse,
 } from './training-plan';
 export type { ExperienceLevel } from './user.types';
 export { experienceLevelSchema, updateExperienceLevelSchema } from './user.schemas';

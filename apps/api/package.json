@@ -14,8 +14,8 @@
   "dependencies": {
     "@adaptive-training-plan/types": "workspace:*",
     "@adaptive-training-plan/utils": "workspace:*",
-    "@ai-sdk/openai": "^2.0.58",
-    "ai": "^5.0.82",
+    "@ai-sdk/openai": "^3.0.26",
+    "ai": "^6.0.77",
     "cors": "^2.8.5",
     "csv-parse": "^6.1.0",
     "dotenv": "^17.2.3",
@@ -26,6 +26,7 @@
     "mongoose": "^8.19.2",
     "multer": "^2.0.2",
     "pdf-parse": "^2.4.5",
+    "pdf-to-img": "^5.0.0",
     "strava-v3": "^2.2.1",
     "winston": "^3.18.3",
     "zod": "^4.1.12"

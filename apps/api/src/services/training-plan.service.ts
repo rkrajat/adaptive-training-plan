@@ -11,6 +11,7 @@ import {
   type ITrainingPlanVersion,
 } from "../models/TrainingPlanVersion";
 import { User } from "../models/User";
+import type { TrainingPlanRow } from "../schemas/training-plan-row.schema";
 import type {
   TrainingPlanResponse,
   TrainingPlanWithContentResponse,
@@ -29,14 +30,124 @@ import {
 } from "../utils/error";
 import { log } from "../utils/logger";
 
-import { pdfToCsvService } from "./pdf-to-csv.service";
+import { aiService } from "./ai.service";
+import {
+  pdfToCsvService,
+  type ExtractedDataForCorrection,
+} from "./pdf-to-csv.service";
 import { vdotService } from "./vdot.service";
+
+/**
+ * Result type for training plan creation that may require manual correction
+ */
+export interface TrainingPlanCreateResult {
+  status: "success" | "requires_manual_correction";
+  trainingPlan?: TrainingPlanWithContentResponse;
+  extractedData?: ExtractedDataForCorrection;
+  attemptsMade?: number;
+  error?: string;
+}
 
 /**
  * Training Plan Service
  * Handles training plan CRUD operations and version management
  */
 export class TrainingPlanService {
+  /**
+   * Process training plan file and generate CSV content
+   * This is the core logic extracted for testability
+   * @param file - Uploaded file (PDF or CSV)
+   * @param metadata - Training plan metadata including race goal
+   * @param fileType - "pdf" or "csv"
+   * @returns Generated CSV content string
+   * @internal Exposed for testing purposes
+   */
+  async processTrainingPlanFile(
+    file: Express.Multer.File,
+    metadata: TrainingPlanUploadRequest,
+    fileType: "csv" | "pdf"
+  ): Promise<string> {
+    let csvContent: string;
+
+    if (fileType === "pdf") {
+      log.info("Converting PDF to CSV", { filename: file.originalname });
+
+      const targetTimeSeconds = metadata.raceGoal?.targetTimeSeconds;
+
+      const conversionResult = await pdfToCsvService.convertPdfToCsvWithRetry(
+        file.buffer,
+        metadata.startDate,
+        targetTimeSeconds,
+        file.originalname
+      );
+
+      if (!conversionResult.success || !conversionResult.csvContent) {
+        // Check if manual correction is required
+        if (conversionResult.requiresManualCorrection && conversionResult.validationResult) {
+          const extractedData = pdfToCsvService.buildExtractedDataForCorrection(
+            conversionResult.validationResult
+          );
+
+          log.info("PDF conversion requires manual correction", {
+            validRows: extractedData.validRowCount,
+            invalidRows: extractedData.invalidRowCount,
+            attemptsMade: conversionResult.attemptsMade,
+          });
+
+          // Throw a special error that the route can catch and handle
+          const error = new AppError(
+            "PDF conversion requires manual correction",
+            422 // Unprocessable Entity
+          );
+          (error as AppError & { extractedData: ExtractedDataForCorrection; attemptsMade: number }).extractedData = extractedData;
+          (error as AppError & { extractedData: ExtractedDataForCorrection; attemptsMade: number }).attemptsMade = conversionResult.attemptsMade;
+          throw error;
+        }
+
+        const errorMessage =
+          conversionResult.error?.message ||
+          "Failed to convert PDF to training plan format";
+        throw new AppError(errorMessage, 400);
+      }
+
+      csvContent = conversionResult.csvContent;
+
+      log.info("PDF converted to CSV successfully", {
+        csvLength: csvContent.length,
+        attemptsMade: conversionResult.attemptsMade,
+      });
+    } else {
+      // Handle CSV files
+      const csvText = parseCsvBuffer(file.buffer);
+      const targetTimeSeconds = metadata.raceGoal?.targetTimeSeconds;
+
+      if (targetTimeSeconds) {
+        // Update CSV with matched pace group
+        log.info("Updating CSV with matched pace group", {
+          targetTimeSeconds,
+          startDate: metadata.startDate,
+        });
+
+        csvContent = await aiService.updateCsvWithMatchedPaceGroup(
+          csvText,
+          targetTimeSeconds,
+          metadata.startDate
+        );
+
+        log.info("CSV updated with matched pace group", {
+          csvLength: csvContent.length,
+        });
+      } else {
+        csvContent = csvText;
+      }
+    }
+
+    // Validate CSV structure
+    validateCsvStructure(csvContent);
+
+    return csvContent;
+  }
+
   /**
    * Create a new training plan with initial version
    * Uses MongoDB transactions to ensure atomicity
@@ -55,35 +166,8 @@ export class TrainingPlanService {
 
       validateCsvFile(file);
 
-      let csvContent: string;
-
-      if (fileType === "pdf") {
-        log.info("Converting PDF to CSV", { filename: file.originalname });
-
-        const conversionResult = await pdfToCsvService.convertPdfToCsv(
-          file.buffer,
-          metadata.startDate
-        );
-
-        if (!conversionResult.success || !conversionResult.csvContent) {
-          const errorMessage =
-            conversionResult.error?.message ||
-            "Failed to convert PDF to training plan format";
-          throw new AppError(errorMessage, 400);
-        }
-
-        csvContent = conversionResult.csvContent;
-
-        log.info("PDF converted to CSV successfully", {
-          csvLength: csvContent.length,
-        });
-      } else {
-        // Handle CSV files - existing path
-        csvContent = parseCsvBuffer(file.buffer);
-      }
-
-      // Validate CSV structure (for both converted PDFs and direct CSV uploads)
-      validateCsvStructure(csvContent);
+      // Process file and get CSV content (core logic extracted for testability)
+      const csvContent = await this.processTrainingPlanFile(file, metadata, fileType);
 
       // Calculate VDOT and training paces from race goal
       let raceGoal: RaceGoal | undefined;
@@ -164,6 +248,121 @@ export class TrainingPlanService {
         throw error;
       }
       throw new InternalServerError("Failed to create training plan", error);
+    } finally {
+      await session.endSession();
+    }
+  }
+
+  /**
+   * Create a training plan from manually corrected rows
+   * Used when the PDF conversion requires manual correction
+   */
+  async createTrainingPlanFromCorrectedRows(
+    userId: string,
+    rows: TrainingPlanRow[],
+    metadata: {
+      name: string;
+      startDate: string;
+      goal?: string;
+      raceName?: string;
+      raceDate?: string;
+      raceGoal: {
+        distance: 5000 | 10000 | 21097.5 | 42195;
+        targetTimeSeconds: number;
+      };
+    }
+  ): Promise<TrainingPlanWithContentResponse> {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
+    try {
+      log.info("Creating training plan from corrected rows", {
+        userId,
+        rowCount: rows.length,
+        metadata,
+      });
+
+      // Convert rows to CSV format
+      const csvContent = aiService.structuredPlanToCsv({ rows });
+
+      // Validate CSV structure
+      validateCsvStructure(csvContent);
+
+      // Calculate VDOT and training paces from race goal
+      const raceGoal = vdotService.createRaceGoal(
+        metadata.raceGoal.distance as RaceDistance,
+        metadata.raceGoal.targetTimeSeconds
+      );
+
+      log.info("VDOT calculated for race goal", {
+        userId,
+        distance: raceGoal.distanceLabel,
+        vdot: raceGoal.vdot,
+      });
+
+      // Update user with race goal and training paces
+      await User.findByIdAndUpdate(userId, { raceGoal }, { session });
+
+      log.info("User race goal updated", { userId, vdot: raceGoal.vdot });
+
+      // Create training plan
+      const trainingPlanData = {
+        userId: new mongoose.Types.ObjectId(userId),
+        csvContent,
+        metadata: {
+          name: metadata.name,
+          goal: metadata.goal,
+          raceName: metadata.raceName,
+          raceDate: metadata.raceDate ? new Date(metadata.raceDate) : undefined,
+        },
+        source: "user_upload" as const,
+        isActive: true,
+        startDate: new Date(metadata.startDate),
+      };
+
+      const [trainingPlan] = await TrainingPlan.create([trainingPlanData], {
+        session,
+      });
+
+      log.info("Training plan created from corrected rows", {
+        trainingPlanId: trainingPlan._id,
+        userId,
+      });
+
+      // Create initial version
+      const versionData = {
+        trainingPlanId: trainingPlan._id as mongoose.Types.ObjectId,
+        versionNumber: 1,
+        csvContent,
+        metadata: trainingPlan.metadata,
+        changeType: "created" as const,
+        changeDescription: "Plan created from manually corrected PDF extraction",
+      };
+
+      await TrainingPlanVersion.create([versionData], { session });
+
+      log.info("Initial version created for corrected plan", {
+        trainingPlanId: trainingPlan._id,
+        versionNumber: 1,
+      });
+
+      // Commit transaction
+      await session.commitTransaction();
+
+      return this.formatTrainingPlanWithContent(trainingPlan);
+    } catch (error) {
+      await session.abortTransaction();
+      log.error("Failed to create training plan from corrected rows", error, {
+        userId,
+      });
+
+      if (error instanceof AppError) {
+        throw error;
+      }
+      throw new InternalServerError(
+        "Failed to create training plan from corrected rows",
+        error
+      );
     } finally {
       await session.endSession();
     }

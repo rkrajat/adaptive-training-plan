@@ -30,8 +30,7 @@ const configSchema = z.object({
   // OpenAI Configuration
   openai: z.object({
     apiKey: z.string().min(1, "OPENAI_API_KEY is required"),
-    // model: z.string().default("gpt-4o-mini"),
-    model: z.string().default("gpt-4o"),
+    model: z.string().default("gpt-5.1"),
     temperature: z.number().min(0).max(2).default(0.7),
   }),
 

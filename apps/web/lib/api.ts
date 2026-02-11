@@ -1,4 +1,4 @@
-import ky from "ky";
+import ky, { HTTPError } from "ky";
 import type {
   Activity,
   User,
@@ -11,6 +11,8 @@ import type {
   RejectAction,
   RejectRecommendationResponse,
   RaceGoalInput,
+  TrainingPlanRow,
+  ManualCorrectionResponse,
 } from "@adaptive-training-plan/types";
 
 import { getToken, removeToken } from "./auth";
@@ -26,7 +28,7 @@ const getAuthHeader = (): string | undefined => {
 // Create ky instance with Authorization header
 export const api = ky.create({
   prefixUrl: API_URL,
-  timeout: 120000, // 2 minutes - matches backend timeout for AI recommendations
+  timeout: 600000, // 10 minutes - vision-based PDF extraction can take several minutes
   retry: {
     limit: 0, // Disable retries for long-running AI requests
   },
@@ -99,7 +101,7 @@ export const trainingPlansApi = {
       raceDate?: string;
       raceGoal: RaceGoalInput;
     }
-  ): Promise<TrainingPlanWithContent> => {
+  ): Promise<TrainingPlanWithContent | ManualCorrectionResponse> => {
     const formData = new FormData();
     formData.append("file", file);
     formData.append("name", metadata.name);
@@ -111,8 +113,30 @@ export const trainingPlansApi = {
     formData.append("raceGoal[distance]", metadata.raceGoal.distance.toString());
     formData.append("raceGoal[targetTimeSeconds]", metadata.raceGoal.targetTimeSeconds.toString());
 
+    try {
+      return await api
+        .post("api/training-plans", { body: formData })
+        .json<TrainingPlanWithContent>();
+    } catch (error) {
+      // Check if this is a 422 response (requires manual correction)
+      if (error instanceof HTTPError && error.response.status === 422) {
+        return error.response.json() as Promise<ManualCorrectionResponse>;
+      }
+      throw error;
+    }
+  },
+
+  submitCorrected: async (data: {
+    name: string;
+    startDate: string;
+    goal?: string;
+    raceName?: string;
+    raceDate?: string;
+    raceGoal: RaceGoalInput;
+    rows: TrainingPlanRow[];
+  }): Promise<TrainingPlanWithContent> => {
     return api
-      .post("api/training-plans", { body: formData })
+      .post("api/training-plans/corrected", { json: data })
       .json<TrainingPlanWithContent>();
   },
 

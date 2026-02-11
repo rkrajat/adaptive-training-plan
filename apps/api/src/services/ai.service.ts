@@ -1,9 +1,14 @@
 import type { ExperienceLevel, TrainingPaces } from "@adaptive-training-plan/types";
 import { groupTrainingPlanByWeek } from "@adaptive-training-plan/utils";
 import { openai } from "@ai-sdk/openai";
-import { generateText, streamText } from "ai";
+import { generateObject, generateText, streamText } from "ai";
 
 import { config } from "../config";
+import {
+  TrainingPlanSchema,
+  type TrainingPlan,
+  type TrainingPlanRow,
+} from "../schemas/training-plan-row.schema";
 import type {
   FormattedActivity,
   StravaActivity,
@@ -12,6 +17,7 @@ import type {
 import { InternalServerError } from "../utils/error";
 import { log } from "../utils/logger";
 import { formatPace } from "../utils/pace-formatter";
+import { saveTokenUsage } from "../utils/token-usage-tracker";
 
 /**
  * Training status types for status indicator
@@ -32,6 +38,26 @@ export interface TrainingStatusResult {
  * Handles AI-powered recommendations using Vercel AI SDK
  */
 export class AIService {
+  /**
+   * Get OpenAI model instance
+   * @param modelId - Model ID string
+   * @returns OpenAI language model instance
+   */
+  private getOpenAIModel(modelId: string) {
+    return openai(modelId);
+  }
+
+  /**
+   * Get model options for PDF parsing calls
+   * @returns Model options object with low reasoning effort and text verbosity
+   */
+  private getPdfParsingModelOptions() {
+    return {
+      reasoningEffort: "medium" as const,
+      textVerbosity: "low" as const,
+      seed: 42,
+    };
+  }
   /**
    * Build the system prompt for training recommendations
    */
@@ -612,7 +638,7 @@ Keep the tone professional but encouraging. Be specific and actionable.`;
       });
 
       const result = await generateText({
-        model: openai(config.openai.model),
+        model: this.getOpenAIModel(config.openai.model),
         messages: [
           {
             role: "system",
@@ -678,7 +704,7 @@ Keep the tone professional but encouraging. Be specific and actionable.`;
       });
 
       const result = await generateText({
-        model: openai(config.openai.model),
+        model: this.getOpenAIModel(config.openai.model),
         messages: [
           {
             role: "system",
@@ -754,7 +780,7 @@ Keep the tone professional but encouraging. Be specific and actionable.`;
       });
 
       return streamText({
-        model: openai(config.openai.model),
+        model: this.getOpenAIModel(config.openai.model),
         messages: [
           {
             role: "system",
@@ -780,102 +806,224 @@ Keep the tone professional but encouraging. Be specific and actionable.`;
   }
 
   /**
-   * Convert PDF text to CSV format using LLM
-   * @param pdfText - Extracted text from PDF training plan
-   * @param startDate - Training plan start date in YYYY-MM-DD format
-   * @returns CSV formatted string
+   * Format time from seconds to HH:MM:SS or MM:SS format
+   * @param seconds - Time in seconds
+   * @returns Formatted time string (e.g., "2:00:00" or "1:30:00")
    */
-  async convertPdfTextToCsv(
-    pdfText: string,
-    startDate: string
-  ): Promise<string> {
-    try {
-      log.info("Converting PDF text to CSV using LLM", {
-        textLength: pdfText.length,
-        startDate,
-      });
+  private formatTimeFromSeconds(seconds: number): string {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = Math.round(seconds % 60);
+    
+    if (hours > 0) {
+      return `${hours}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    }
+    return `${minutes}:${String(secs).padStart(2, '0')}`;
+  }
 
-      const systemPrompt = `
+  /**
+   * Build the system prompt for PDF to structured plan conversion
+   * @param startDate - Training plan start date in YYYY-MM-DD format
+   * @param targetTimeSeconds - Optional target race time in seconds for pace group matching
+   * @param errorContext - Optional error context from previous failed attempt
+   * @returns System prompt string
+   */
+  private buildPdfConversionSystemPrompt(
+    startDate: string,
+    targetTimeSeconds?: number,
+    errorContext?: string
+  ): string {
+    let prompt = `
 ## YOUR ROLE
-You are a Running Training Plan Normalizer. Your job is to extract and standardize training plan data from any PDF — regardless of formatting — into a structured, machine-readable table.
+You are a Running Training Plan Normalizer. Your job is to extract and standardize training plan data from any PDF — regardless of formatting — into a structured JSON format.
 
-🧩 INPUT
-You will receive a PDF file or the extracted text from the PDF file by the user. The file may contain text, tables, or images showing a running training plan. If the file contains the training plan in miles and kilometers, consider the kilometers version.
+## CRITICAL EXTRACTION RULE
+EXTRACT ONLY WHAT IS EXPLICITLY WRITTEN IN THE SOURCE. DO NOT:
+- Add explanations, clarifications, or additional context that isn't in the source
+- Infer or expand on what's written (e.g., don't add workout details, effort levels, or instructions that aren't explicitly stated)
+- Change the wording or format (e.g., if source says "bike, swim, strength, etc." keep it as is, don't change to "bike/elliptical/strength/yoga")
+- Add workout details that aren't explicitly mentioned
+- Summarize or paraphrase - extract the exact text when possible
+- If the source has minimal information, keep the extracted fields minimal
 
-📅 TRAINING PLAN START DATE
+## INPUT
+You will receive extracted text from a PDF file containing a running training plan. The file may contain text or tables showing a running training plan. If the file contains the training plan in miles and kilometers, consider the kilometers version.
+
+## TRAINING PLAN START DATE
 The user has specified that this training plan starts on: ${startDate}
 Use this as the starting date for the training plan. If the PDF contains explicit dates, use those. Otherwise, start from ${startDate} and increment sequentially for each day.
 THIS IS VERY IMPORTANT. DO NOT CHANGE THE START DATE. AND ALWAYS USE CORRECT DATE AND DAYS.
 
-🎯 OUTPUT
-Your task is to produce a clean CSV (Comma Separated) table with the following columns:
-| date | day | type | planned_distance_km | target_pace_min_per_km | target_HR_zone | notes |
+## OUTPUT FORMAT
+You must output a JSON object with a "rows" array. Each row represents one day's workout with these fields:
 
-Field Rules:
-date → extract if explicitly mentioned in the PDF (e.g., "March 4", "10/03"); otherwise, infer sequential days starting from ${startDate}. The first training day should use ${startDate} as the date.
+- date: YYYY-MM-DD format (e.g., "2025-10-14")
+- day: Day abbreviation that MUST match the date (Mon, Tue, Wed, Thu, Fri, Sat, Sun)
+- type: One of: Easy, Long, Tempo, Interval, Recovery, Rest, Race, Cross-Training, Progression
+- planned_distance_km: Number in kilometers, rounded to one decimal, or null if not specified
+- target_pace_min_per_km: Pace range string like "5:30-5:45", try to infer from the text if it includes keywords like "easy", "moderate", "fast", "hard", "pace"
+    If it cannot be inferred, use null
+- target_HR_zone: One of: Z1, Z2, Z3, Z4, Z5, or null if not specified
+- notes: Any additional context (max 300 chars), or null if not present
 
-day → Mon, Tue, Wed, Thu, Fri, Sat, Sun. Make sure the day of the "date" matches this field. For example, if the date - 24th August 2025 is a Sunday, then the day should be Sun.
+## FIELD RULES
 
-type → one of {Easy, Long, Tempo, Interval, Recovery, Rest, Race, Cross-Training, Progression}.
+### date
+Extract if explicitly mentioned in the PDF (e.g., "March 4", "10/03"). Otherwise, infer sequential days starting from ${startDate}.
 
-planned_distance_km → convert all distances to kilometers, rounded to one decimal place. (e.g., "6 miles" → 9.7).
+### day
+MUST match the actual day of the date. For example:
+- If date is 2025-08-24 (a Sunday), day MUST be "Sun"
+- If date is 2025-08-25 (a Monday), day MUST be "Mon"
 
-target_pace_min_per_km → have the target pace in a range format (e.g., "6:00-6:15/km). If the input has only a single value, have the range as the same value (e.g., "6:00-6:00/km). If the plan doesn't clearly mention the pace, but rather has details like "conversational", "fast pace" etc, then try to recommend a page range in the above format, based on the context you understood from the training plan.
+### type
+Classify based on keywords, matching to the closest available value:
+- "easy", "recovery", "jog", "steady" → Easy or Recovery (use Recovery if "recovery" is mentioned, otherwise Easy)
+- "long", "long run" → Long
+- "tempo", "threshold" → Tempo
+- "interval", "speed", "track" → Interval
+- Repetition patterns (e.g., "4 x 2k", "6 x 800m", "10 x 400m", "5 x 3mins", "N x distance") → Interval (even if combined with other descriptions like "Target Pace Workout")
+- "rest", "off" → Rest
+- "race" → Race
+- "gym", "strength", "yoga", "pilates", "cross" → Cross-Training
+- "progression" → Progression
 
-target_HR_zone → Z1–Z5 if explicitly mentioned. If written as bpm or %HRmax, map approximately:
-Z1: <65% HRmax or <120 bpm
-Z2: 65–75% HRmax or 120–140 bpm
-Z3: 75–85% HRmax or 140–160 bpm
-Z4: 85–90% HRmax or 160–175 bpm
-Z5: >90% HRmax or >175 bpm
+**Priority rule**: 
+- Repetition patterns (e.g., "4 x 2k", "5 x 3mins", "10-12 x 600m") → Interval (highest priority for classification, unless explicitly overridden by type keywords like "threshold" or "tempo")
+- If explicit type keywords are present (e.g., "threshold", "tempo", "interval", "easy"), use those even if repetition patterns are also present. For example, "Threshold: 5 x 3mins" → Tempo (not Interval).
+- If no explicit type keywords but repetition pattern exists (e.g., "4 x 2k at target pace", "Target Pace Workout: 4 x 2k"), classify as Interval (not Long or other types).
 
-notes → include any other textual context (e.g., "hill repeats", "easy aerobic", "steady state", "rest day", "cross-train").
+For ambiguous descriptions without explicit keywords (e.g., "steady", "moderate", "comfortable"), scan the entire plan first: if similar descriptions appear elsewhere, classify them consistently using the same type.
+If no similar descriptions exist, analyze the context and choose the best matching type.
 
-🧠 PROCESSING STEPS
-Read all text from the uploaded PDF.
+For compound types (e.g., "Rest+Pilates", "Rest or Pilates", "Rest OR Cross Training"):
+- If one type is clearly primary (e.g., "Rest+Pilates" where Rest is the main activity), use that type
+- For "OR" options (e.g., "Rest OR Cross Training"), prefer the active/specific option over Rest (e.g., "Rest OR 30mins Cross Training" → Cross-Training, not Rest)
+- If both are equally important, prefer the more specific type (e.g., "Rest+Pilates" → Cross-Training if Pilates is the focus, or Rest if rest is emphasized)
+- The type field is REQUIRED - always select the best matching value
 
-Identify individual sessions (each line or table row that describes a specific day's workout).
+### planned_distance_km
+- ONLY include if distance is explicitly mentioned in the plan (e.g., "5km", "3 miles", "10K")
+- Convert miles to km: multiply by 1.609
+- Round to one decimal place
+- For Rest days, use 0
+- Use null if distance is not specified (even if time is given, e.g., "45 min run" without distance → null)
+- DO NOT calculate distance from workout descriptions (e.g., "10 x 600m" → null unless explicitly stated as total distance)
+- DO NOT estimate or guess distances
 
-Extract relevant data points using pattern recognition:
-- Numbers with "km" or "mile" → distance
-- Time formats (e.g., 5:00/km) → pace
-- Keywords → classify type (e.g., "interval", "tempo", "long run", "rest")
-- In case the overall distance is not given, convert pace and time to get that. (e.g., if pace is 4:15/km and the workout is 6min * 3, then total distance = 4.24km)
+### target_pace_min_per_km
+- Use range format: "5:30-5:45"
+- If single value given, repeat it: "5:30-5:30"
+- ONLY include if pace is explicitly mentioned OR if pace-related keywords are present in the workout description itself
+- Pace-related keywords include: "pace", "easy pace", "moderate pace", "fast pace", "hard pace", "tempo pace", "interval pace", "recovery pace", "long pace", "5K pace", "10K pace", "marathon pace", "threshold pace", etc.
+- When pace-related keywords are present in the workout description:
+  - First, check if the workout description contains explicit pace values (e.g., "4:15/km", "6:00 pace")
+  - If explicit pace values exist in the workout description, use those values
+  - If no explicit values but keywords are present (e.g., "Easy Pace"), infer the pace from the workout's context if possible, otherwise use null
+  - DO NOT infer pace from other workouts in the plan or from pace group definitions elsewhere - only use pace information present in the current workout description
+- If no pace-related keywords are present in the workout description, use null (even if pace is mentioned elsewhere in the plan)
+- For Rest/Cross-Training, use null
 
-Infer missing information logically:
-- If "Rest" or "Off" day → set distance = 0, pace = null, HR = null.
-- If information for a consecutive days is not given, then consider the day as Rest/Off day.
-- Normalize units → all distances in kilometers, paces in min/km.
+### target_HR_zone
+Map to Z1-Z5 if mentioned. Approximate mappings:
+- Z1: <65% HRmax or <120 bpm
+- Z2: 65–75% HRmax or 120–140 bpm
+- Z3: 75–85% HRmax or 140–160 bpm
+- Z4: 85–90% HRmax or 160–175 bpm
+- Z5: >90% HRmax or >175 bpm
+For Rest/Cross-Training, use empty string ""
+Use null if HR is not specified
 
-Output a single, well-formatted CSV table — no markdown, no commentary, only the table.
+### notes
+CRITICAL: Extract ONLY what is explicitly written in the source text. Do NOT:
+- Add explanations, clarifications, or additional context, unless required by the Schema.
+- Infer or expand on what's written (e.g., don't add "Keep effort easy to moderate" if it's not in the source)
+- Add workout details that aren't explicitly mentioned
+- Summarize or paraphrase - extract the exact text when possible
+- If the source has minimal notes, keep the notes field minimal
+- Preserve the original wording and structure from the source
 
-🧾 OUTPUT FORMAT (STRICT)
-date,day,type,planned_distance_km,target_pace_min_per_km,target_HR_zone,notes
-2025-10-14,Tue,Easy,6,5:35,Z2,"Easy, aerobic run"
-2025-10-15,Wed,Intervals,7,4:25,Z4,"6x800m, intervals"
-2025-10-16,Thu,Rest,0,,,
+## PROCESSING RULES
+1. Each row = one unique day
+2. If a day has no workout info, mark as Rest with distance 0
+3. Non-running sessions (gym, yoga) → type = "Cross-Training"
+4. Ensure dates are sequential with no gaps
+5. CRITICAL: Extract information exactly as written - do not add new content unless required by the Schema.
+${targetTimeSeconds ? `
 
-⚠️ OUTPUT RULES
-Do not add markdown syntax (\`\`\`csv or tables with borders).
-Do not include explanations, summaries, or confidence scores.
-If multiple weeks exist, continue the same format (one row per run).
-If the plan includes non-running sessions (e.g., gym, yoga), mark type = "Cross-Training".
+## PACE GROUP DETECTION AND MATCHING
+The user's target race time is: ${this.formatTimeFromSeconds(targetTimeSeconds)}
 
-✅ EXAMPLE PROMPT FROM USER
-"Here's my training plan PDF. Please extract it into your standard CSV format."
-
-🧭 POST-PROCESS CHECKLIST (internal)
-Ensure every row corresponds to one unique day or run.
-Verify numeric conversions (miles→km, pace range→average).
-Ensure consistent column order and no missing headers.
-
-If you encounter ambiguous text, make reasonable assumptions but maintain structural consistency.
+When extracting the training plan:
+1. The text may contain pace groups in different formats - as separate rows, as a table, as a list, as a different section.
+2. Look for pace groups in the text (e.g., "Sub 2:00", "2:00-2:20", "1:45-2:00", "Completion Goal", "Sub 01:30", "2:00-2:30")
+3. Match the user's target time (${this.formatTimeFromSeconds(targetTimeSeconds)}) to the appropriate pace group:
+   - For "Sub X" goals (e.g., "Sub 2:00"): match if target time ≤ X (e.g., if target is 1:55:00 and plan has "Sub 2:00", use that group)
+   - For ranges (e.g., "2:00-2:20"): match if target time falls within the range (inclusive)
+   - For "Completion" goals or open-ended ranges: use the most relaxed/easiest pace group (highest time range or no upper limit)
+   - If multiple matches, prefer the most specific match (smallest range that contains the target)
+   - If no exact match, use the closest pace group (smallest difference from target time)
+4. Use the paces from the matched pace group for each workout type:
+   - Easy runs → use easy pace from matched group
+   - Tempo runs → use tempo pace from matched group
+   - Interval runs → use interval pace from matched group
+   - Long runs → use long pace from matched group
+   - Recovery runs → use recovery pace from matched group
+   - If a pace group specifies paces for other workout types, use those as well
+5. If no pace groups are found in the text or no match is found:
+   - Use the paces explicitly specified in the plan for each workout
+   - If no explicit paces are given, estimate based on the target time using standard training pace calculations
+` : ''}
 `;
 
-      const userPrompt = `Convert the following training plan text to CSV format:\n\n${pdfText}`;
+    if (errorContext) {
+      prompt += `
 
-      const result = await generateText({
-        model: openai(config.openai.model),
+## PREVIOUS ATTEMPT FAILED
+Your previous response had validation errors. Please fix these issues:
+
+${errorContext}
+
+Pay special attention to:
+1. Ensuring the "day" field matches the actual day of the "date"
+2. Using valid type values: Easy, Long, Tempo, Interval, Recovery, Rest, Race, Cross-Training, Progression
+3. Using valid HR zones: Z1, Z2, Z3, Z4, Z5, or empty string
+4. Rest days should have planned_distance_km = 0
+`;
+    }
+
+    return prompt;
+  }
+
+  /**
+   * Convert PDF text to structured training plan using generateObject()
+   * Uses Zod schema validation for guaranteed output format
+   * @param pdfText - Extracted text from PDF training plan
+   * @param startDate - Training plan start date in YYYY-MM-DD format
+   * @param errorContext - Optional error context from previous failed attempt for retry
+   * @returns Validated TrainingPlan object
+   */
+  async convertPdfTextToStructuredPlan(
+    pdfText: string,
+    startDate: string,
+    targetTimeSeconds?: number,
+    errorContext?: string,
+    filename?: string
+  ): Promise<TrainingPlan> {
+    try {
+      log.info("Converting PDF text to structured plan using generateObject", {
+        textLength: pdfText.length,
+        startDate,
+        targetTimeSeconds,
+        isRetry: !!errorContext,
+      });
+
+      const systemPrompt = this.buildPdfConversionSystemPrompt(startDate, targetTimeSeconds, errorContext);
+      const userPrompt = `Extract the training plan from this text:\n\n${pdfText}`;
+
+      const result = await generateObject({
+        model: this.getOpenAIModel(config.openai.model),
+        schema: TrainingPlanSchema,
         messages: [
           {
             role: "system",
@@ -887,21 +1035,255 @@ If you encounter ambiguous text, make reasonable assumptions but maintain struct
           },
         ],
         temperature: 0.1,
+        ...this.getPdfParsingModelOptions(),
       });
 
-      log.info("PDF text to CSV conversion successful", {
-        resultLength: result.text.length,
+      log.info("PDF text to structured plan conversion successful", {
+        rowCount: result.object.rows.length,
         usage: result.usage,
       });
 
-      return result.text;
+      // Save token usage data
+      if (filename) {
+        await saveTokenUsage({
+          modelName: config.openai.model,
+          filename,
+          method: "text",
+          usage: result.usage,
+          metadata: {
+            startDate,
+            targetTimeSeconds,
+            textLength: pdfText.length,
+          },
+        });
+      }
+
+      return result.object;
     } catch (error) {
-      log.error("Failed to convert PDF text to CSV", error);
+      log.error("Failed to convert PDF text to structured plan", error);
       throw new InternalServerError(
-        "Failed to convert PDF text to CSV format",
+        "Failed to convert PDF text to structured format",
         error
       );
     }
+  }
+
+  /**
+   * Convert PDF images to structured training plan using GPT-4o vision capability
+   * Used when PDF pages contain images instead of extractable text
+   * @param images - Array of PNG image buffers (rendered PDF pages)
+   * @param textContent - Any extractable text from the PDF (may be sparse/empty)
+   * @param startDate - Training plan start date in YYYY-MM-DD format
+   * @param errorContext - Optional error context from previous failed attempt
+   * @returns Validated TrainingPlan object
+   */
+  async convertPdfImagesToStructuredPlan(
+    images: Buffer[],
+    textContent: string,
+    startDate: string,
+    targetTimeSeconds?: number,
+    errorContext?: string,
+    filename?: string
+  ): Promise<TrainingPlan> {
+    try {
+      log.info("Converting PDF images to structured plan using vision", {
+        imageCount: images.length,
+        textLength: textContent.length,
+        startDate,
+        targetTimeSeconds,
+        isRetry: !!errorContext,
+        totalImageSizeBytes: images.reduce((sum, img) => sum + img.length, 0),
+      });
+
+      const systemPrompt = this.buildPdfConversionSystemPrompt(startDate, targetTimeSeconds, errorContext);
+
+      // Build user message content with text and images
+      type ContentPart =
+        | { type: "text"; text: string }
+        | { type: "image"; image: Buffer; mimeType: "image/png" };
+
+      const userTextContent = `Extract the training plan from the provided images. The training plan starts on ${startDate}.${
+        textContent.trim()
+          ? `\n\nAdditional extracted text from the PDF:\n${textContent}`
+          : ""
+      }`;
+
+      const userContent: ContentPart[] = [
+        {
+          type: "text",
+          text: userTextContent,
+        },
+        // Add each image as an ImagePart
+        ...images.map(
+          (img): ContentPart => ({
+            type: "image" as const,
+            image: img,
+            mimeType: "image/png" as const,
+          })
+        ),
+      ];
+
+      const result = await generateObject({
+        model: this.getOpenAIModel(config.openai.model),
+        schema: TrainingPlanSchema,
+        messages: [
+          {
+            role: "system",
+            content: systemPrompt,
+          },
+          {
+            role: "user",
+            content: userContent,
+          },
+        ],
+        temperature: 0.1,
+        ...this.getPdfParsingModelOptions(),
+      });
+
+      log.info("PDF images to structured plan conversion successful", {
+        rowCount: result.object.rows.length,
+        usage: result.usage,
+      });
+
+      // Save token usage data
+      if (filename) {
+        await saveTokenUsage({
+          modelName: config.openai.model,
+          filename,
+          method: "vision",
+          usage: result.usage,
+          metadata: {
+            startDate,
+            targetTimeSeconds,
+            imageCount: images.length,
+            textLength: textContent.length,
+          },
+        });
+      }
+
+      return result.object;
+    } catch (error) {
+      log.error("Failed to convert PDF images to structured plan", error);
+      throw new InternalServerError(
+        "Failed to convert PDF images to structured format",
+        error
+      );
+    }
+  }
+
+  /**
+   * Update CSV with matched pace group based on target time
+   * Uses LLM to detect pace groups from CSV text and regenerate CSV with matched paces
+   * @param csvText - CSV content as string
+   * @param targetTimeSeconds - Target race time in seconds
+   * @param startDate - Training plan start date in YYYY-MM-DD format
+   * @returns Updated CSV content with matched pace group paces
+   */
+  async updateCsvWithMatchedPaceGroup(
+    csvText: string,
+    targetTimeSeconds: number,
+    startDate: string
+  ): Promise<string> {
+    try {
+      log.info("Updating CSV with matched pace group", {
+        csvLength: csvText.length,
+        targetTimeSeconds,
+        startDate,
+      });
+
+      // Build prompt that instructs LLM to detect pace groups and update paces
+      const systemPrompt = this.buildPdfConversionSystemPrompt(startDate, targetTimeSeconds);
+      
+      const userPrompt = `Update the following CSV training plan by detecting pace groups and matching the user's target time (${this.formatTimeFromSeconds(targetTimeSeconds)}) to the appropriate pace group. Use the paces from the matched pace group for each workout type.
+
+Current CSV:
+${csvText}
+
+Return the updated CSV with the same structure, but with paces updated based on the matched pace group.`;
+
+      const result = await generateText({
+        model: this.getOpenAIModel(config.openai.model),
+        messages: [
+          {
+            role: "system",
+            content: systemPrompt,
+          },
+          {
+            role: "user",
+            content: userPrompt,
+          },
+        ],
+        temperature: 0.1,
+        ...this.getPdfParsingModelOptions(),
+      });
+
+      let updatedCsv = result.text.trim();
+
+      // Remove markdown code block syntax if present
+      if (updatedCsv.startsWith("```")) {
+        const lines = updatedCsv.split("\n");
+        // Remove first line (```csv or ```)
+        lines.shift();
+        // Remove last line (```)
+        if (lines[lines.length - 1]?.trim() === "```") {
+          lines.pop();
+        }
+        updatedCsv = lines.join("\n").trim();
+      }
+
+      log.info("CSV updated with matched pace group", {
+        originalLength: csvText.length,
+        updatedLength: updatedCsv.length,
+      });
+
+      return updatedCsv;
+    } catch (error) {
+      log.error("Failed to update CSV with matched pace group", error);
+      throw new InternalServerError(
+        "Failed to update CSV with matched pace group",
+        error
+      );
+    }
+  }
+
+  /**
+   * Convert structured training plan to CSV string
+   * @param plan - Validated TrainingPlan object
+   * @returns CSV formatted string
+   */
+  structuredPlanToCsv(plan: TrainingPlan): string {
+    const headers = "date,day,type,planned_distance_km,target_pace_min_per_km,target_HR_zone,notes";
+
+    const rows = plan.rows.map((row: TrainingPlanRow) => {
+      // Handle nullable fields - convert null to empty string for CSV
+      const pace = row.target_pace_min_per_km ?? "";
+      const hrZone = row.target_HR_zone ?? "";
+      
+      // Escape notes field for CSV (double quotes inside, wrap in quotes)
+      const escapedNotes = row.notes
+        ? `"${row.notes.replace(/"/g, '""')}"`
+        : '""';
+
+      return `${row.date},${row.day},${row.type},${row.planned_distance_km},${pace},${hrZone},${escapedNotes}`;
+    });
+
+    return [headers, ...rows].join("\n");
+  }
+
+  /**
+   * @deprecated Use convertPdfTextToStructuredPlan instead
+   * Convert PDF text to CSV format using LLM (legacy method)
+   * @param pdfText - Extracted text from PDF training plan
+   * @param startDate - Training plan start date in YYYY-MM-DD format
+   * @returns CSV formatted string
+   */
+  async convertPdfTextToCsv(
+    pdfText: string,
+    startDate: string
+  ): Promise<string> {
+    // Use new structured method and convert to CSV
+    const structuredPlan = await this.convertPdfTextToStructuredPlan(pdfText, startDate);
+    return this.structuredPlanToCsv(structuredPlan);
   }
 
   /**
@@ -921,7 +1303,7 @@ If you encounter ambiguous text, make reasonable assumptions but maintain struct
       });
 
       return streamText({
-        model: openai(config.openai.model),
+        model: this.getOpenAIModel(config.openai.model),
         messages: [
           {
             role: "system",
@@ -1216,7 +1598,7 @@ Provide your assessment in the required JSON format.`;
       });
 
       const result = await generateText({
-        model: openai(config.openai.model),
+        model: this.getOpenAIModel(config.openai.model),
         messages: [
           {
             role: "system",
