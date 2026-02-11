@@ -37,9 +37,8 @@ import {
   TrainingStatusBannerSkeleton,
   isSuccessResponse,
 } from "./components/training-status";
-import { WeeklyRunsReport } from "./components/weekly-runs-report";
+import { WeeklySummaryDialog } from "./components/weekly-runs-report";
 import { OnboardingReminderBanner } from "./components/onboarding-reminder";
-import { TrainingPacesDialog } from "@/components/training-paces-dialog";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -81,7 +80,7 @@ export default function DashboardPage() {
   const [isActivitiesDialogOpen, setIsActivitiesDialogOpen] = useState(false);
   const [isPreRecommendationDialogOpen, setIsPreRecommendationDialogOpen] =
     useState(false);
-  const [isTrainingPacesDialogOpen, setIsTrainingPacesDialogOpen] =
+  const [isWeeklySummaryDialogOpen, setIsWeeklySummaryDialogOpen] =
     useState(false);
 
   // Fetch weekly summary for pre-recommendation dialog
@@ -239,27 +238,24 @@ export default function DashboardPage() {
       {/* Onboarding Reminder - shown if profile incomplete */}
       <OnboardingReminderBanner user={user} activePlan={activePlan} />
 
-      {/* Training Status Banner - shown at top when eligible */}
+      {/* Training Status Banner - shown when eligible */}
       {isTrainingStatusLoading && activePlan && (
-        <TrainingStatusBannerSkeleton />
+        <div className="mb-6">
+          <TrainingStatusBannerSkeleton />
+        </div>
       )}
       {trainingStatusData && isSuccessResponse(trainingStatusData) && (
-        <TrainingStatusBanner
-          status={trainingStatusData.status}
-          rationale={trainingStatusData.rationale}
-          currentWeek={trainingStatusData.currentWeek}
-        />
+        <div className="mb-6">
+          <TrainingStatusBanner
+            status={trainingStatusData.status}
+            rationale={trainingStatusData.rationale}
+            currentWeek={trainingStatusData.currentWeek}
+          />
+        </div>
       )}
 
-      {activePlan ? (
-        <WeeklyRunsReport
-          currentWeek={activePlan.currentWeek}
-          startDate={activePlan.startDate}
-          onViewActivities={() => setIsActivitiesDialogOpen(true)}
-          onViewTrainingPaces={() => setIsTrainingPacesDialogOpen(true)}
-          hasRaceGoal={!!user?.raceGoal}
-        />
-      ) : (
+      {/* View Activities button - shown when no active plan */}
+      {!activePlan && (
         <ViewActivitiesButton
           activityCount={activities.length}
           onClick={() => setIsActivitiesDialogOpen(true)}
@@ -280,11 +276,15 @@ export default function DashboardPage() {
         originalPlan={
           activePlan
             ? {
-              csvContent: activePlan.csvContent,
-              currentWeek: activePlan.currentWeek,
-              startDate: activePlan.startDate,
-            }
+                csvContent: activePlan.csvContent,
+                currentWeek: activePlan.currentWeek,
+                startDate: activePlan.startDate,
+              }
             : undefined
+        }
+        currentWeek={activePlan?.currentWeek}
+        onViewWeeklySummary={
+          activePlan ? () => setIsWeeklySummaryDialogOpen(true) : undefined
         }
       />
 
@@ -327,11 +327,14 @@ export default function DashboardPage() {
         isLoading={isGenerating}
       />
 
-      {user?.raceGoal && (
-        <TrainingPacesDialog
-          open={isTrainingPacesDialogOpen}
-          onOpenChange={setIsTrainingPacesDialogOpen}
-          raceGoal={user.raceGoal}
+      {activePlan && (
+        <WeeklySummaryDialog
+          open={isWeeklySummaryDialogOpen}
+          onOpenChange={setIsWeeklySummaryDialogOpen}
+          currentWeek={activePlan.currentWeek}
+          startDate={activePlan.startDate}
+          activities={activities}
+          raceGoal={user?.raceGoal}
         />
       )}
     </DashboardLayout>

@@ -142,8 +142,9 @@ const WeekActivityList = ({ activities }: { activities: Activity[] }) => (
 
 /**
  * Tabbed activity list content shared between Dialog and Drawer
+ * Also exported as ActivitiesContent for embedding in other dialogs
  */
-const TabbedActivityListContent = ({
+export const ActivitiesContent = ({
   activities,
 }: {
   activities: Activity[];
@@ -179,9 +180,9 @@ const TabbedActivityListContent = ({
                 "min-w-[80px] px-3 py-1.5 text-xs font-medium transition-all flex flex-col gap-0.5",
                 "data-[state=active]:shadow-sm",
                 week.isCurrentWeek &&
-                "data-[state=active]:bg-orange-500 data-[state=active]:text-white",
+                  "data-[state=active]:bg-orange-500 data-[state=active]:text-white",
                 week.isCurrentWeek &&
-                "data-[state=inactive]:bg-orange-100 data-[state=inactive]:text-orange-700 dark:data-[state=inactive]:bg-orange-950/50 dark:data-[state=inactive]:text-orange-400",
+                  "data-[state=inactive]:bg-orange-100 data-[state=inactive]:text-orange-700 dark:data-[state=inactive]:bg-orange-950/50 dark:data-[state=inactive]:text-orange-400",
               )}
             >
               <span className="font-medium">{week.weekLabel}</span>
@@ -236,7 +237,7 @@ export const ActivitiesDialog = ({
             <DrawerTitle>{title}</DrawerTitle>
           </DrawerHeader>
           <div className="flex-1 overflow-auto px-4 pb-6">
-            <TabbedActivityListContent activities={activities} />
+            <ActivitiesContent activities={activities} />
           </div>
         </DrawerContent>
       </Drawer>
@@ -251,7 +252,7 @@ export const ActivitiesDialog = ({
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
         <div className="overflow-y-auto flex-1 -mx-6 px-6">
-          <TabbedActivityListContent activities={activities} />
+          <ActivitiesContent activities={activities} />
         </div>
       </DialogContent>
     </Dialog>

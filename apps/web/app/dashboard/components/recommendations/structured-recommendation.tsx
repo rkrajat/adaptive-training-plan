@@ -165,49 +165,6 @@ const parseRecommendation = (markdown: string): ParsedSection[] => {
 };
 
 /**
- * Extract a one-line summary from the recommendation
- */
-const extractSummary = (markdown: string): string | null => {
-  // Look for the first paragraph after any heading
-  const lines = markdown.split("\n");
-  let foundHeading = false;
-
-  for (const line of lines) {
-    const trimmed = line.trim();
-
-    // Skip empty lines
-    if (!trimmed) continue;
-
-    // Skip headings
-    if (trimmed.startsWith("#")) {
-      foundHeading = true;
-      continue;
-    }
-
-    // Skip table rows
-    if (trimmed.startsWith("|")) continue;
-
-    // Found a paragraph-like line after heading
-    if (foundHeading) {
-      // Strip markdown formatting for summary
-      const plainText = trimmed
-        .replace(/\*\*(.*?)\*\*/g, "$1") // Bold
-        .replace(/\*(.*?)\*/g, "$1") // Italic
-        .replace(/`(.*?)`/g, "$1") // Code
-        .replace(/\[(.*?)\]\(.*?\)/g, "$1"); // Links
-
-      // Limit length
-      if (plainText.length > 150) {
-        return plainText.slice(0, 147) + "...";
-      }
-      return plainText;
-    }
-  }
-
-  return null;
-};
-
-/**
  * Collapsible Section Component
  */
 const SectionBlock = ({
@@ -268,7 +225,6 @@ export const StructuredRecommendation = ({
   originalPlan,
 }: StructuredRecommendationProps) => {
   const sections = useMemo(() => parseRecommendation(markdown), [markdown]);
-  const quickSummary = useMemo(() => extractSummary(markdown), [markdown]);
 
   // Determine which sections should be open by default
   const getDefaultOpen = (sectionId: string) => {
@@ -292,9 +248,9 @@ export const StructuredRecommendation = ({
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2.5 sm:space-y-4">
       {/* Quick Summary Card */}
-      {quickSummary && (
+      {/* {quickSummary && (
         <div className="p-3 rounded-lg bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800">
           <div className="flex items-start gap-2">
             <Sparkles className="h-4 w-4 text-purple-600 dark:text-purple-400 mt-0.5 flex-shrink-0" />
@@ -303,7 +259,7 @@ export const StructuredRecommendation = ({
             </p>
           </div>
         </div>
-      )}
+      )} */}
 
       {/* Structured Sections */}
       <div className="border rounded-lg divide-y divide-border">

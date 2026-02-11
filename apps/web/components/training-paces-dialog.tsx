@@ -35,6 +35,10 @@ interface TrainingPacesDialogProps {
   raceGoal: RaceGoal;
 }
 
+interface TrainingPacesContentProps {
+  raceGoal: RaceGoal;
+}
+
 interface PaceZoneItemProps {
   icon: React.ReactNode;
   label: string;
@@ -152,6 +156,56 @@ const PaceZoneItem = ({
     </span>
   </div>
 );
+
+/**
+ * Training Paces Content Component
+ * Displays the training pace zones without dialog wrapper - for embedding in other dialogs
+ */
+export const TrainingPacesContent = ({
+  raceGoal,
+}: TrainingPacesContentProps) => {
+  const { paces, distanceLabel, targetTimeSeconds, vdot } = raceGoal;
+
+  const paceZones: Array<keyof TrainingPaces> = [
+    "easy",
+    "longRun",
+    "marathon",
+    "threshold",
+    "interval",
+    "repetition",
+  ];
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center gap-2">
+        <Gauge className="h-5 w-5 text-indigo-600" />
+        <span className="font-semibold">My Training Paces</span>
+        <span className="ml-auto text-xs font-normal px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300">
+          VDOT {vdot.toFixed(1)}
+        </span>
+      </div>
+      <p className="text-sm text-muted-foreground">
+        Based on your {distanceLabel} goal of{" "}
+        {formatTargetTime(targetTimeSeconds)}
+      </p>
+      <div className="space-y-0">
+        {paceZones.map((zone) => {
+          const config = PACE_ZONE_CONFIG[zone];
+          return (
+            <PaceZoneItem
+              key={zone}
+              icon={config.icon}
+              label={config.label}
+              paceRange={paces[zone]}
+              description={config.description}
+              color={config.color}
+            />
+          );
+        })}
+      </div>
+    </div>
+  );
+};
 
 /**
  * Training Paces Dialog Component

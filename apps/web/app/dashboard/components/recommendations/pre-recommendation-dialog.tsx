@@ -27,7 +27,6 @@ import {
 } from "@/components/ui/responsive-dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { cn } from "@/lib/utils";
 
 interface PreRecommendationDialogProps {
   open: boolean;
@@ -93,42 +92,9 @@ const QuickStat = ({
 );
 
 /**
- * Observation item
- */
-const Observation = ({
-  icon,
-  text,
-  type = "info",
-}: {
-  icon: React.ReactNode;
-  text: string;
-  type?: "info" | "warning" | "success";
-}) => {
-  const colorClasses = {
-    info: "bg-blue-50 border-blue-200 text-blue-700 dark:bg-blue-950/30 dark:border-blue-800 dark:text-blue-300",
-    warning:
-      "bg-amber-50 border-amber-200 text-amber-700 dark:bg-amber-950/30 dark:border-amber-800 dark:text-amber-300",
-    success:
-      "bg-green-50 border-green-200 text-green-700 dark:bg-green-950/30 dark:border-green-800 dark:text-green-300",
-  };
-
-  return (
-    <div
-      className={cn(
-        "flex items-start gap-2 p-2 rounded-lg border",
-        colorClasses[type],
-      )}
-    >
-      <span className="mt-0.5 flex-shrink-0">{icon}</span>
-      <span className="text-xs leading-relaxed">{text}</span>
-    </div>
-  );
-};
-
-/**
  * Generate observations based on weekly data
  */
-const generateObservations = (
+export const generateObservations = (
   summary: WeeklySummaryData | undefined,
 ): Array<{
   icon: React.ReactNode;
@@ -218,8 +184,6 @@ export const PreRecommendationDialog = ({
 }: PreRecommendationDialogProps) => {
   const [userFeedback, setUserFeedback] = useState("");
 
-  const observations = generateObservations(weeklySummary);
-
   const handleGenerate = () => {
     onGenerate(userFeedback.trim() || undefined);
     setUserFeedback("");
@@ -288,7 +252,7 @@ export const PreRecommendationDialog = ({
           </div>
 
           {/* Key Observations */}
-          <div className="space-y-2">
+          {/* <div className="space-y-2">
             <h4 className="text-sm font-medium flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-amber-600" />
               Key Observations
@@ -303,7 +267,7 @@ export const PreRecommendationDialog = ({
                 />
               ))}
             </div>
-          </div>
+          </div> */}
 
           {/* What We're Considering */}
           <div className="space-y-2">
