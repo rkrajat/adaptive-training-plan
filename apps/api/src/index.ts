@@ -1,3 +1,6 @@
+// OpenTelemetry instrumentation MUST be imported first, before any other modules
+import "./instrumentation";
+
 import cors from "cors";
 import express from "express";
 import mongoose from "mongoose";
