@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -15,6 +15,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
+import { trackEvent, TELEMETRY_EVENTS } from '@/lib/telemetry';
 
 import { StarRating } from './star-rating';
 
@@ -42,6 +43,13 @@ export const FeedbackModal = ({
   const [wouldFollow, setWouldFollow] = useState<boolean>(false);
   const [comment, setComment] = useState<string>('');
 
+  // Track modal open event
+  useEffect(() => {
+    if (isOpen) {
+      trackEvent(TELEMETRY_EVENTS.FEEDBACK_MODAL_OPEN);
+    }
+  }, [isOpen]);
+
   // Reset form and close modal
   const handleClose = useCallback(() => {
     setRating(0);
@@ -56,6 +64,13 @@ export const FeedbackModal = ({
     if (rating === 0) {
       return; // Don't submit if no rating selected
     }
+
+    // Track feedback submission click
+    trackEvent(TELEMETRY_EVENTS.FEEDBACK_SUBMIT_CLICK, {
+      rating,
+      would_follow: wouldFollow,
+      has_comment: !!comment.trim(),
+    });
 
     const feedbackData: FeedbackFormData = {
       rating,

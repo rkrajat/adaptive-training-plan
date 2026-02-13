@@ -3,6 +3,7 @@
 import { Check, X, Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { trackEvent, TELEMETRY_EVENTS } from "@/lib/telemetry";
 
 interface AcceptRejectButtonsProps {
   onAccept: () => void;
@@ -26,12 +27,22 @@ export const AcceptRejectButtons = ({
 }: AcceptRejectButtonsProps) => {
   const isLoading = isAccepting || isRejecting;
 
+  const handleAccept = () => {
+    trackEvent(TELEMETRY_EVENTS.RECOMMENDATION_ACCEPT_CLICK);
+    onAccept();
+  };
+
+  const handleReject = () => {
+    trackEvent(TELEMETRY_EVENTS.RECOMMENDATION_REJECT_CLICK);
+    onReject();
+  };
+
   return (
     <div className="flex gap-2" data-tour="accept-reject-buttons">
       <Button
         variant="outline"
         size="sm"
-        onClick={onAccept}
+        onClick={handleAccept}
         disabled={disabled || isLoading}
         className="border-green-500/50 text-green-600 hover:bg-green-50 hover:text-green-700 hover:border-green-500 dark:border-green-500/30 dark:text-green-400 dark:hover:bg-green-950 dark:hover:text-green-300"
       >
@@ -45,7 +56,7 @@ export const AcceptRejectButtons = ({
       <Button
         variant="outline"
         size="sm"
-        onClick={onReject}
+        onClick={handleReject}
         disabled={disabled || isLoading}
         className="border-red-500/50 text-red-600 hover:bg-red-50 hover:text-red-700 hover:border-red-500 dark:border-red-500/30 dark:text-red-400 dark:hover:bg-red-950 dark:hover:text-red-300"
       >
