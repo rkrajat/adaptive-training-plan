@@ -32,20 +32,20 @@ const CallbackContent = () => {
       const token = searchParams.get('token');
 
       if (error) {
-        trackEvent(TELEMETRY_EVENTS.AUTH_CALLBACK_ERROR, { error_type: error });
+        trackEvent(TELEMETRY_EVENTS.AUTH_CALLBACK, { status: 'error', error_type: error });
         router.push(`/login?error=${error}`);
         return;
       }
 
       if (!token) {
-        trackEvent(TELEMETRY_EVENTS.AUTH_CALLBACK_ERROR, { error_type: 'no_token' });
+        trackEvent(TELEMETRY_EVENTS.AUTH_CALLBACK, { status: 'error', error_type: 'no_token' });
         router.push('/login?error=no_token');
         return;
       }
 
       // Store token in localStorage
       setToken(token);
-      trackEvent(TELEMETRY_EVENTS.AUTH_CALLBACK_SUCCESS);
+      trackEvent(TELEMETRY_EVENTS.AUTH_CALLBACK, { status: 'success' });
 
       try {
         // Check if user has completed onboarding (has experience level and active plan)

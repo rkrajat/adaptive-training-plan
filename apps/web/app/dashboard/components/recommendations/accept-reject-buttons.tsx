@@ -28,12 +28,12 @@ export const AcceptRejectButtons = ({
   const isLoading = isAccepting || isRejecting;
 
   const handleAccept = () => {
-    trackEvent(TELEMETRY_EVENTS.RECOMMENDATION_ACCEPT_CLICK);
+    trackEvent(TELEMETRY_EVENTS.RECOMMENDATION_ACTION, { action: 'accept' });
     onAccept();
   };
 
   const handleReject = () => {
-    trackEvent(TELEMETRY_EVENTS.RECOMMENDATION_REJECT_CLICK);
+    trackEvent(TELEMETRY_EVENTS.RECOMMENDATION_ACTION, { action: 'reject' });
     onReject();
   };
 

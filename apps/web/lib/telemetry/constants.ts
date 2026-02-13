@@ -3,21 +3,19 @@
  * Single source of truth for all custom telemetry instrumentation.
  */
 export const TELEMETRY_EVENTS = {
-  // Auth events
-  AUTH_CALLBACK_SUCCESS: "auth.callback_success",
-  AUTH_CALLBACK_ERROR: "auth.callback_error",
+  // Auth events (combined with status attribute: "success" | "error")
+  AUTH_CALLBACK: "auth.callback",
 
-  // Onboarding events
+  // Onboarding events (kept separate - different actions)
   ONBOARDING_STEP_VIEW: "onboarding.step_view",
   ONBOARDING_STEP_COMPLETE: "onboarding.step_complete",
   ONBOARDING_SKIP: "onboarding.skip",
 
-  // Recommendation events
-  RECOMMENDATION_ACCEPT_CLICK: "recommendation.accept_click",
-  RECOMMENDATION_REJECT_CLICK: "recommendation.reject_click",
+  // Recommendation events (accept/reject combined with action attribute: "accept" | "reject")
+  RECOMMENDATION_ACTION: "recommendation.action",
   RECOMMENDATION_REJECT_ACTION_SELECTED: "recommendation.reject_action_selected",
 
-  // Feedback events
+  // Feedback events (kept separate - different actions)
   FEEDBACK_MODAL_OPEN: "feedback.modal_open",
   FEEDBACK_SUBMIT_CLICK: "feedback.submit_click",
 } as const;
