@@ -1,3 +1,4 @@
+import { trace } from "@opentelemetry/api";
 import { Router, type Request, type Response } from "express";
 
 import {
@@ -8,6 +9,7 @@ import {
   rejectRecommendation,
 } from "../controllers/recommendation.controller";
 import { authenticateJWT } from "../middleware/auth";
+import { addTelemetryContext } from "../middleware/telemetry.middleware";
 import { validateBody } from "../middleware/validate";
 import { Recommendation } from "../models/Recommendation";
 import { User } from "../models/User";
@@ -15,6 +17,7 @@ import { aiService } from "../services/ai.service";
 import { authService } from "../services/auth.service";
 import { stravaService } from "../services/strava.service";
 import { trainingPlanService } from "../services/training-plan.service";
+import { TRACER_NAME, TELEMETRY_EVENTS } from "../telemetry";
 import type { StravaActivity } from "../types/strava.types";
 import { formatActivitiesForAI } from "../utils/activity-formatter";
 import {
@@ -37,6 +40,7 @@ const router = Router();
 router.post(
   "/generate",
   authenticateJWT,
+  addTelemetryContext,
   validateBody(recommendationsGenerateSchema),
   async (req: Request, res: Response) => {
     try {
@@ -128,6 +132,7 @@ router.post(
 router.post(
   "/generate-with-plan",
   authenticateJWT,
+  addTelemetryContext,
   validateBody(recommendationsWithPlanSchema),
   async (req: Request, res: Response) => {
     try {
@@ -208,73 +213,98 @@ router.post(
         hasFirstName: !!athleteFirstName,
       });
 
-      // Generate recommendations with enhanced training plan data
-      // Training paces from VDOT are included to help the AI provide pace-specific recommendations
-      // Athlete's first name is passed for personalized coach's notes
-      const result = aiService.generateRecommendationsWithEnhancedPlan(
-        enhancedActivities,
-        trainingPlan.csvContent,
-        trainingPlan.currentWeek,
-        trainingPlan.startDate,
-        userFeedback,
-        experienceLevel,
-        trainingPaces,
-        athleteFirstName
-      );
+      // Start OpenTelemetry span for recommendation generation
+      const tracer = trace.getTracer(TRACER_NAME);
+      const generateSpan = tracer.startSpan(TELEMETRY_EVENTS.RECOMMENDATION_GENERATE);
+      generateSpan.setAttributes({
+        "user.id": userId,
+        "week_number": trainingPlan.currentWeek,
+        "training_plan.id": planId,
+        "is_regenerated": false,
+        "has_user_feedback": !!userFeedback,
+        "experience_level": experienceLevel || "unknown",
+      });
 
-      // Set headers for streaming (must be set before any res.write())
-      res.setHeader("Content-Type", "text/plain; charset=utf-8");
-      res.setHeader("Cache-Control", "no-cache");
-      res.setHeader("Connection", "keep-alive");
+      let streamingSuccess = false;
 
-      // Stream AI response in real-time while accumulating for database storage
-      let accumulatedContent = "";
-      for await (const part of result.fullStream) {
-        if (part.type === "text-delta") {
-          accumulatedContent += part.text;
-          res.write(part.text);
-        }
-      }
-
-      log.info("Streaming recommendations completed successfully");
-
-      // After streaming completes, save recommendation to database
-      let recommendationId: string | null = null;
       try {
-        const recommendation = await Recommendation.create({
-          userId,
-          trainingPlanId: planId,
-          weekNumber: trainingPlan.currentWeek,
-          content: accumulatedContent,
-          athleteInputFeedback: userFeedback || null,
-          isRegenerated: false,
-        });
+        // Generate recommendations with enhanced training plan data
+        // Training paces from VDOT are included to help the AI provide pace-specific recommendations
+        // Athlete's first name is passed for personalized coach's notes
+        const result = aiService.generateRecommendationsWithEnhancedPlan(
+          enhancedActivities,
+          trainingPlan.csvContent,
+          trainingPlan.currentWeek,
+          trainingPlan.startDate,
+          userFeedback,
+          experienceLevel,
+          trainingPaces,
+          athleteFirstName
+        );
 
-        recommendationId = String(recommendation._id);
+        // Set headers for streaming (must be set before any res.write())
+        res.setHeader("Content-Type", "text/plain; charset=utf-8");
+        res.setHeader("Cache-Control", "no-cache");
+        res.setHeader("Connection", "keep-alive");
 
-        log.info("Recommendation saved to database", {
-          recommendationId: recommendation._id,
-          userId,
-          trainingPlanId: planId,
-          weekNumber: trainingPlan.currentWeek,
-        });
-      } catch (dbError) {
-        // Log error but don't break streaming - graceful degradation
-        log.error("Failed to save recommendation to database", {
-          error: dbError,
-          userId,
-          trainingPlanId: planId,
-        });
+        // Stream AI response in real-time while accumulating for database storage
+        let accumulatedContent = "";
+        for await (const part of result.fullStream) {
+          if (part.type === "text-delta") {
+            accumulatedContent += part.text;
+            res.write(part.text);
+          }
+        }
+
+        streamingSuccess = true;
+        log.info("Streaming recommendations completed successfully");
+
+        // After streaming completes, save recommendation to database
+        let recommendationId: string | null = null;
+        try {
+          const recommendation = await Recommendation.create({
+            userId,
+            trainingPlanId: planId,
+            weekNumber: trainingPlan.currentWeek,
+            content: accumulatedContent,
+            athleteInputFeedback: userFeedback || null,
+            isRegenerated: false,
+          });
+
+          recommendationId = String(recommendation._id);
+
+          log.info("Recommendation saved to database", {
+            recommendationId: recommendation._id,
+            userId,
+            trainingPlanId: planId,
+            weekNumber: trainingPlan.currentWeek,
+          });
+        } catch (dbError) {
+          // Log error but don't break streaming - graceful degradation
+          log.error("Failed to save recommendation to database", {
+            error: dbError,
+            userId,
+            trainingPlanId: planId,
+          });
+        }
+
+        // Append metadata with recommendation ID at end of stream
+        // Format: __META__:recId=${id}
+        // Note: Frontend will parse and remove this before displaying
+        if (recommendationId) {
+          res.write(`__META__:recId=${recommendationId}`);
+        }
+
+        res.end();
+      } catch (streamError) {
+        generateSpan.recordException(
+          streamError instanceof Error ? streamError : new Error(String(streamError))
+        );
+        throw streamError;
+      } finally {
+        generateSpan.setStatus({ code: streamingSuccess ? 1 : 2 });
+        generateSpan.end();
       }
-
-      // Append metadata with recommendation ID at end of stream
-      // Format: __META__:recId=${id}
-      // Note: Frontend will parse and remove this before displaying
-      if (recommendationId) {
-        res.write(`__META__:recId=${recommendationId}`);
-      }
-
-      res.end();
     } catch (error) {
       if (error instanceof AppError) {
         log.warn("Error generating recommendations with training plan", {
@@ -303,23 +333,24 @@ router.post(
 );
 
 // GET /api/recommendations/user/history - Get user's recommendation history
-router.get("/user/history", authenticateJWT, getUserRecommendationHistory);
+router.get("/user/history", authenticateJWT, addTelemetryContext, getUserRecommendationHistory);
 
 // GET /api/recommendations/active - Get user's active (accepted, non-expired) recommendation
-router.get("/active", authenticateJWT, getActiveRecommendation);
+router.get("/active", authenticateJWT, addTelemetryContext, getActiveRecommendation);
 
 // POST /api/recommendations/:id/accept - Accept a recommendation
-router.post("/:id/accept", authenticateJWT, acceptRecommendation);
+router.post("/:id/accept", authenticateJWT, addTelemetryContext, acceptRecommendation);
 
 // POST /api/recommendations/:id/reject - Reject a recommendation with action
 router.post(
   "/:id/reject",
   authenticateJWT,
+  addTelemetryContext,
   validateBody(rejectRecommendationSchema),
   rejectRecommendation
 );
 
 // GET /api/recommendations/:id - Get single recommendation by ID
-router.get("/:id", authenticateJWT, getRecommendationById);
+router.get("/:id", authenticateJWT, addTelemetryContext, getRecommendationById);
 
 export { router as recommendationsRouter };
