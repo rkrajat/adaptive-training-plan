@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 
 import { Feedback } from "../models/Feedback";
 import { Recommendation } from "../models/Recommendation";
+import { withSpan, TELEMETRY_EVENTS } from "../telemetry";
 import { log } from "../utils/logger";
 import {
   sendSuccess,
@@ -70,16 +71,28 @@ export const submitFeedback = async (
       return;
     }
 
-    // Create new feedback
-    const feedback = new Feedback({
-      userId,
-      recommendationId,
-      usefulnessRating,
-      wouldFollow,
-      comment: comment || null,
-    });
-
-    await feedback.save();
+    // Create and save feedback with telemetry
+    const feedback = await withSpan(
+      TELEMETRY_EVENTS.FEEDBACK_SUBMIT,
+      async () => {
+        const newFeedback = new Feedback({
+          userId,
+          recommendationId,
+          usefulnessRating,
+          wouldFollow,
+          comment: comment || null,
+        });
+        await newFeedback.save();
+        return newFeedback;
+      },
+      {
+        "user.id": userId,
+        "recommendation.id": recommendationId,
+        "rating": usefulnessRating,
+        "would_follow": wouldFollow,
+        "has_comment": !!comment,
+      }
+    );
 
     log.info("Feedback submitted successfully", {
       feedbackId: feedback._id,
