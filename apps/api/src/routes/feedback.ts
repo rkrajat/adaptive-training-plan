@@ -7,6 +7,7 @@ import {
 } from '../controllers/feedback.controller';
 import { authenticateJWT } from '../middleware/auth';
 import { feedbackRateLimiter } from '../middleware/rate-limit';
+import { addTelemetryContext } from '../middleware/telemetry.middleware';
 import { validateBody } from '../middleware/validate';
 import { submitFeedbackSchema } from '../validators/feedback.validator';
 
@@ -14,6 +15,7 @@ const router = Router();
 
 // All feedback routes require authentication
 router.use(authenticateJWT);
+router.use(addTelemetryContext);
 
 // POST /api/feedback - Submit feedback for a recommendation
 router.post(

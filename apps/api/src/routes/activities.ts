@@ -1,6 +1,7 @@
 import { Router, type Request, type Response } from "express";
 
 import { authenticateJWT } from "../middleware/auth";
+import { addTelemetryContext } from "../middleware/telemetry.middleware";
 import { validateQuery } from "../middleware/validate";
 import { stravaService } from "../services/strava.service";
 import { weeklySummaryService } from "../services/weekly-summary.service";
@@ -20,7 +21,7 @@ import {
 const router = Router();
 
 // GET /api/activities - Fetch activities from Strava (last 30 days)
-router.get("/", authenticateJWT, async (req: Request, res: Response) => {
+router.get("/", authenticateJWT, addTelemetryContext, async (req: Request, res: Response) => {
   try {
     if (!req.user) {
       sendUnauthorized(res, "User not authenticated");
@@ -56,6 +57,7 @@ router.get("/", authenticateJWT, async (req: Request, res: Response) => {
 router.get(
   "/weekly-summary",
   authenticateJWT,
+  addTelemetryContext,
   validateQuery(weeklySummaryQuerySchema),
   async (req: Request, res: Response) => {
     try {

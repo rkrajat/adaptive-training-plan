@@ -2,6 +2,7 @@ import { Router, type Request, type Response } from "express";
 
 import { config } from "../config";
 import { authenticateJWT } from "../middleware/auth";
+import { addTelemetryContext } from "../middleware/telemetry.middleware";
 import { authService } from "../services/auth.service";
 import { stravaService } from "../services/strava.service";
 import { log } from "../utils/logger";
@@ -57,7 +58,7 @@ router.get("/strava/callback", async (req: Request, res: Response) => {
 });
 
 // GET /api/auth/me - Returns authenticated user profile
-router.get("/me", authenticateJWT, async (req: Request, res: Response) => {
+router.get("/me", authenticateJWT, addTelemetryContext, async (req: Request, res: Response) => {
   try {
     if (!req.user) {
       sendUnauthorized(res, "User not authenticated");
