@@ -28,6 +28,10 @@ if (isEnabled) {
         "@opentelemetry/instrumentation-undici": {
           enabled: true,
         },
+        // Disable runtime node instrumentation
+        "@opentelemetry/instrumentation-runtime-node": {
+          enabled: false,
+        },
         // Disable instrumentations we don't need
         "@opentelemetry/instrumentation-fs": {
           enabled: false,
