@@ -6,7 +6,7 @@ import { Loader2 } from 'lucide-react';
 
 import { setToken } from '@/lib/auth';
 import { authApi, trainingPlansApi } from '@/lib/api';
-import { trackEvent, TELEMETRY_EVENTS } from '@/lib/telemetry';
+import { trackEvent, setTelemetryUser, TELEMETRY_EVENTS } from '@/lib/telemetry';
 
 const LoadingSpinner = () => (
   <div className="flex min-h-screen items-center justify-center bg-gray-50">
@@ -45,6 +45,7 @@ const CallbackContent = () => {
 
       // Store token in localStorage
       setToken(token);
+      setTelemetryUser(token);
       trackEvent(TELEMETRY_EVENTS.AUTH_CALLBACK, { status: 'success' });
 
       try {

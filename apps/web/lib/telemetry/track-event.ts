@@ -3,6 +3,7 @@
 import { trace, SpanStatusCode } from "@opentelemetry/api";
 
 import { isTelemetryEnabled } from "./init";
+import { getTelemetryUserAttributes } from "./user-context";
 
 type AttributeValue = string | number | boolean;
 
@@ -30,6 +31,11 @@ export const trackEvent = (
   try {
     const tracer = trace.getTracer("user-actions");
     const span = tracer.startSpan(eventName);
+
+    const userAttrs = getTelemetryUserAttributes();
+    if (userAttrs) {
+      span.setAttributes(userAttrs);
+    }
 
     if (attributes) {
       span.setAttributes(attributes);
@@ -68,6 +74,11 @@ export const trackAsyncEvent = async <T>(
 
   const tracer = trace.getTracer("user-actions");
   const span = tracer.startSpan(eventName);
+
+  const userAttrs = getTelemetryUserAttributes();
+  if (userAttrs) {
+    span.setAttributes(userAttrs);
+  }
 
   if (attributes) {
     span.setAttributes(attributes);

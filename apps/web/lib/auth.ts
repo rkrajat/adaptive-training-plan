@@ -1,3 +1,5 @@
+import { clearTelemetryUser } from "@/lib/telemetry";
+
 const TOKEN_KEY = "auth_token";
 
 /**
@@ -35,6 +37,7 @@ export const isAuthenticated = (): boolean => {
  * Log out the user by removing the token and redirecting to login
  */
 export const logout = async (): Promise<void> => {
+  clearTelemetryUser();
   removeToken();
   if (typeof window !== "undefined") {
     window.location.href = "/login";

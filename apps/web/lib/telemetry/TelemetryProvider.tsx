@@ -2,7 +2,10 @@
 
 import { useEffect } from "react";
 
+import { getToken } from "@/lib/auth";
+
 import { initTelemetry } from "./init";
+import { setTelemetryUser } from "./user-context";
 
 /**
  * Client component that initializes OpenTelemetry on mount.
@@ -15,6 +18,12 @@ export const TelemetryProvider = ({
 }) => {
   useEffect(() => {
     initTelemetry();
+
+    // Initialize user context from existing token
+    const token = getToken();
+    if (token) {
+      setTelemetryUser(token);
+    }
   }, []);
 
   return <>{children}</>;
