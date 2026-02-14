@@ -45,7 +45,7 @@ export const initTelemetry = (): void => {
 
     // Configure OTLP exporter for Honeycomb
     const exporter = new OTLPTraceExporter({
-      url: "https://api.honeycomb.io/v1/traces",
+      url: "https://api.eu1.honeycomb.io/v1/traces",
       headers: {
         "x-honeycomb-team": apiKey,
       },

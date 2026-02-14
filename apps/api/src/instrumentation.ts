@@ -5,15 +5,15 @@
  * before any other imports, to ensure proper instrumentation of all modules.
  */
 
-import { HoneycombSDK } from "@honeycombio/opentelemetry-node";
 import { getNodeAutoInstrumentations } from "@opentelemetry/auto-instrumentations-node";
+import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
+import { NodeSDK } from '@opentelemetry/sdk-node';
 
-const isEnabled = Boolean(process.env.HONEYCOMB_API_KEY);
+const isEnabled = Boolean(process.env.OTEL_EXPORTER_OTLP_HEADERS);
 
 if (isEnabled) {
-  const sdk = new HoneycombSDK({
-    apiKey: process.env.HONEYCOMB_API_KEY,
-    serviceName: process.env.OTEL_SERVICE_NAME || "adaptive-training-api",
+  const sdk = new NodeSDK({
+    traceExporter: new OTLPTraceExporter(),
     instrumentations: [
       getNodeAutoInstrumentations({
         // Enable HTTP instrumentation for Express routes

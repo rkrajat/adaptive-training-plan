@@ -1,10 +1,10 @@
 // OpenTelemetry instrumentation MUST be imported first, before any other modules
+import "dotenv/config";
 import "./instrumentation";
 
 import cors from "cors";
 import express from "express";
 import mongoose from "mongoose";
-import "dotenv/config";
 
 import { config } from "./config";
 import { errorHandler, notFoundHandler } from "./middleware/error-handler";
