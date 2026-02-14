@@ -2,9 +2,11 @@ import { Router, type Request, type Response } from "express";
 import multer from "multer";
 
 import { authenticateJWT } from "../middleware/auth";
+import { addTelemetryContext } from "../middleware/telemetry.middleware";
 import { validateParams } from "../middleware/validate";
 import type { ExtractedDataForCorrection } from "../services/pdf-to-csv.service";
 import { trainingPlanService } from "../services/training-plan.service";
+import { withSpan, TELEMETRY_EVENTS } from "../telemetry";
 import type { TrainingPlanUploadRequest } from "../types/api.types";
 import { AppError } from "../utils/error";
 import { log } from "../utils/logger";
@@ -62,6 +64,7 @@ const upload = multer({
 router.post(
   "/",
   authenticateJWT,
+  addTelemetryContext,
   upload.single("file"),
   async (req: Request, res: Response) => {
     try {
@@ -103,12 +106,21 @@ router.post(
         filename: req.file.originalname,
       });
 
-      // Create training plan
-      const trainingPlan = await trainingPlanService.createTrainingPlan(
-        req.user.userId,
-        req.file,
-        metadata,
-        fileType
+      // Create training plan with telemetry
+      const trainingPlan = await withSpan(
+        TELEMETRY_EVENTS.TRAINING_PLAN_UPLOAD,
+        async () =>
+          trainingPlanService.createTrainingPlan(
+            req.user!.userId,
+            req.file!,
+            metadata,
+            fileType
+          ),
+        {
+          "user.id": req.user.userId,
+          "file_type": fileType,
+          "file_size_bytes": req.file.size,
+        }
       );
 
       log.info("Training plan uploaded successfully", {
@@ -158,6 +170,7 @@ router.post(
 router.post(
   "/corrected",
   authenticateJWT,
+  addTelemetryContext,
   async (req: Request, res: Response) => {
     try {
       if (!req.user) {
@@ -212,7 +225,7 @@ router.post(
 );
 
 // GET /api/training-plans - List all training plans for authenticated user
-router.get("/", authenticateJWT, async (req: Request, res: Response) => {
+router.get("/", authenticateJWT, addTelemetryContext, async (req: Request, res: Response) => {
   try {
     if (!req.user) {
       sendBadRequest(res, "User not authenticated");
@@ -246,6 +259,7 @@ router.get("/", authenticateJWT, async (req: Request, res: Response) => {
 router.get(
   "/:id",
   authenticateJWT,
+  addTelemetryContext,
   validateParams(trainingPlanIdParamSchema),
   async (req: Request, res: Response) => {
     try {
@@ -281,6 +295,7 @@ router.get(
 router.get(
   "/:id/versions",
   authenticateJWT,
+  addTelemetryContext,
   validateParams(trainingPlanIdParamSchema),
   async (req: Request, res: Response) => {
     try {
@@ -316,6 +331,7 @@ router.get(
 router.patch(
   "/:id",
   authenticateJWT,
+  addTelemetryContext,
   validateParams(trainingPlanIdParamSchema),
   async (req: Request, res: Response) => {
     try {
@@ -367,6 +383,7 @@ router.patch(
 router.delete(
   "/:id",
   authenticateJWT,
+  addTelemetryContext,
   validateParams(trainingPlanIdParamSchema),
   async (req: Request, res: Response) => {
     try {

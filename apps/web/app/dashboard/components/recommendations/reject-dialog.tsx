@@ -11,6 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { trackEvent, TELEMETRY_EVENTS } from "@/lib/telemetry";
 
 import type { RejectAction } from "./types";
 
@@ -31,6 +32,13 @@ export const RejectDialog = ({
   onSelectAction,
   isLoading,
 }: RejectDialogProps) => {
+  const handleSelectAction = (action: RejectAction) => {
+    trackEvent(TELEMETRY_EVENTS.RECOMMENDATION_REJECT_ACTION_SELECTED, {
+      action,
+    });
+    onSelectAction(action);
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-md">
@@ -44,7 +52,7 @@ export const RejectDialog = ({
           <Button
             variant="outline"
             className="justify-start h-auto py-3 px-4"
-            onClick={() => onSelectAction("generate_new")}
+            onClick={() => handleSelectAction("generate_new")}
             disabled={isLoading}
           >
             <RefreshCw className="h-5 w-5 mr-3 text-orange-500" />
@@ -58,7 +66,7 @@ export const RejectDialog = ({
           <Button
             variant="outline"
             className="justify-start h-auto py-3 px-4"
-            onClick={() => onSelectAction("discard")}
+            onClick={() => handleSelectAction("discard")}
             disabled={isLoading}
           >
             <Trash2 className="h-5 w-5 mr-3 text-red-500" />

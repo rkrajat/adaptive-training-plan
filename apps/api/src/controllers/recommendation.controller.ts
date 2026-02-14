@@ -247,6 +247,7 @@ export const acceptRecommendation = async (
       return;
     }
 
+    // Accept recommendation (user intent tracked on frontend)
     const acceptedRecommendation =
       await recommendationAcceptanceService.acceptRecommendation(id, userId);
 
@@ -294,6 +295,7 @@ export const rejectRecommendation = async (
       return;
     }
 
+    // Reject recommendation (user intent tracked on frontend)
     const result = await recommendationAcceptanceService.rejectRecommendation(
       id,
       userId,

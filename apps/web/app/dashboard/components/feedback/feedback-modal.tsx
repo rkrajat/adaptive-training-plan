@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -15,6 +15,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
+import { trackEvent, TELEMETRY_EVENTS } from '@/lib/telemetry';
 
 import { StarRating } from './star-rating';
 
@@ -41,6 +42,13 @@ export const FeedbackModal = ({
   const [rating, setRating] = useState<number>(0);
   const [wouldFollow, setWouldFollow] = useState<boolean>(false);
   const [comment, setComment] = useState<string>('');
+
+  // Track modal open event
+  useEffect(() => {
+    if (isOpen) {
+      trackEvent(TELEMETRY_EVENTS.FEEDBACK_MODAL_OPEN);
+    }
+  }, [isOpen]);
 
   // Reset form and close modal
   const handleClose = useCallback(() => {
@@ -145,11 +153,10 @@ export const FeedbackModal = ({
               />
               <div className="flex justify-end">
                 <span
-                  className={`text-xs ${
-                    characterCount > maxCharacters * 0.9
+                  className={`text-xs ${characterCount > maxCharacters * 0.9
                       ? 'text-orange-600 font-semibold'
                       : 'text-muted-foreground'
-                  }`}
+                    }`}
                 >
                   {characterCount} / {maxCharacters}
                 </span>

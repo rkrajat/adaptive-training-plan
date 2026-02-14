@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Toaster } from 'sonner';
 
+import { TelemetryProvider } from '@/lib/telemetry';
 import { ThemeProvider } from '@/components/theme-provider';
 
 export const Providers = ({ children }: { children: React.ReactNode }) => {
@@ -20,11 +21,13 @@ export const Providers = ({ children }: { children: React.ReactNode }) => {
   );
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider defaultTheme="system">
-        {children}
-        <Toaster position="bottom-right" richColors />
-      </ThemeProvider>
-    </QueryClientProvider>
+    <TelemetryProvider>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider defaultTheme="system">
+          {children}
+          <Toaster position="bottom-right" richColors />
+        </ThemeProvider>
+      </QueryClientProvider>
+    </TelemetryProvider>
   );
 };

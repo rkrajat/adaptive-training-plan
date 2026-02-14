@@ -23,6 +23,7 @@ import { useAuthGuard } from "@/hooks/use-auth-guard";
 import { useDashboardData } from "@/hooks/use-dashboard-data";
 import { useUpdateExperienceLevel } from "@/hooks/use-user-profile";
 import { trainingPlansApi } from "@/lib/api";
+import { trackEvent, TELEMETRY_EVENTS } from "@/lib/telemetry";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -51,6 +52,14 @@ export default function OnboardingPage() {
 
   // Step state
   const [currentStep, setCurrentStep] = useState(1);
+
+  // Track step views
+  useEffect(() => {
+    trackEvent(TELEMETRY_EVENTS.ONBOARDING_STEP_VIEW, {
+      step_number: currentStep,
+      step_name: STEPS[currentStep - 1]?.title ?? "unknown",
+    });
+  }, [currentStep]);
 
   // Form state - derive initial value from user data
   const initialExperienceLevel = user?.experienceLevel;
@@ -142,16 +151,35 @@ export default function OnboardingPage() {
 
   const handleNext = async () => {
     if (currentStep === 1 && effectiveExperienceLevel) {
+      trackEvent(TELEMETRY_EVENTS.ONBOARDING_STEP_COMPLETE, {
+        step_number: 1,
+        step_name: "Experience",
+        experience_level: effectiveExperienceLevel,
+      });
       await saveExperienceLevelOnly();
       setCurrentStep(2);
     } else if (currentStep === 2) {
+      trackEvent(TELEMETRY_EVENTS.ONBOARDING_STEP_COMPLETE, {
+        step_number: 2,
+        step_name: "Race Goal",
+        has_race_goal: !!raceGoal,
+      });
       setCurrentStep(3);
     } else if (currentStep === 3) {
+      trackEvent(TELEMETRY_EVENTS.ONBOARDING_STEP_COMPLETE, {
+        step_number: 3,
+        step_name: "Training Plan",
+        file_type: file?.name.toLowerCase().endsWith(".pdf") ? "pdf" : "csv",
+      });
       uploadMutation.mutate();
     }
   };
 
   const handleSkip = () => {
+    trackEvent(TELEMETRY_EVENTS.ONBOARDING_SKIP, {
+      skipped_at_step: currentStep,
+      step_name: STEPS[currentStep - 1]?.title ?? "unknown",
+    });
     // Save experience level if set
     if (effectiveExperienceLevel && effectiveExperienceLevel !== user?.experienceLevel) {
       saveExperienceLevelOnly();

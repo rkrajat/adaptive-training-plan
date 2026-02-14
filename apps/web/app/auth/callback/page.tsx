@@ -6,6 +6,7 @@ import { Loader2 } from 'lucide-react';
 
 import { setToken } from '@/lib/auth';
 import { authApi, trainingPlansApi } from '@/lib/api';
+import { trackEvent, setTelemetryUser, TELEMETRY_EVENTS } from '@/lib/telemetry';
 
 const LoadingSpinner = () => (
   <div className="flex min-h-screen items-center justify-center bg-gray-50">
@@ -31,17 +32,21 @@ const CallbackContent = () => {
       const token = searchParams.get('token');
 
       if (error) {
+        trackEvent(TELEMETRY_EVENTS.AUTH_CALLBACK, { status: 'error', error_type: error });
         router.push(`/login?error=${error}`);
         return;
       }
 
       if (!token) {
+        trackEvent(TELEMETRY_EVENTS.AUTH_CALLBACK, { status: 'error', error_type: 'no_token' });
         router.push('/login?error=no_token');
         return;
       }
 
       // Store token in localStorage
       setToken(token);
+      setTelemetryUser(token);
+      trackEvent(TELEMETRY_EVENTS.AUTH_CALLBACK, { status: 'success' });
 
       try {
         // Check if user has completed onboarding (has experience level and active plan)

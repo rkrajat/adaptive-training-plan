@@ -7,6 +7,7 @@ import {
   updateRaceGoal,
 } from '../controllers/user.controller';
 import { authenticateJWT } from '../middleware/auth';
+import { addTelemetryContext } from '../middleware/telemetry.middleware';
 import { validateBody } from '../middleware/validate';
 import { stravaService } from '../services/strava.service';
 import { sendSuccess, sendUnauthorized } from '../utils/response';
@@ -17,6 +18,7 @@ const router = Router();
 
 // All user routes require authentication
 router.use(authenticateJWT);
+router.use(addTelemetryContext);
 
 // GET /api/users/profile - Get user profile
 router.get('/profile', getUserProfile);
