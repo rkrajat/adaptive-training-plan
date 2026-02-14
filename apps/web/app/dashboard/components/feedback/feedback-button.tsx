@@ -5,6 +5,7 @@ import { MessageSquare, Check, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
+import { trackEvent, TELEMETRY_EVENTS } from '@/lib/telemetry';
 
 import { useFeedbackStatus, useFeedbackSubmit } from '@/hooks/use-feedback';
 
@@ -52,6 +53,13 @@ export const FeedbackButton = ({ recommendationId }: FeedbackButtonProps) => {
       },
       {
         onSuccess: () => {
+          trackEvent(TELEMETRY_EVENTS.FEEDBACK_SUBMIT_CLICK, {
+            rating: formData.rating,
+            would_follow: formData.wouldFollow,
+            has_comment: !!formData.comment?.trim(),
+          });
+
+
           toast.success('Thank you for your feedback!', {
             description: 'Your feedback helps us improve recommendations.',
           });

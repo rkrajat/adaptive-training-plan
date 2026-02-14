@@ -65,13 +65,6 @@ export const FeedbackModal = ({
       return; // Don't submit if no rating selected
     }
 
-    // Track feedback submission click
-    trackEvent(TELEMETRY_EVENTS.FEEDBACK_SUBMIT_CLICK, {
-      rating,
-      would_follow: wouldFollow,
-      has_comment: !!comment.trim(),
-    });
-
     const feedbackData: FeedbackFormData = {
       rating,
       wouldFollow,
@@ -160,11 +153,10 @@ export const FeedbackModal = ({
               />
               <div className="flex justify-end">
                 <span
-                  className={`text-xs ${
-                    characterCount > maxCharacters * 0.9
+                  className={`text-xs ${characterCount > maxCharacters * 0.9
                       ? 'text-orange-600 font-semibold'
                       : 'text-muted-foreground'
-                  }`}
+                    }`}
                 >
                   {characterCount} / {maxCharacters}
                 </span>

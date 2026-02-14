@@ -11,7 +11,8 @@ export const TELEMETRY_EVENTS = {
   ONBOARDING_STEP_COMPLETE: "onboarding.step_complete",
   ONBOARDING_SKIP: "onboarding.skip",
 
-  // Recommendation events (accept/reject combined with action attribute: "accept" | "reject")
+  // Recommendation events
+  RECOMMENDATION_REQUEST: "recommendation.request",
   RECOMMENDATION_ACTION: "recommendation.action",
   RECOMMENDATION_REJECT_ACTION_SELECTED: "recommendation.reject_action_selected",
 

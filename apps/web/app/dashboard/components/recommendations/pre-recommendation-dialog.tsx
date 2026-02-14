@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/responsive-dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { trackEvent, TELEMETRY_EVENTS } from "@/lib/telemetry";
 
 interface PreRecommendationDialogProps {
   open: boolean;
@@ -185,6 +186,9 @@ export const PreRecommendationDialog = ({
   const [userFeedback, setUserFeedback] = useState("");
 
   const handleGenerate = () => {
+    trackEvent(TELEMETRY_EVENTS.RECOMMENDATION_REQUEST, {
+      has_feedback: Boolean(userFeedback?.trim()),
+    });
     onGenerate(userFeedback.trim() || undefined);
     setUserFeedback("");
     onOpenChange(false);
