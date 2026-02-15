@@ -1,12 +1,17 @@
-'use client';
+"use client";
 
-import { Suspense, useEffect, useRef } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
-import { Loader2 } from 'lucide-react';
+import { Suspense, useEffect, useRef } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { Loader2 } from "lucide-react";
 
-import { setToken } from '@/lib/auth';
-import { authApi, trainingPlansApi } from '@/lib/api';
-import { trackEvent, setTelemetryUser, TELEMETRY_EVENTS } from '@/lib/telemetry';
+import { setToken } from "@/lib/auth";
+import { authApi, trainingPlansApi } from "@/lib/api";
+import { getOnboardingStatus } from "@/lib/auth-utils";
+import {
+  trackEvent,
+  setTelemetryUser,
+  TELEMETRY_EVENTS,
+} from "@/lib/telemetry";
 
 const LoadingSpinner = () => (
   <div className="flex min-h-screen items-center justify-center bg-gray-50">
@@ -28,25 +33,31 @@ const CallbackContent = () => {
       if (hasProcessed.current) return;
       hasProcessed.current = true;
 
-      const error = searchParams.get('error');
-      const token = searchParams.get('token');
+      const error = searchParams.get("error");
+      const token = searchParams.get("token");
 
       if (error) {
-        trackEvent(TELEMETRY_EVENTS.AUTH_CALLBACK, { status: 'error', error_type: error });
+        trackEvent(TELEMETRY_EVENTS.AUTH_CALLBACK, {
+          status: "error",
+          error_type: error,
+        });
         router.push(`/login?error=${error}`);
         return;
       }
 
       if (!token) {
-        trackEvent(TELEMETRY_EVENTS.AUTH_CALLBACK, { status: 'error', error_type: 'no_token' });
-        router.push('/login?error=no_token');
+        trackEvent(TELEMETRY_EVENTS.AUTH_CALLBACK, {
+          status: "error",
+          error_type: "no_token",
+        });
+        router.push("/login?error=no_token");
         return;
       }
 
       // Store token in localStorage
       setToken(token);
       setTelemetryUser(token);
-      trackEvent(TELEMETRY_EVENTS.AUTH_CALLBACK, { status: 'success' });
+      trackEvent(TELEMETRY_EVENTS.AUTH_CALLBACK, { status: "success" });
 
       try {
         // Check if user has completed onboarding (has experience level and active plan)
@@ -55,22 +66,21 @@ const CallbackContent = () => {
           trainingPlansApi.listActive(),
         ]);
 
-        const hasExperienceLevel = !!user.experienceLevel;
-        const hasActivePlan = plansResponse.plans.length > 0;
+        const onboardingStatus = getOnboardingStatus(user, plansResponse.plans);
 
         // If onboarding is incomplete, redirect to onboarding
-        if (!hasExperienceLevel || !hasActivePlan) {
-          router.push('/onboarding');
+        if (!onboardingStatus.isComplete) {
+          router.push("/onboarding");
           return;
         }
 
         // Otherwise, go to dashboard
-        router.push('/dashboard');
+        router.push("/dashboard");
       } catch (fetchError) {
         // If there's an error fetching user data, just go to dashboard
         // The dashboard will handle any errors
-        console.error('Error checking onboarding status:', fetchError);
-        router.push('/dashboard');
+        console.error("Error checking onboarding status:", fetchError);
+        router.push("/dashboard");
       }
     };
 
