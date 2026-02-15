@@ -1,24 +1,7 @@
-"use client";
-
-import Link from "next/link";
-import { Zap, BarChart3 } from "lucide-react";
-
-import { useAutoAuthRedirect } from "@/hooks/use-auto-auth-redirect";
-import { LoadingScreen } from "@/components/LoadingScreen";
+import Link from 'next/link';
+import { Zap, BarChart3 } from 'lucide-react';
 
 export const HomePage = () => {
-  const authState = useAutoAuthRedirect();
-
-  // Show loading screen while checking authentication
-  if (authState === "loading" || authState === "redirecting") {
-    const message =
-      authState === "redirecting"
-        ? "Redirecting..."
-        : "Checking authentication...";
-    return <LoadingScreen message={message} />;
-  }
-
-  // Show landing page for unauthenticated users
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -26,9 +9,7 @@ export const HomePage = () => {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Zap className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
-            <span className="text-lg sm:text-xl font-semibold text-foreground">
-              AdaptiveRunning
-            </span>
+            <span className="text-lg sm:text-xl font-semibold text-foreground">AdaptiveRunning</span>
           </div>
           <Link
             href="/login"
@@ -42,7 +23,7 @@ export const HomePage = () => {
       {/* Hero Section */}
       <section className="mx-auto max-w-4xl px-4 sm:px-6 py-12 sm:py-20 text-center">
         <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-foreground">
-          Train Smarter,{" "}
+          Train Smarter,{' '}
           <span className="bg-blue-600 text-white px-2 sm:px-4 py-1 inline-block mt-2 sm:mt-0">
             Not Harder
           </span>
@@ -71,12 +52,9 @@ export const HomePage = () => {
             <div className="mx-auto w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-blue-100 dark:bg-blue-950 flex items-center justify-center mb-3 sm:mb-4">
               <Zap className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
             </div>
-            <h3 className="text-base sm:text-lg font-semibold text-foreground mb-2">
-              Strava Integration
-            </h3>
+            <h3 className="text-base sm:text-lg font-semibold text-foreground mb-2">Strava Integration</h3>
             <p className="text-xs sm:text-sm text-muted-foreground">
-              Automatically sync your running data, heart rate, and performance
-              metrics from Strava.
+              Automatically sync your running data, heart rate, and performance metrics from Strava.
             </p>
           </div>
 
@@ -85,12 +63,9 @@ export const HomePage = () => {
             <div className="mx-auto w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-orange-100 dark:bg-orange-950 flex items-center justify-center mb-3 sm:mb-4">
               <BarChart3 className="h-5 w-5 sm:h-6 sm:w-6 text-orange-500" />
             </div>
-            <h3 className="text-base sm:text-lg font-semibold text-foreground mb-2">
-              Data-Driven Insights
-            </h3>
+            <h3 className="text-base sm:text-lg font-semibold text-foreground mb-2">Data-Driven Insights</h3>
             <p className="text-xs sm:text-sm text-muted-foreground">
-              Analyze your past month&apos;s performance to provide intelligent
-              training adjustments.
+              Analyze your past month&apos;s performance to provide intelligent training adjustments.
             </p>
           </div>
 
@@ -99,12 +74,9 @@ export const HomePage = () => {
             <div className="mx-auto w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-blue-100 dark:bg-blue-950 flex items-center justify-center mb-3 sm:mb-4">
               <Zap className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
             </div>
-            <h3 className="text-base sm:text-lg font-semibold text-foreground mb-2">
-              Adaptive Plans
-            </h3>
+            <h3 className="text-base sm:text-lg font-semibold text-foreground mb-2">Adaptive Plans</h3>
             <p className="text-xs sm:text-sm text-muted-foreground">
-              Get personalized weekly tweaks to your training plan that prevent
-              burnout and injury.
+              Get personalized weekly tweaks to your training plan that prevent burnout and injury.
             </p>
           </div>
         </div>
@@ -113,9 +85,7 @@ export const HomePage = () => {
       {/* How It Works Section */}
       <section className="bg-muted py-12 sm:py-20">
         <div className="mx-auto max-w-4xl px-4 sm:px-6">
-          <h2 className="text-2xl sm:text-3xl font-bold text-foreground text-center mb-8 sm:mb-12">
-            How It Works
-          </h2>
+          <h2 className="text-2xl sm:text-3xl font-bold text-foreground text-center mb-8 sm:mb-12">How It Works</h2>
 
           <div className="space-y-6 sm:space-y-8">
             {/* Step 1 */}
@@ -126,12 +96,9 @@ export const HomePage = () => {
                 </div>
               </div>
               <div>
-                <h3 className="text-base sm:text-lg font-semibold text-foreground mb-1">
-                  Connect Your Strava
-                </h3>
+                <h3 className="text-base sm:text-lg font-semibold text-foreground mb-1">Connect Your Strava</h3>
                 <p className="text-sm sm:text-base text-muted-foreground">
-                  Link your Strava account to import your running history,
-                  including distance, heart rate, and frequency data.
+                  Link your Strava account to import your running history, including distance, heart rate, and frequency data.
                 </p>
               </div>
             </div>
@@ -144,12 +111,9 @@ export const HomePage = () => {
                 </div>
               </div>
               <div>
-                <h3 className="text-base sm:text-lg font-semibold text-foreground mb-1">
-                  Upload Your Training Plan
-                </h3>
+                <h3 className="text-base sm:text-lg font-semibold text-foreground mb-1">Upload Your Training Plan</h3>
                 <p className="text-sm sm:text-base text-muted-foreground">
-                  Share your current training plan so we understand your goals
-                  and weekly structure.
+                  Share your current training plan so we understand your goals and weekly structure.
                 </p>
               </div>
             </div>
@@ -162,12 +126,9 @@ export const HomePage = () => {
                 </div>
               </div>
               <div>
-                <h3 className="text-base sm:text-lg font-semibold text-foreground mb-1">
-                  Get Personalized Recommendations
-                </h3>
+                <h3 className="text-base sm:text-lg font-semibold text-foreground mb-1">Get Personalized Recommendations</h3>
                 <p className="text-sm sm:text-base text-muted-foreground">
-                  Receive data-driven weekly adjustments tailored to your
-                  performance and recovery metrics.
+                  Receive data-driven weekly adjustments tailored to your performance and recovery metrics.
                 </p>
               </div>
             </div>
