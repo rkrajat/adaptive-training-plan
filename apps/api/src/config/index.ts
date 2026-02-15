@@ -47,7 +47,7 @@ const configSchema = z.object({
       .int()
       .positive()
       .default(15 * 60 * 1000), // 15 minutes
-    maxRequests: z.number().int().positive().default(100),
+    maxRequests: z.number().int().positive().default(200),
   }),
 
   // Recommendation Settings
