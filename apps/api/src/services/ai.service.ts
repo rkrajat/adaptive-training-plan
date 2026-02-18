@@ -266,7 +266,9 @@ Else:
     - Continue progression as planned
 
 STEP 6: REGENERATE MODIFIED PLAN
-For next week:
+Generate the Modified Training Plan for the week specified in "NEXT WEEK FOR RECOMMENDATIONS" in the input.
+CRITICAL: Use the EXACT dates provided in that section. Do NOT calculate or estimate dates yourself.
+For each of the 7 days in that week:
     - Assign Run Type (Easy, Interval, Tempo, Long, Rest)
     - Set Distance (adjusted per Step 5)
     - Set Target Pace / HR Zone
@@ -303,7 +305,16 @@ Always respond in the EXACT format below. Do not include any text before the two
 Provide the table in markdown format with the following columns:
 | Date | Day | Run Type | Distance (km) | Target Pace (min/km) | Target HR Zone | Notes |
 
-- The table must contain the full week (7 days).
+CRITICAL DATE REQUIREMENTS:
+- The table MUST contain exactly 7 rows (one for each day of the week)
+- Use the EXACT dates from the "NEXT WEEK FOR RECOMMENDATIONS" section provided in the input
+- First row date = first date of that week range
+- Last row date = last date of that week range
+- Do NOT generate dates outside this range
+- Do NOT skip any days in the week
+- Do NOT spill over into additional weeks
+
+OTHER REQUIREMENTS:
 - Include at least one rest day.
 - All distances and paces should be realistic and consistent with the runner's profile.
 - Adjust distances, intensity, or recovery days based on analysis results.
@@ -363,6 +374,29 @@ If you are unable to find sufficient data to make changes, output the same forma
       return `No training data available for week ${currentWeek}`;
     }
 
+    // Calculate the next week number and extract its date range
+    const nextWeekNumber = currentWeek + 1;
+    const nextWeekData = groupedWeeks.find(
+      (week: { weekNumber: number; rows: Record<string, string>[] }) =>
+        week.weekNumber === nextWeekNumber
+    );
+
+    // Build the next week date range section
+    let nextWeekDateRange = "";
+    if (nextWeekData && nextWeekData.rows.length > 0) {
+      const firstDay = nextWeekData.rows[0];
+      const lastDay = nextWeekData.rows[nextWeekData.rows.length - 1];
+      const startDateStr = firstDay["date"] || firstDay["Date"];
+      const endDateStr = lastDay["date"] || lastDay["Date"];
+
+      if (startDateStr && endDateStr) {
+        nextWeekDateRange = `\n## NEXT WEEK FOR RECOMMENDATIONS (Week ${nextWeekNumber})
+Date Range: ${startDateStr} to ${endDateStr}
+Your Modified Training Plan table MUST use these exact 7 dates from ${startDateStr} to ${endDateStr}.
+Do NOT generate dates outside this range. Do NOT skip any days.\n`;
+      }
+    }
+
     // Format header
     let formattedPlan = `Training Plan Structure:\n`;
     formattedPlan += `Headers: ${headers.join(", ")}\n\n`;
@@ -386,10 +420,17 @@ If you are unable to find sufficient data to make changes, output the same forma
       formattedPlan += "\n";
     }
 
+    // Append the next week date range section at the end
+    if (nextWeekDateRange) {
+      formattedPlan += nextWeekDateRange;
+    }
+
     log.debug("Training plan formatted for AI prompt", {
       totalWeeks: groupedWeeks.length,
       relevantWeeks: relevantWeeks.length,
       currentWeek,
+      nextWeekNumber,
+      hasNextWeekDateRange: !!nextWeekDateRange,
       formattedLength: formattedPlan.length,
     });
 
@@ -485,6 +526,7 @@ Use these ONLY when the training plan does NOT specify target paces. Plan-embedd
   private buildUserPromptWithEnhancedActivities(
     activities: EnhancedFormattedActivity[],
     trainingPlanData: string,
+    currentWeek: number,
     userFeedback?: string,
     experienceLevel?: ExperienceLevel,
     trainingPaces?: TrainingPaces,
@@ -524,7 +566,14 @@ Use these ONLY when the training plan does NOT specify target paces. Plan-embedd
       ? `## Athlete\nFirst Name: ${athleteFirstName}\n\n`
       : "";
 
-    let prompt = `${athleteNameSection}## Recent Running Activities (Last 30 Days)\n${activitiesTable}\n\n## Training Plan\n${trainingPlanData}\n\n## Running Experience\n${runningExperience}`;
+    // Add explicit current/target week header for clarity
+    const nextWeekNumber = currentWeek + 1;
+    const weekContextSection = `## Current Training Status
+You are analyzing: Week ${currentWeek}
+You MUST generate recommendations for: Week ${nextWeekNumber}
+IMPORTANT: Use the exact dates from "NEXT WEEK FOR RECOMMENDATIONS" section below.\n\n`;
+
+    let prompt = `${weekContextSection}${athleteNameSection}## Recent Running Activities (Last 30 Days)\n${activitiesTable}\n\n## Training Plan\n${trainingPlanData}\n\n## Running Experience\n${runningExperience}`;
 
     // Add training paces if available (calculated from VDOT or plan-embedded)
     if (trainingPaces) {
@@ -768,6 +817,7 @@ Keep the tone professional but encouraging. Be specific and actionable.`;
       const userPrompt = this.buildUserPromptWithEnhancedActivities(
         activities,
         trainingPlanData,
+        currentWeek,
         userFeedback,
         experienceLevel,
         trainingPaces,
