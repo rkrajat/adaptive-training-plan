@@ -65,7 +65,7 @@ export const RecommendationsCard = ({
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 sm:gap-3">
           <div className="flex flex-col sm:flex-row sm:items-center gap-2.5 sm:gap-4">
             <CardTitle className="text-lg sm:text-xl">
-              Weekly Training Recommendation
+              Next Week&apos;s Training Recommendation
             </CardTitle>
             {currentWeek && onViewWeeklySummary && (
               <Button
@@ -155,7 +155,7 @@ export const RecommendationsCard = ({
           <div className="text-center py-8">
             <p className="text-sm text-muted-foreground">
               Click &quot;Get Recommendations&quot; to get your personalized
-              training recommendation
+              training recommendation for next week
             </p>
           </div>
         )}

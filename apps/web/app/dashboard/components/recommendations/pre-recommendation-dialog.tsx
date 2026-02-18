@@ -208,8 +208,8 @@ export const PreRecommendationDialog = ({
             Generate Training Recommendation
           </ResponsiveDialogTitle>
           <ResponsiveDialogDescription>
-            Review your week before the AI generates personalized
-            recommendations.
+            Review your current week before the AI generates personalized
+            recommendations for next week.
           </ResponsiveDialogDescription>
         </ResponsiveDialogHeader>
 
