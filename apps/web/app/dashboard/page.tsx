@@ -277,7 +277,7 @@ export default function DashboardPage() {
           activePlan
             ? {
                 csvContent: activePlan.csvContent,
-                currentWeek: activePlan.currentWeek,
+                currentWeek: activePlan.currentWeek + 1, // Recommendation is for NEXT week
                 startDate: activePlan.startDate,
               }
             : undefined

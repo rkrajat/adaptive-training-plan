@@ -18,6 +18,7 @@ import { InternalServerError } from "../utils/error";
 import { log } from "../utils/logger";
 import { formatPace } from "../utils/pace-formatter";
 import { saveTokenUsage } from "../utils/token-usage-tracker";
+import type { TrainingMetrics } from "../utils/training-metrics";
 
 /**
  * Training status types for status indicator
@@ -209,7 +210,35 @@ Across the week:
     If pace slower at higher HR → mark "Negative Adaptation"
     If 4 skipped run in last two week → mark "Inconsistency"
 
+STEP 4A: ADHERENCE ASSESSMENT (CRITICAL - USE PRE-CALCULATED METRICS)
+The input includes pre-calculated adherence metrics. Use these directly:
+
+If adherence_level = "strong" (completion >= 80%, distance deviation <= 15%):
+    → Positive, encouraging tone is appropriate
+    → May progress training or add volume if other signals support it
+
+If adherence_level = "moderate" (completion 60-79%, distance deviation 16-30%):
+    → Cautiously positive tone
+    → Acknowledge the gaps while staying encouraging
+    → Focus on consistency before progression
+
+If adherence_level = "weak" (completion < 60% OR distance deviation > 30%):
+    → Supportive but realistic tone
+    → Do NOT use phrases like "solid block", "crushing it", "great week", "green flags"
+    → Do NOT add running days
+    → Focus on rebuilding consistency
+    → OVERRIDE any "Positive Adaptation" signals - weak adherence takes precedence
+
+CRITICAL: Your Coach's Notes tone MUST match the adherence level.
+
 STEP 5: DECISION RULES
+ADHERENCE OVERRIDE (APPLIES BEFORE ALL OTHER RULES):
+If adherence_level = "weak":
+    - IGNORE "Positive Adaptation" signals from pace/HR data
+    - Apply "Inconsistency" rules regardless of experience level
+    - Do NOT add running days under any circumstance
+    - Reduce planned volume by 10-20%
+    - Tone must acknowledge the training gap, not celebrate
 If Running Experience = “Beginner”
 If "Fatigue" OR "Overload Risk":
     - Replace next hard run with Easy or Rest
@@ -222,13 +251,13 @@ Else if "Positive Adaptation":
 Else if "Negative Adaptation":
     - Keep mileage constant
     - Maintain current intensity (do not progress)
-    - Add 1 extra recovery/easy day
+    - Convert one hard/tempo/interval day to an easy/recovery day (do NOT add new running days)
 Else if "Inconsistency":
     - Do NOT make up missed sessions
-    - Resume with current week’s plan but cap volume at -10% from target
+    - Resume with current week's plan but cap volume at -10% from target
 Else:
     - Continue progression as planned
-If Running Experience = “Intermediate”
+If Running Experience = "Intermediate"
 If "Fatigue" OR "Overload Risk":
     - Replace next hard run with Easy or Rest
     - Reduce total mileage by 10–20%
@@ -240,10 +269,10 @@ Else if "Positive Adaptation":
 Else if "Negative Adaptation":
     - Keep mileage constant
     - Maintain current intensity (do not progress)
-    - Add 1 extra recovery/easy day
+    - Convert one hard/tempo/interval day to an easy/recovery day (do NOT add new running days)
 Else if "Inconsistency":
     - Do NOT make up missed sessions
-    - Resume with current week’s plan but cap volume at -10% from target
+    - Resume with current week's plan but cap volume at -10% from target
 Else:
     - Continue progression as planned
 Else
@@ -258,15 +287,28 @@ Else if "Positive Adaptation":
 Else if "Negative Adaptation":
     - Keep mileage constant
     - Maintain current intensity (do not progress)
-    - Add 1 extra recovery/easy day
+    - Convert one hard/tempo/interval day to an easy/recovery day (do NOT add new running days)
 Else if "Inconsistency":
     - Do NOT make up missed sessions
-    - Resume with current week’s plan but cap volume at -10% from target
+    - Resume with current week's plan but cap volume at -10% from target
 Else:
     - Continue progression as planned
 
 STEP 6: REGENERATE MODIFIED PLAN
-For next week:
+Generate the Modified Training Plan for the week specified in "NEXT WEEK FOR RECOMMENDATIONS" in the input.
+CRITICAL: Use the EXACT dates provided in that section. Do NOT calculate or estimate dates yourself.
+
+RUNNING DAY CONSISTENCY RULE (CRITICAL):
+- Count the number of running days in the ORIGINAL plan for that week
+- If you are "toning down" or "reducing intensity/load":
+  → Your modified plan must have the SAME number of running days OR FEWER (never more)
+  → Do NOT add extra easy runs while claiming to reduce load
+- If you are "increasing" or "progressing" the training:
+  → You MAY add running days, but MUST clearly explain in Coach's Notes why you're adding them
+  → Never claim to be "toning down" while adding more running days
+- Your Coach's Notes MUST accurately reflect whether you increased, maintained, or decreased the number of running days
+
+For each of the 7 days in that week:
     - Assign Run Type (Easy, Interval, Tempo, Long, Rest)
     - Set Distance (adjusted per Step 5)
     - Set Target Pace / HR Zone
@@ -303,8 +345,20 @@ Always respond in the EXACT format below. Do not include any text before the two
 Provide the table in markdown format with the following columns:
 | Date | Day | Run Type | Distance (km) | Target Pace (min/km) | Target HR Zone | Notes |
 
-- The table must contain the full week (7 days).
+CRITICAL DATE REQUIREMENTS:
+- The table MUST contain exactly 7 rows (one for each day of the week)
+- Use the EXACT dates from the "NEXT WEEK FOR RECOMMENDATIONS" section provided in the input
+- First row date = first date of that week range
+- Last row date = last date of that week range
+- Do NOT generate dates outside this range
+- Do NOT skip any days in the week
+- Do NOT spill over into additional weeks
+
+OTHER REQUIREMENTS:
 - Include at least one rest day.
+- If reducing load/intensity: do NOT add more running days than the original plan
+- If adding running days: clearly explain the reason in Coach's Notes (do NOT claim to be "toning down")
+- Coach's Notes must accurately describe whether you increased, maintained, or decreased running days
 - All distances and paces should be realistic and consistent with the runner's profile.
 - Adjust distances, intensity, or recovery days based on analysis results.
 
@@ -363,6 +417,29 @@ If you are unable to find sufficient data to make changes, output the same forma
       return `No training data available for week ${currentWeek}`;
     }
 
+    // Calculate the next week number and extract its date range
+    const nextWeekNumber = currentWeek + 1;
+    const nextWeekData = groupedWeeks.find(
+      (week: { weekNumber: number; rows: Record<string, string>[] }) =>
+        week.weekNumber === nextWeekNumber
+    );
+
+    // Build the next week date range section
+    let nextWeekDateRange = "";
+    if (nextWeekData && nextWeekData.rows.length > 0) {
+      const firstDay = nextWeekData.rows[0];
+      const lastDay = nextWeekData.rows[nextWeekData.rows.length - 1];
+      const startDateStr = firstDay["date"] || firstDay["Date"];
+      const endDateStr = lastDay["date"] || lastDay["Date"];
+
+      if (startDateStr && endDateStr) {
+        nextWeekDateRange = `\n## NEXT WEEK FOR RECOMMENDATIONS (Week ${nextWeekNumber})
+Date Range: ${startDateStr} to ${endDateStr}
+Your Modified Training Plan table MUST use these exact 7 dates from ${startDateStr} to ${endDateStr}.
+Do NOT generate dates outside this range. Do NOT skip any days.\n`;
+      }
+    }
+
     // Format header
     let formattedPlan = `Training Plan Structure:\n`;
     formattedPlan += `Headers: ${headers.join(", ")}\n\n`;
@@ -386,10 +463,17 @@ If you are unable to find sufficient data to make changes, output the same forma
       formattedPlan += "\n";
     }
 
+    // Append the next week date range section at the end
+    if (nextWeekDateRange) {
+      formattedPlan += nextWeekDateRange;
+    }
+
     log.debug("Training plan formatted for AI prompt", {
       totalWeeks: groupedWeeks.length,
       relevantWeeks: relevantWeeks.length,
       currentWeek,
+      nextWeekNumber,
+      hasNextWeekDateRange: !!nextWeekDateRange,
       formattedLength: formattedPlan.length,
     });
 
@@ -485,10 +569,12 @@ Use these ONLY when the training plan does NOT specify target paces. Plan-embedd
   private buildUserPromptWithEnhancedActivities(
     activities: EnhancedFormattedActivity[],
     trainingPlanData: string,
+    currentWeek: number,
     userFeedback?: string,
     experienceLevel?: ExperienceLevel,
     trainingPaces?: TrainingPaces,
-    athleteFirstName?: string
+    athleteFirstName?: string,
+    metrics?: TrainingMetrics
   ): string {
     // Format activities as a structured table
     const activitiesTable = activities
@@ -524,7 +610,27 @@ Use these ONLY when the training plan does NOT specify target paces. Plan-embedd
       ? `## Athlete\nFirst Name: ${athleteFirstName}\n\n`
       : "";
 
-    let prompt = `${athleteNameSection}## Recent Running Activities (Last 30 Days)\n${activitiesTable}\n\n## Training Plan\n${trainingPlanData}\n\n## Running Experience\n${runningExperience}`;
+    // Add explicit current/target week header for clarity
+    const nextWeekNumber = currentWeek + 1;
+    const weekContextSection = `## Current Training Status
+You are analyzing: Week ${currentWeek}
+You MUST generate recommendations for: Week ${nextWeekNumber}
+IMPORTANT: Use the exact dates from "NEXT WEEK FOR RECOMMENDATIONS" section below.\n\n`;
+
+    let prompt = `${weekContextSection}${athleteNameSection}## Recent Running Activities (Last 30 Days)\n${activitiesTable}\n\n## Training Plan\n${trainingPlanData}\n\n## Running Experience\n${runningExperience}`;
+
+    // Add pre-calculated training adherence metrics if available
+    if (metrics) {
+      prompt += `
+
+## Training Adherence Metrics (Pre-Calculated - USE THESE DIRECTLY)
+- Completion Rate: ${metrics.completionPercentage}% (${metrics.completedRuns}/${metrics.plannedRuns} runs)
+- Distance: ${metrics.actualDistanceKm}km of ${metrics.plannedDistanceKm}km planned (${metrics.distanceDeviationPercentage}% deviation)
+- Adherence Level: ${metrics.adherenceLevel.toUpperCase()}
+- Long Runs: ${metrics.longRunsCompleted}/${metrics.longRunsPlanned} completed
+
+IMPORTANT: Your assessment and tone MUST align with this adherence level.`;
+    }
 
     // Add training paces if available (calculated from VDOT or plan-embedded)
     if (trainingPaces) {
@@ -534,8 +640,6 @@ Use these ONLY when the training plan does NOT specify target paces. Plan-embedd
     if (userFeedback) {
       prompt += `\n\n## Athlete Feedback\n${userFeedback}`;
     }
-
-    // prompt += `\n\n## Request\nBased on the detailed activity data and training plan above (currently on Week ${currentWeek}), provide specific recommendations for adjusting this week's training. Consider:\n- Training load and volume trends\n- Pace and heart rate patterns\n- Recovery indicators\n- Run type distribution\n- Any patterns or concerns in the data\n\nBe specific about which workouts to modify, keep as planned, or adjust in intensity or duration.`;
 
     return prompt;
   }
@@ -739,6 +843,7 @@ Keep the tone professional but encouraging. Be specific and actionable.`;
   /**
    * Generate training recommendations with enhanced activity data and training plan from database
    * Includes training paces from VDOT calculation when available
+   * Includes pre-calculated training metrics for adherence consistency
    */
   generateRecommendationsWithEnhancedPlan(
     activities: EnhancedFormattedActivity[],
@@ -748,7 +853,8 @@ Keep the tone professional but encouraging. Be specific and actionable.`;
     userFeedback?: string,
     experienceLevel?: ExperienceLevel,
     trainingPaces?: TrainingPaces,
-    athleteFirstName?: string
+    athleteFirstName?: string,
+    metrics?: TrainingMetrics
   ) {
     try {
       log.info("Generating AI recommendations with enhanced activity data", {
@@ -757,6 +863,8 @@ Keep the tone professional but encouraging. Be specific and actionable.`;
         hasFeedback: !!userFeedback,
         hasTrainingPaces: !!trainingPaces,
         hasAthleteName: !!athleteFirstName,
+        hasMetrics: !!metrics,
+        adherenceLevel: metrics?.adherenceLevel,
       });
 
       const systemPrompt = this.buildSystemPrompt();
@@ -768,10 +876,12 @@ Keep the tone professional but encouraging. Be specific and actionable.`;
       const userPrompt = this.buildUserPromptWithEnhancedActivities(
         activities,
         trainingPlanData,
+        currentWeek,
         userFeedback,
         experienceLevel,
         trainingPaces,
-        athleteFirstName
+        athleteFirstName,
+        metrics
       );
 
       log.debug("AI prompts prepared with enhanced activities", {

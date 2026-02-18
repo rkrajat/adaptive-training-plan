@@ -19,7 +19,7 @@ import { stravaService } from "../services/strava.service";
 import { trainingPlanService } from "../services/training-plan.service";
 import { TRACER_NAME, TELEMETRY_EVENTS } from "../telemetry";
 import type { StravaActivity } from "../types/strava.types";
-import { formatActivitiesForAI } from "../utils/activity-formatter";
+import { formatActivitiesForAI, filterActivitiesByWeekBoundaries } from "../utils/activity-formatter";
 import {
   UnauthorizedError,
   InternalServerError,
@@ -28,6 +28,7 @@ import {
 import { log } from "../utils/logger";
 import { useMockData } from "../utils/mock";
 import { sendUnauthorized, sendInternalError } from "../utils/response";
+import { calculateTrainingMetrics } from "../utils/training-metrics";
 import { rejectRecommendationSchema } from "../validators/recommendation-acceptance.validator";
 import {
   recommendationsGenerateSchema,
@@ -194,8 +195,16 @@ router.post(
         rawActivities = await stravaService.fetchActivities(accessToken, userId);
       }
 
-      // Format activities with enhanced metadata for AI service
-      const enhancedActivities = formatActivitiesForAI(rawActivities);
+      // Filter activities to only relevant weeks (previous week + current week)
+      // This ensures metrics are calculated using the same date range as training status
+      const filteredActivities = filterActivitiesByWeekBoundaries(
+        rawActivities,
+        new Date(trainingPlan.startDate),
+        trainingPlan.currentWeek
+      );
+
+      // Format filtered activities with enhanced metadata for AI service
+      const enhancedActivities = formatActivitiesForAI(filteredActivities);
 
       // Fetch user's experience level, race goal (training paces), and name
       const user = await User.findOne({ _id: userId });
@@ -213,6 +222,21 @@ router.post(
         hasFirstName: !!athleteFirstName,
       });
 
+      // Calculate training adherence metrics for consistency with training status
+      const metrics = calculateTrainingMetrics(
+        enhancedActivities,
+        trainingPlan.csvContent,
+        trainingPlan.startDate,
+        trainingPlan.currentWeek
+      );
+
+      log.info("Calculated training metrics for recommendations", {
+        userId,
+        adherenceLevel: metrics.adherenceLevel,
+        completionPercentage: metrics.completionPercentage,
+        distanceDeviationPercentage: metrics.distanceDeviationPercentage,
+      });
+
       // Start OpenTelemetry span for recommendation generation
       const tracer = trace.getTracer(TRACER_NAME);
       const generateSpan = tracer.startSpan(TELEMETRY_EVENTS.RECOMMENDATION_GENERATE);
@@ -223,6 +247,8 @@ router.post(
         "is_regenerated": false,
         "has_user_feedback": !!userFeedback,
         "experience_level": experienceLevel || "unknown",
+        "adherence_level": metrics.adherenceLevel,
+        "completion_percentage": metrics.completionPercentage,
       });
 
       let streamingSuccess = false;
@@ -231,6 +257,7 @@ router.post(
         // Generate recommendations with enhanced training plan data
         // Training paces from VDOT are included to help the AI provide pace-specific recommendations
         // Athlete's first name is passed for personalized coach's notes
+        // Pre-calculated metrics ensure consistency between training status and recommendations
         const result = aiService.generateRecommendationsWithEnhancedPlan(
           enhancedActivities,
           trainingPlan.csvContent,
@@ -239,7 +266,8 @@ router.post(
           userFeedback,
           experienceLevel,
           trainingPaces,
-          athleteFirstName
+          athleteFirstName,
+          metrics
         );
 
         // Set headers for streaming (must be set before any res.write())
