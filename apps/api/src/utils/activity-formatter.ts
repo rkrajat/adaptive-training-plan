@@ -4,6 +4,38 @@ import type {
 } from '../types/strava.types';
 
 /**
+ * Calculate the start date of a given week number based on the plan start date
+ * Week 1 starts on planStartDate, Week 2 starts 7 days later, etc.
+ */
+const getWeekStartDate = (planStartDate: Date, weekNumber: number): Date => {
+  const startDate = new Date(planStartDate);
+  startDate.setHours(0, 0, 0, 0);
+  const targetStart = new Date(startDate);
+  targetStart.setDate(startDate.getDate() + (weekNumber - 1) * 7);
+  return targetStart;
+};
+
+/**
+ * Filter activities by week boundaries based on plan start date
+ * Includes: previous week (full 7 days) + current week (day 1 through today)
+ */
+export const filterActivitiesByWeekBoundaries = (
+  activities: StravaActivity[],
+  planStartDate: Date,
+  currentWeek: number
+): StravaActivity[] => {
+  const today = new Date();
+  today.setHours(23, 59, 59, 999);
+
+  const previousWeekStart = getWeekStartDate(planStartDate, currentWeek - 1);
+
+  return activities.filter((activity) => {
+    const activityDate = new Date(activity.start_date);
+    return activityDate >= previousWeekStart && activityDate <= today;
+  });
+};
+
+/**
  * Derive run type from activity name using keyword matching
  */
 const deriveRunType = (activityName: string): string | undefined => {
